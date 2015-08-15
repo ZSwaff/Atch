@@ -48,14 +48,6 @@
         </activity>
 
         <activity
-            android:name=".SplashActivity"
-            android:label="Tiberius" >
-        </activity>
-        <activity
-            android:name=".SignUpActivity"
-            android:label="@string/title_activity_sign_up" >
-        </activity>
-        <activity
             android:name=".AtchAgreementActivity"
             android:label="@string/title_activity_atch_agreement" >
         </activity>

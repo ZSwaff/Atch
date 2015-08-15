@@ -31,13 +31,6 @@ public class AddFriendsActivity extends AppCompatActivity {
                 new GraphRequest.GraphJSONArrayCallback() {
                     @Override
                     public void onCompleted(JSONArray array, GraphResponse response) {
-                        //TODO remove
-                        for (int i = 0; i < array.length(); i++) {
-                            try {
-                                JSONObject obj = array.getJSONObject(i);
-                                Log.d("Friend", obj.getString("name"));
-                            } catch (JSONException e) {}
-                        }
                         fillListView(array);
                     }
                 });
