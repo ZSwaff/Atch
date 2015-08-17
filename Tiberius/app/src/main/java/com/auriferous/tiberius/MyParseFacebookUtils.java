@@ -2,7 +2,9 @@ package com.auriferous.tiberius;
 
 import android.support.annotation.NonNull;
 
+import com.auriferous.tiberius.Friends.User;
 import com.parse.FindCallback;
+import com.parse.GetCallback;
 import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -20,13 +22,13 @@ public class MyParseFacebookUtils {
     public static List<String> permissions = Arrays.asList("public_profile", "user_friends");
 
     //blocking sorry
+    //TODO this is being called on the main thread sometimes, fix that
     private static ParseUser getUserFromId(String parseId){
         ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
         userQuery.whereEqualTo("objectId", parseId);
         try {
-            List<ParseUser> users = userQuery.find();
-            if(!users.isEmpty())
-                return users.get(0);
+            ParseUser user = userQuery.getFirst();
+            return user;
         } catch (ParseException e) {}
         return null;
     }
@@ -77,11 +79,30 @@ public class MyParseFacebookUtils {
     public static List<ParseObject> getPendingFriendRequestsToCurrentUser() {
         ParseQuery<ParseObject> query = ParseQuery.getQuery("FriendRequest");
         query.whereEqualTo("toUser", ParseUser.getCurrentUser());
-        query.whereEqualTo("state", "accepted");
+        query.whereEqualTo("state", "requested");
         try {
             List<ParseObject> requests = query.find();
             return requests;
         } catch (ParseException e) {}
         return new ArrayList<ParseObject>();
+    }
+    //also blocking
+    public static ArrayList<User> getUsersWhoHaveRequestedToFriendCurrentUser() {
+        List<ParseObject> requests = getPendingFriendRequestsToCurrentUser();
+        ArrayList<String> userObjIds = new ArrayList<String>();
+        for (ParseObject req : requests)
+            userObjIds.add(req.getParseObject("fromUser").getObjectId());
+
+        ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
+        userQuery.whereContainedIn("objectId", userObjIds);
+        userQuery.orderByAscending("fullname");
+        try {
+            ArrayList<User> ret = new ArrayList<User>();
+            for(ParseUser pUsr : userQuery.find()){
+                ret.add(new User(pUsr));
+            }
+            return ret;
+        } catch (ParseException e) {}
+        return new ArrayList<User>();
     }
 }
