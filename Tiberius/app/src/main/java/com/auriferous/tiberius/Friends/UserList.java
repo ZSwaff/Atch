@@ -1,5 +1,6 @@
 package com.auriferous.tiberius.Friends;
 
+import com.parse.ParseObject;
 import com.parse.ParseUser;
 
 import java.io.Serializable;
@@ -23,6 +24,18 @@ public class UserList implements Serializable {
         for (User user : users)
             this.users.add(user);
     }
+
+    public void addDataToUnknownUser(ParseObject privateDatum){
+        ParseUser goalUser = privateDatum.getParseUser("user");
+        String goalId = goalUser.getObjectId();
+
+        for(User user : users){
+            if(user.getId().equals(goalId)) {
+                user.setPrivateData(privateDatum);
+            }
+        }
+    }
+
 
     @Override
     public String toString() {

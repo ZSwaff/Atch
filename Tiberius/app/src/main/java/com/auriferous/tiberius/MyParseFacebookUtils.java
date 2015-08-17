@@ -1,8 +1,10 @@
 package com.auriferous.tiberius;
 
+import android.location.Location;
 import android.support.annotation.NonNull;
 
 import com.auriferous.tiberius.Friends.User;
+import com.auriferous.tiberius.Friends.UserList;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.Parse;
@@ -11,6 +13,7 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
+import java.text.ParsePosition;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -75,6 +78,31 @@ public class MyParseFacebookUtils {
         });
     }
 
+    //blocking
+    //TODO use and test
+    public static ArrayList<User> getUsersWithMatchingUsernameOrFullname(String strQuery){
+        ParseQuery<ParseUser> usernameQuery = ParseUser.getQuery();
+        usernameQuery.whereContains("username", strQuery);
+
+        ParseQuery<ParseUser> fullnameQuery = ParseUser.getQuery();
+        fullnameQuery.whereContains("fullname", strQuery);
+
+        List<ParseQuery<ParseUser>> queries = new ArrayList<ParseQuery<ParseUser>>();
+        queries.add(usernameQuery);
+        queries.add(fullnameQuery);
+
+        ParseQuery<ParseUser> mainQuery = ParseQuery.or(queries);
+        mainQuery.orderByAscending("fullname");
+        try {
+            ArrayList<User> ret = new ArrayList<User>();
+            for(ParseUser pUsr : mainQuery.find()){
+                ret.add(new User(pUsr));
+            }
+            return ret;
+        } catch (ParseException e) {}
+        return new ArrayList<User>();
+    }
+
     //should be called in background, probably
     public static List<ParseObject> getPendingFriendRequestsToCurrentUser() {
         ParseQuery<ParseObject> query = ParseQuery.getQuery("FriendRequest");
@@ -104,5 +132,39 @@ public class MyParseFacebookUtils {
             return ret;
         } catch (ParseException e) {}
         return new ArrayList<User>();
+    }
+
+    public static void updateMyLocation(final Location location){
+        ParseUser currentUser = ParseUser.getCurrentUser();
+
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("FriendData");
+        query.whereEqualTo("user", currentUser);
+        query.getFirstInBackground(new GetCallback<ParseObject>() {
+            @Override
+            public void done(ParseObject parseObject, ParseException e) {
+                parseObject.put("location",location);
+                parseObject.saveInBackground();
+            }
+        });
+    }
+
+    //TODO so this blocks. it's very complicated where it is, but long story short it shouldn't
+    public static void updateWithMostRecentLocations(UserList friends){
+        ArrayList<ParseUser> friendPUsers = new ArrayList<ParseUser>();
+        synchronized (friends){
+            for(User friend : friends.getAllUsers())
+                friendPUsers.add(friend.getUser());
+        }
+
+        ParseQuery<ParseObject> userQuery = ParseQuery.getQuery("FriendData");
+        userQuery.whereContainedIn("user", friendPUsers);
+        try{
+            List<ParseObject> dataList = userQuery.find();
+            synchronized (friends) {
+                for (ParseObject privateDatum : dataList) {
+                    friends.addDataToUnknownUser(privateDatum);
+                }
+            }
+        } catch (ParseException e) {}
     }
 }

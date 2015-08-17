@@ -56,6 +56,8 @@ public class AddFriendsActivity extends AppCompatActivity {
         task.execute();
 
         fillListView();
+
+        MenuItem searchBar = (MenuItem) findViewById(R.id.search);
     }
 
     @Override

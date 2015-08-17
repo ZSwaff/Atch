@@ -12,12 +12,15 @@ public class AtchAgreementActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_atch_agreement);
+
     }
 
     @Override
     public void onBackPressed() {}
 
     public void engageApp(View view){
+        startService(new Intent(this, LocationUpdateService.class));
+
         startActivity(new Intent(getApplicationContext(), AddFriendsActivity.class));
     }
 }

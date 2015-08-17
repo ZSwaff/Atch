@@ -25,7 +25,7 @@ public class AddFriendScreenListAdapter extends BaseAdapter {
     }
 
     public int getCount() {
-        return topHalf.size() + bottomHalf.size() + 3;
+        return topHalf.size() + bottomHalf.size() + ((topHalf.size() == 0)?1:3);
     }
 
     public User getItem(int position) {
