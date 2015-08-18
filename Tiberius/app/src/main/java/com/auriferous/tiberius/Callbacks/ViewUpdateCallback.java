@@ -1,4 +1,4 @@
-package com.auriferous.tiberius;
+package com.auriferous.tiberius.Callbacks;
 
 public interface ViewUpdateCallback {
     void updateView ();

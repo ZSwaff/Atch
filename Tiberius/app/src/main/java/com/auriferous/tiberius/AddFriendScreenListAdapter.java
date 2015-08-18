@@ -1,6 +1,7 @@
 package com.auriferous.tiberius;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,18 +10,23 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.auriferous.tiberius.Friends.User;
+import com.auriferous.tiberius.Users.User;
 
 import java.util.ArrayList;
 
 public class AddFriendScreenListAdapter extends BaseAdapter {
     private final Context context;
+
+    private String topLabel = "";
     private final ArrayList<User> topHalf;
+    private String bottomLabel = "";
     private final ArrayList<User> bottomHalf;
 
-    public AddFriendScreenListAdapter(Context context, ArrayList<User> topHalf, ArrayList<User> bottomHalf) {
+    public AddFriendScreenListAdapter(Context context, String topLabel, ArrayList<User> topHalf, String bottomLabel, ArrayList<User> bottomHalf) {
         this.context = context;
+        this.topLabel = topLabel;
         this.topHalf = topHalf;
+        this.bottomLabel = bottomLabel;
         this.bottomHalf = bottomHalf;
     }
 
@@ -49,7 +55,7 @@ public class AddFriendScreenListAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         if(topHalf.size() != 0) {
             if (position == 0)
-                return createLabelView("Pending requests", parent);
+                return createLabelView(topLabel, parent);
             position--;
             if (position < topHalf.size())
                 return createUserView(topHalf.get(position), R.layout.pending_request_list_item, parent);
@@ -61,7 +67,7 @@ public class AddFriendScreenListAdapter extends BaseAdapter {
             position--;
         }
         if(position == 0)
-            return createLabelView("Facebook friends", parent);
+            return createLabelView(bottomLabel, parent);
         position--;
         if(position < bottomHalf.size())
             return createUserView(bottomHalf.get(position), R.layout.facebook_friend_list_item, parent);
@@ -106,7 +112,11 @@ public class AddFriendScreenListAdapter extends BaseAdapter {
                 }
             });
 
-        ImageView imageView = (ImageView) rowView.findViewById(R.id.prof_pic);
+        Bitmap profPic = user.getProfPic();
+        if(profPic != null) {
+            ImageView imageView = (ImageView) rowView.findViewById(R.id.prof_pic);
+            imageView.setImageBitmap(profPic);
+        }
 
         return rowView;
     }

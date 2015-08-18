@@ -1,4 +1,4 @@
-package com.auriferous.tiberius.Friends;
+package com.auriferous.tiberius.Users;
 
 import com.parse.ParseObject;
 import com.parse.ParseUser;

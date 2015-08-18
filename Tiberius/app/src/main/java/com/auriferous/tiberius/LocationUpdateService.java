@@ -13,7 +13,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.widget.Toast;
 
-import java.text.DateFormat;
+import java.util.Date;
 
 public class LocationUpdateService extends Service implements
         GoogleApiClient.ConnectionCallbacks,
@@ -22,12 +22,14 @@ public class LocationUpdateService extends Service implements
     GoogleApiClient mGoogleApiClient;
     LocationRequest mLocationRequest;
 
+
     @Override
     public void onCreate() {
         super.onCreate();
 
         buildGoogleApiClient();
         createLocationRequest();
+        mGoogleApiClient.connect();
     }
     protected synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -46,15 +48,15 @@ public class LocationUpdateService extends Service implements
 
     @Override
     public void onLocationChanged(Location location) {
-        TiberiusApplication app = (TiberiusApplication)(getApplication());
+        AtchApplication app = (AtchApplication)(getApplication());
         app.setCurrentLocation(location);
-        app.setLastUpdateTime(DateFormat.getTimeInstance());
 
-        //TODO see if any of these things happen
         MyParseFacebookUtils.updateMyLocation(location);
+        app.setLastUpdateTime(new Date());
 
         //TODO questionable about whether this is the best place to call this
         MyParseFacebookUtils.updateWithMostRecentLocations(app.getFriendsList());
+        //TODO then also call MapActivity.addMarkers()
     }
 
 

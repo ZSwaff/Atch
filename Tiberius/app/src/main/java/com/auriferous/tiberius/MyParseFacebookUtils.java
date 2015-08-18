@@ -1,86 +1,77 @@
 package com.auriferous.tiberius;
 
 import android.location.Location;
-import android.support.annotation.NonNull;
 
-import com.auriferous.tiberius.Friends.User;
-import com.auriferous.tiberius.Friends.UserList;
+import com.auriferous.tiberius.Callbacks.ListUserCallback;
+import com.auriferous.tiberius.Users.User;
+import com.auriferous.tiberius.Users.UserList;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
-import com.parse.Parse;
 import com.parse.ParseException;
+import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
-import java.text.ParsePosition;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 
 public class MyParseFacebookUtils {
     public static List<String> permissions = Arrays.asList("public_profile", "user_friends");
 
-    //blocking sorry
-    //TODO this is being called on the main thread sometimes, fix that
-    private static ParseUser getUserFromId(String parseId){
+    //not blocking any more
+    private static void getParseUserFromId(String parseId, final GetCallback<ParseUser> callback){
         ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
         userQuery.whereEqualTo("objectId", parseId);
-        try {
-            ParseUser user = userQuery.getFirst();
-            return user;
-        } catch (ParseException e) {}
-        return null;
+        userQuery.getFirstInBackground(callback);
     }
 
     public static void sendFriendRequest(String targetParseId) {
-        //gets user from id
-        final ParseUser targetUser = getUserFromId(targetParseId);
-        if(targetUser == null) return;
-
-        //checks if duplicate
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("FriendRequest");
-        query.whereEqualTo("toUser", targetUser);
-        query.findInBackground(new FindCallback<ParseObject>() {
+        getParseUserFromId(targetParseId, new GetCallback<ParseUser>() {
             @Override
-            public void done(List<ParseObject> list, ParseException e) {
-                if(list.isEmpty()){
-                    ParseObject friendRequest = new ParseObject("FriendRequest");
-                    friendRequest.put("fromUser", ParseUser.getCurrentUser());
-                    friendRequest.put("toUser", targetUser);
-                    friendRequest.put("state", "requested");
-                    friendRequest.saveInBackground();
-                }
+            public void done(final ParseUser targetUser, ParseException e) {
+                if (targetUser == null) return;
+
+                //todo implement the below code on the cloud which checks if duplicate
+                ParseQuery<ParseObject> query = ParseQuery.getQuery("FriendRequest");
+                query.whereEqualTo("toUser", targetUser);
+                query.findInBackground(new FindCallback<ParseObject>() {
+                    @Override
+                    public void done(List<ParseObject> list, ParseException e) {
+                        if (list.isEmpty()) {
+                            ParseObject friendRequest = new ParseObject("FriendRequest");
+                            friendRequest.put("fromUser", ParseUser.getCurrentUser());
+                            friendRequest.put("toUser", targetUser);
+                            friendRequest.put("state", "requested");
+                            friendRequest.saveInBackground();
+                        }
+                    }
+                });
+
             }
         });
     }
-
     public static void acceptFriendRequest(String senderParseId) {
-        //gets user from id
-        final ParseUser senderUser = getUserFromId(senderParseId);
-        if(senderUser == null) return;
-
-        //checks if duplicate
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("FriendRequest");
-        query.whereEqualTo("fromUser", senderUser);
-        query.findInBackground(new FindCallback<ParseObject>() {
+        getParseUserFromId(senderParseId, new GetCallback<ParseUser>() {
             @Override
-            public void done(List<ParseObject> list, ParseException e) {
-                if(!list.isEmpty()){
-                    ParseObject friendRequest = list.get(0);
-                    friendRequest.put("state", "accepted");
-                    friendRequest.saveInBackground();
-                }
+            public void done(final ParseUser senderUser, ParseException e) {
+                if (senderUser == null) return;
+
+                ParseQuery<ParseObject> query = ParseQuery.getQuery("FriendRequest");
+                query.whereEqualTo("fromUser", senderUser);
+                query.getFirstInBackground(new GetCallback<ParseObject>() {
+                    @Override
+                    public void done(ParseObject friendRequest, ParseException e) {
+                        friendRequest.put("state", "accepted");
+                        friendRequest.saveInBackground();
+                    }
+                });
             }
         });
     }
 
-    //blocking
-    //TODO use and test
-    public static ArrayList<User> getUsersWithMatchingUsernameOrFullname(String strQuery){
+    public static void getUsersWithMatchingUsernameOrFullname(String strQuery, final FindCallback<ParseUser> callback){
         ParseQuery<ParseUser> usernameQuery = ParseUser.getQuery();
         usernameQuery.whereContains("username", strQuery);
 
@@ -93,56 +84,51 @@ public class MyParseFacebookUtils {
 
         ParseQuery<ParseUser> mainQuery = ParseQuery.or(queries);
         mainQuery.orderByAscending("fullname");
-        try {
-            ArrayList<User> ret = new ArrayList<User>();
-            for(ParseUser pUsr : mainQuery.find()){
-                ret.add(new User(pUsr));
-            }
-            return ret;
-        } catch (ParseException e) {}
-        return new ArrayList<User>();
+        mainQuery.findInBackground(callback);
     }
 
-    //should be called in background, probably
-    public static List<ParseObject> getPendingFriendRequestsToCurrentUser() {
+    public static void getPendingFriendRequestsToCurrentUser(final FindCallback<ParseObject> callback) {
         ParseQuery<ParseObject> query = ParseQuery.getQuery("FriendRequest");
         query.whereEqualTo("toUser", ParseUser.getCurrentUser());
         query.whereEqualTo("state", "requested");
-        try {
-            List<ParseObject> requests = query.find();
-            return requests;
-        } catch (ParseException e) {}
-        return new ArrayList<ParseObject>();
+        query.findInBackground(callback);
     }
-    //also blocking
-    public static ArrayList<User> getUsersWhoHaveRequestedToFriendCurrentUser() {
-        List<ParseObject> requests = getPendingFriendRequestsToCurrentUser();
-        ArrayList<String> userObjIds = new ArrayList<String>();
-        for (ParseObject req : requests)
-            userObjIds.add(req.getParseObject("fromUser").getObjectId());
+    public static void getUsersWhoHaveRequestedToFriendCurrentUser(final ListUserCallback callback) {
+        getPendingFriendRequestsToCurrentUser(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> requests, ParseException e) {
+                ArrayList<String> userObjIds = new ArrayList<String>();
+                for (ParseObject req : requests)
+                    userObjIds.add(req.getParseObject("fromUser").getObjectId());
 
-        ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
-        userQuery.whereContainedIn("objectId", userObjIds);
-        userQuery.orderByAscending("fullname");
-        try {
-            ArrayList<User> ret = new ArrayList<User>();
-            for(ParseUser pUsr : userQuery.find()){
-                ret.add(new User(pUsr));
+                ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
+                userQuery.whereContainedIn("objectId", userObjIds);
+                userQuery.orderByAscending("fullname");
+                userQuery.findInBackground(new FindCallback<ParseUser>() {
+                    @Override
+                    public void done(List<ParseUser> users, ParseException e) {
+                        if (callback == null) return;
+                        ArrayList<User> ret = new ArrayList<User>();
+                        for(ParseUser pUsr : users)
+                            ret.add(new User(pUsr));
+                        callback.done(ret);
+                    }
+                });
             }
-            return ret;
-        } catch (ParseException e) {}
-        return new ArrayList<User>();
+        });
     }
 
-    public static void updateMyLocation(final Location location){
+    public static void updateMyLocation(Location location){
         ParseUser currentUser = ParseUser.getCurrentUser();
+
+        final ParseGeoPoint loc = new ParseGeoPoint(location.getLatitude(),location.getLongitude());
 
         ParseQuery<ParseObject> query = ParseQuery.getQuery("FriendData");
         query.whereEqualTo("user", currentUser);
         query.getFirstInBackground(new GetCallback<ParseObject>() {
             @Override
             public void done(ParseObject parseObject, ParseException e) {
-                parseObject.put("location",location);
+                parseObject.put("location",loc);
                 parseObject.saveInBackground();
             }
         });
@@ -164,6 +150,7 @@ public class MyParseFacebookUtils {
                 for (ParseObject privateDatum : dataList) {
                     friends.addDataToUnknownUser(privateDatum);
                 }
+
             }
         } catch (ParseException e) {}
     }
