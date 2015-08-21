@@ -1,0 +1,41 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:gravity="center_horizontal"
+    android:orientation="vertical" android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.auriferous.tiberius.Activities.LoginActivity">
+
+    <LinearLayout android:id="@+id/buttons_layout" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:orientation="vertical"
+        android:layout_alignParentBottom="true">
+
+        <Button android:id="@+id/log_in_button" style="?android:textAppearanceSmall"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="16dp" android:text="Log in"
+            android:textStyle="bold" />
+
+        <Button android:id="@+id/sign_up_switch_button" style="?android:textAppearanceSmall"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="16dp" android:text="Sign up"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/sign_up_layout" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:orientation="vertical"
+        android:layout_alignParentBottom="true" android:visibility="gone">
+
+        <AutoCompleteTextView android:id="@+id/username" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:hint="Pick a username" android:maxLines="1"
+            android:singleLine="true" />
+
+        <Button android:id="@+id/sign_up_button" style="?android:textAppearanceSmall"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="16dp" android:text="Sign up with Facebook"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+</RelativeLayout>
