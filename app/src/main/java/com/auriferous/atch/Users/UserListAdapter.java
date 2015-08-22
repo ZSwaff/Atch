@@ -18,16 +18,19 @@ import java.util.ArrayList;
 public class UserListAdapter extends BaseAdapter {
     private final Context context;
     private ArrayList<UserListAdapterSection> sections;
+    private String emptyMessage;
 
 
-    public UserListAdapter(Context context, UserListAdapterSection section) {
+    public UserListAdapter(Context context, UserListAdapterSection section, String emptyMessage) {
         this.context = context;
         sections = new ArrayList<>();
         sections.add(section);
+        this.emptyMessage = emptyMessage;
     }
-    public UserListAdapter(Context context, ArrayList<UserListAdapterSection> sections) {
+    public UserListAdapter(Context context, ArrayList<UserListAdapterSection> sections, String emptyMessage) {
         this.context = context;
         this.sections = sections;
+        this.emptyMessage = emptyMessage;
     }
 
 
@@ -39,6 +42,7 @@ public class UserListAdapter extends BaseAdapter {
                 if(size != 0) count++;
             count += size;
         }
+        if(count == 0) return 1;
         return count;
     }
     @Override
@@ -74,10 +78,21 @@ public class UserListAdapter extends BaseAdapter {
                 return createUserView(users.get(position), parent);
             position -= users.size();
         }
+        if (position == 0)
+            return createFullscreenLabelView(parent);
         return null;
     }
 
 
+    private View createFullscreenLabelView(ViewGroup parent) {
+        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View rowView = inflater.inflate(R.layout.fullscreen_label, parent, false);
+
+        TextView label = (TextView) rowView.findViewById(R.id.label);
+        label.setText(emptyMessage);
+
+        return rowView;
+    }
     private View createLabelView(String text, ViewGroup parent) {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View rowView = inflater.inflate(R.layout.label, parent, false);

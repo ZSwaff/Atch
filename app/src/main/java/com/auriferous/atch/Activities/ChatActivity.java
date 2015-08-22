@@ -33,9 +33,9 @@ public class ChatActivity extends BaseFriendsActivity {
         setContentView(R.layout.activity_chat);
         if(getActionBar() != null) getActionBar().setDisplayHomeAsUpEnabled(true);
 
-        chatRecipient = User.getUserFromMap(getIntent().getStringExtra("userParseId"));
+        chatRecipient = User.getUserFromMap(getIntent().getStringExtra("chatterParseId"));
 
-        updateChatHistory();
+        setupChatHistory();
 
         final EditText messageBox = (EditText) findViewById(R.id.message_box);
         messageBox.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -46,7 +46,7 @@ public class ChatActivity extends BaseFriendsActivity {
                     ParseAndFacebookUtils.sendMessage(messageHistory, newMessage, new FuncCallback<Object>() {
                         @Override
                         public void done(Object o) {
-                            updateChatHistory();
+                            setupChatHistory();
                         }
                     });
                     messageBox.setText("");
@@ -93,7 +93,7 @@ public class ChatActivity extends BaseFriendsActivity {
     }
 
 
-    private void updateChatHistory(){
+    private void setupChatHistory(){
         final ChatActivity chatActivity = this;
         ParseAndFacebookUtils.getOrCreateMessageHistory(chatRecipient.getId(), new FunctionCallback<ParseObject>() {
             @Override
@@ -111,7 +111,7 @@ public class ChatActivity extends BaseFriendsActivity {
     }
 
     private void fillListView() {
-        MessageListAdapter arrayAdapter = new MessageListAdapter(this, messageList, ParseUser.getCurrentUser());
+        MessageListAdapter arrayAdapter = new MessageListAdapter(this, messageList, ParseUser.getCurrentUser(), "No messages");
 
         ListView listView = (ListView) findViewById(R.id.listview);
         listView.setAdapter(arrayAdapter);

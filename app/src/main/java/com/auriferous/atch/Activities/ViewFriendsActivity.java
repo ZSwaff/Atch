@@ -5,8 +5,11 @@ import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.auriferous.atch.Users.User;
 import com.auriferous.atch.Users.UserListAdapter;
 import com.auriferous.atch.AtchApplication;
 import com.auriferous.atch.Callbacks.ViewUpdateCallback;
@@ -65,9 +68,19 @@ public class ViewFriendsActivity extends BaseFriendsActivity {
 
     private void fillListView() {
         UserList friends = ((AtchApplication) getApplication()).getFriendsList();
-        UserListAdapter arrayAdapter = new UserListAdapter(this, new UserListAdapterSection("Friends", friends));
+        UserListAdapter arrayAdapter = new UserListAdapter(this, new UserListAdapterSection("Friends", friends), "No friends yet");
 
         ListView listView = (ListView) findViewById(R.id.listview);
         listView.setAdapter(arrayAdapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+            @Override
+            public void onItemClick(AdapterView<?> adapter, View v, int position, long id){
+                User item = (User)adapter.getItemAtPosition(position);
+                Intent intent = new Intent(getApplicationContext(), ChatActivity.class);
+                intent.putExtra("chatterParseId", item.getId());
+                startActivity(intent);
+            }
+        });
     }
 }

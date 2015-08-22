@@ -84,7 +84,7 @@ public class MapActivity  extends BaseFriendsActivity {
             @Override
             public boolean onMarkerClick(final Marker marker) {
                 Intent intent = new Intent(getApplicationContext(), ChatActivity.class);
-                intent.putExtra("userParseId", marker.getSnippet());
+                intent.putExtra("chatterParseId", marker.getSnippet());
                 startActivity(intent);
                 return true;
             }
