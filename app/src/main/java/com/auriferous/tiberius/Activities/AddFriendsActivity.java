@@ -154,6 +154,7 @@ public class AddFriendsActivity extends BaseFriendsActivity {
             public void done(List<ParseUser> list, ParseException e) {
                 if (list == null) return;
                 searchResults = new UserList(list, User.UserType.RANDOM);
+                searchResults.sortByPriorityForSearch();
             }
         });
     }
@@ -174,7 +175,6 @@ public class AddFriendsActivity extends BaseFriendsActivity {
         listView.setAdapter(arrayAdapter);
     }
     private void fillListViewSearch() {
-        //todo sort by type
         UserListAdapter arrayAdapter = new UserListAdapter(this, new UserListAdapterSection("Search results", searchResults));
 
         final ListView listView = (ListView) findViewById(R.id.listview);

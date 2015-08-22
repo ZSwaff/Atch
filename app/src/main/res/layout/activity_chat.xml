@@ -24,7 +24,7 @@
         android:layout_height="wrap_content"
         android:hint="Type a message"
         android:layout_alignParentBottom="true"
-        android:inputType="text|textCapSentences|textAutoCorrect"
+        android:inputType="text|textMultiLine|textCapSentences|textAutoCorrect"
         android:singleLine="false"
         android:lines="2"
         android:minLines="1"

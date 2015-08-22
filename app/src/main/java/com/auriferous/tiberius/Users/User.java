@@ -111,7 +111,7 @@ public class User {
     }
     private void setMarkerIconBitmap(){
         //todo different size for different screens?
-        markerIcon = Bitmap.createScaledBitmap(profPic, 100, 100, false);
+        markerIcon = Bitmap.createScaledBitmap(profPic, 130, 130, false);
     }
     private static Bitmap getCircular(Bitmap bm) {
         int radius = bm.getWidth();

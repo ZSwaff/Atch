@@ -35,10 +35,8 @@ public class LoginActivity extends Activity {
         setContentView(R.layout.activity_login);
 
         ParseUser currUser = ParseUser.getCurrentUser();
-        if (accountIsAlreadyCreatedWithUsername(currUser) && ParseFacebookUtils.isLinked(currUser) && isLoggedIn()) {
-            ((AtchApplication)getApplication()).populateFriendList();
+        if (accountIsAlreadyCreatedWithUsername(currUser) && ParseFacebookUtils.isLinked(currUser) && isLoggedIn())
             startActivity(new Intent(getApplicationContext(), AtchAgreementActivity.class));
-        }
 
         Button mSignUpSwitchButton = (Button) findViewById(R.id.sign_up_switch_button);
         mSignUpSwitchButton.setOnClickListener(new View.OnClickListener() {
@@ -85,10 +83,8 @@ public class LoginActivity extends Activity {
                 if (user != null) {
                     if (user.isNew() || !accountIsAlreadyCreatedWithUsername(user))
                         switchViews(true);
-                    else {
-                        ((AtchApplication)getApplication()).populateFriendList();
+                    else
                         startActivity(new Intent(getApplicationContext(), AtchAgreementActivity.class));
-                    }
                 }
             }
         });
@@ -135,7 +131,6 @@ public class LoginActivity extends Activity {
                     }
 
                     //switch to the atch agreement activity
-                    ((AtchApplication)getApplication()).populateFriendList();
                     startActivity(new Intent(getApplicationContext(), AtchAgreementActivity.class));
                 }
             }

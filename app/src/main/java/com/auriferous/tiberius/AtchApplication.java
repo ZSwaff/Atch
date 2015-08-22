@@ -19,6 +19,7 @@ import com.parse.GetCallback;
 import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
+import com.parse.ParseInstallation;
 import com.parse.ParseQuery;
 import com.parse.ParseRelation;
 import com.parse.ParseRole;
@@ -85,7 +86,8 @@ public class AtchApplication extends Application {
         MapsInitializer.initialize(getApplicationContext());
 
         FacebookSdk.sdkInitialize(getApplicationContext());
-        Parse.initialize(getApplicationContext(), "P4g0harOzaQTi9g3QyEqGPI3HkiPJxxz4SJObhCE", "GpAM5yqJzbltLQENhwJt0cMbrVyM9q4aHR8O3k2s");
+
+        Parse.initialize(this, "P4g0harOzaQTi9g3QyEqGPI3HkiPJxxz4SJObhCE", "GpAM5yqJzbltLQENhwJt0cMbrVyM9q4aHR8O3k2s");
         ParseFacebookUtils.initialize(getApplicationContext());
     }
 

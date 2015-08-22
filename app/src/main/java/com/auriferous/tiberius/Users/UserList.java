@@ -46,6 +46,35 @@ public class UserList {
         }
     }
 
+    public void sortByPriorityForSearch() {
+        ArrayList<User> friends = new ArrayList<>();
+        ArrayList<User> pendingYou = new ArrayList<>();
+        ArrayList<User> fbFriends = new ArrayList<>();
+        ArrayList<User> other = new ArrayList<>();
+
+        for (User user : users) {
+            switch (user.getUserType()){
+                case FRIEND:
+                    friends.add(user);
+                    break;
+                case PENDING_YOU:
+                    pendingYou.add(user);
+                    break;
+                case FACEBOOK_FRIEND:
+                    fbFriends.add(user);
+                    break;
+                default:
+                    other.add(user);
+                    break;
+            }
+        }
+
+        users = friends;
+        users.addAll(pendingYou);
+        users.addAll(fbFriends);
+        users.addAll(other);
+    }
+
 
     @Override
     public String toString() {

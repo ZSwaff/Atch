@@ -1,6 +1,7 @@
 package com.auriferous.tiberius.Activities;
 
 import android.content.Intent;
+import android.location.Location;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -9,8 +10,11 @@ import com.auriferous.tiberius.AtchApplication;
 import com.auriferous.tiberius.Callbacks.ViewUpdateCallback;
 import com.auriferous.tiberius.R;
 import com.auriferous.tiberius.Users.User;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -41,7 +45,7 @@ public class MapActivity  extends BaseFriendsActivity {
                 addMarkers();
             }
         });
-        setUpMapIfNeeded();
+        addMarkers();
     }
 
     @Override
@@ -93,10 +97,37 @@ public class MapActivity  extends BaseFriendsActivity {
         map.clear();
         AtchApplication app = (AtchApplication)(getApplication());
         ArrayList<User> friends = app.getFriendsList().getAllUsers();
+
+        final double minRadialDist = .04; //in degrees
+        final double maxRadius = 8000; //in meters
+
+        double lat = 37.427325;
+        double lng = -122.169882;
+        Location userLocation = app.getCurrentLocation();
+        if(userLocation != null) {
+            lat = userLocation.getLatitude();
+            lng = userLocation.getLongitude();
+        }
+        LatLngBounds mapBounds = new LatLngBounds(new LatLng(lat-minRadialDist, lng-minRadialDist), new LatLng(lat+minRadialDist, lng+minRadialDist));
+
+        //todo sort by distance first, then stop expanding if we get too many
         for (User friend : friends) {
             MarkerOptions marker = friend.getMarker();
-            if(marker != null)
+            if(marker != null) {
                 map.addMarker(marker);
+                LatLngBounds newMapBounds = mapBounds.including(marker.getPosition());
+                LatLng sw = newMapBounds.southwest, cent = newMapBounds.getCenter();
+                float[] results = new float[1];
+                Location.distanceBetween(sw.latitude,sw.longitude,cent.latitude,cent.longitude,results);
+                float radialDist = results[0];
+                if(radialDist < maxRadius)
+                    mapBounds = newMapBounds;
+            }
         }
+
+        try {
+            map.animateCamera(CameraUpdateFactory.newLatLngBounds(mapBounds, 0), 500, null);
+        }
+        catch (IllegalStateException iSE) {}
     }
 }
