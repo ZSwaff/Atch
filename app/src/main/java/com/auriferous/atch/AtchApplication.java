@@ -1,4 +1,4 @@
-package com.auriferous.tiberius;
+package com.auriferous.atch;
 
 import android.app.Activity;
 import android.app.Application;
@@ -9,9 +9,9 @@ import android.location.Location;
 import android.util.Base64;
 import android.util.Log;
 
-import com.auriferous.tiberius.Callbacks.ViewUpdateCallback;
-import com.auriferous.tiberius.Users.User;
-import com.auriferous.tiberius.Users.UserList;
+import com.auriferous.atch.Callbacks.ViewUpdateCallback;
+import com.auriferous.atch.Users.User;
+import com.auriferous.atch.Users.UserList;
 import com.facebook.FacebookSdk;
 import com.google.android.gms.maps.MapsInitializer;
 import com.parse.FindCallback;
@@ -19,7 +19,6 @@ import com.parse.GetCallback;
 import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
-import com.parse.ParseInstallation;
 import com.parse.ParseQuery;
 import com.parse.ParseRelation;
 import com.parse.ParseRole;
@@ -79,7 +78,7 @@ public class AtchApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        //logReleaseHashKey()
+        //logReleaseHashKey();
 
         User.init(this);
 
@@ -94,7 +93,7 @@ public class AtchApplication extends Application {
     private void logReleaseHashKey(){
         PackageInfo info;
         try {
-            info = getPackageManager().getPackageInfo("com.auriferous.tiberius", PackageManager.GET_SIGNATURES);
+            info = getPackageManager().getPackageInfo("com.auriferous.atch", PackageManager.GET_SIGNATURES);
             for (Signature signature : info.signatures) {
                 MessageDigest md;
                 md = MessageDigest.getInstance("SHA");

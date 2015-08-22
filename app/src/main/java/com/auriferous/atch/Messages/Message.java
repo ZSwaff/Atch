@@ -1,4 +1,4 @@
-package com.auriferous.tiberius.Messages;
+package com.auriferous.atch.Messages;
 
 import com.parse.ParseObject;
 import com.parse.ParseUser;

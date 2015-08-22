@@ -1,4 +1,4 @@
-package com.auriferous.tiberius;
+package com.auriferous.atch;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;

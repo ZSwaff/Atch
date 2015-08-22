@@ -1,4 +1,4 @@
-package com.auriferous.tiberius.Users;
+package com.auriferous.atch.Users;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -10,7 +10,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.AsyncTask;
 
-import com.auriferous.tiberius.AtchApplication;
+import com.auriferous.atch.AtchApplication;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;

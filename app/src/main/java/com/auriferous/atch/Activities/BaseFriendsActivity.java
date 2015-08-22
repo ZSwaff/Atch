@@ -1,11 +1,11 @@
-package com.auriferous.tiberius.Activities;
+package com.auriferous.atch.Activities;
 
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
-import com.auriferous.tiberius.AtchApplication;
-import com.auriferous.tiberius.Callbacks.ViewUpdateCallback;
+import com.auriferous.atch.AtchApplication;
+import com.auriferous.atch.Callbacks.ViewUpdateCallback;
 
 public abstract class BaseFriendsActivity extends AppCompatActivity{
     protected AtchApplication app;

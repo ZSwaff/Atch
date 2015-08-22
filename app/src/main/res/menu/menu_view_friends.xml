@@ -1,7 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.auriferous.tiberius.Activities.ViewFriendsActivity">
+    tools:context="com.auriferous.atch.Activities.ViewFriendsActivity">
 
     <item android:id="@+id/switch_to_add_friends"
         android:title="Add friends"

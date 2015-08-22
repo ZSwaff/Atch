@@ -1,9 +1,9 @@
-package com.auriferous.tiberius;
+package com.auriferous.atch;
 
 import android.content.Context;
 import android.content.Intent;
 
-import com.auriferous.tiberius.Activities.ChatActivity;
+import com.auriferous.atch.Activities.ChatActivity;
 import com.parse.ParseAnalytics;
 import com.parse.ParsePushBroadcastReceiver;
 

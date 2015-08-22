@@ -1,4 +1,4 @@
-package com.auriferous.tiberius.Activities;
+package com.auriferous.atch.Activities;
 
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -9,13 +9,13 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.auriferous.tiberius.Callbacks.FuncCallback;
-import com.auriferous.tiberius.Callbacks.ViewUpdateCallback;
-import com.auriferous.tiberius.Messages.MessageList;
-import com.auriferous.tiberius.Messages.MessageListAdapter;
-import com.auriferous.tiberius.ParseAndFacebookUtils;
-import com.auriferous.tiberius.R;
-import com.auriferous.tiberius.Users.User;
+import com.auriferous.atch.Callbacks.FuncCallback;
+import com.auriferous.atch.Callbacks.ViewUpdateCallback;
+import com.auriferous.atch.Messages.MessageList;
+import com.auriferous.atch.Messages.MessageListAdapter;
+import com.auriferous.atch.ParseAndFacebookUtils;
+import com.auriferous.atch.R;
+import com.auriferous.atch.Users.User;
 import com.parse.FunctionCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;

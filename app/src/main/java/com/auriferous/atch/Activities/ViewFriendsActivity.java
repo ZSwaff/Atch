@@ -1,4 +1,4 @@
-package com.auriferous.tiberius.Activities;
+package com.auriferous.atch.Activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,12 +7,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
 
-import com.auriferous.tiberius.Users.UserListAdapter;
-import com.auriferous.tiberius.AtchApplication;
-import com.auriferous.tiberius.Callbacks.ViewUpdateCallback;
-import com.auriferous.tiberius.R;
-import com.auriferous.tiberius.Users.UserListAdapterSection;
-import com.auriferous.tiberius.Users.UserList;
+import com.auriferous.atch.Users.UserListAdapter;
+import com.auriferous.atch.AtchApplication;
+import com.auriferous.atch.Callbacks.ViewUpdateCallback;
+import com.auriferous.atch.R;
+import com.auriferous.atch.Users.UserListAdapterSection;
+import com.auriferous.atch.Users.UserList;
 
 public class ViewFriendsActivity extends BaseFriendsActivity {
     @Override

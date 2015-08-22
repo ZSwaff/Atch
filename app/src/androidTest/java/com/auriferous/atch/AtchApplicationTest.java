@@ -1,4 +1,4 @@
-package com.auriferous.tiberius;
+package com.auriferous.atch;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

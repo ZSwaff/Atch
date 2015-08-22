@@ -1,4 +1,4 @@
-package com.auriferous.tiberius.Users;
+package com.auriferous.atch.Users;
 
 public class UserListAdapterSection {
     private String label;

@@ -1,4 +1,4 @@
-package com.auriferous.tiberius.Activities;
+package com.auriferous.atch.Activities;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -11,15 +11,16 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
-import com.auriferous.tiberius.AtchApplication;
-import com.auriferous.tiberius.ParseAndFacebookUtils;
-import com.auriferous.tiberius.R;
+import com.auriferous.atch.ParseAndFacebookUtils;
+import com.auriferous.atch.R;
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.parse.LogInCallback;
 import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
+import com.parse.ParseInstallation;
+import com.parse.ParsePush;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
@@ -83,8 +84,10 @@ public class LoginActivity extends Activity {
                 if (user != null) {
                     if (user.isNew() || !accountIsAlreadyCreatedWithUsername(user))
                         switchViews(true);
-                    else
+                    else {
+                        setupParseInstallation();
                         startActivity(new Intent(getApplicationContext(), AtchAgreementActivity.class));
+                    }
                 }
             }
         });
@@ -113,6 +116,7 @@ public class LoginActivity extends Activity {
             public void done(ParseUser user, ParseException err) {
                 if (user != null) {
                     if (user.isNew() || !accountIsAlreadyCreatedWithUsername(user)) {
+                        setupParseInstallation();
                         GraphRequest request = GraphRequest.newMeRequest(
                                 AccessToken.getCurrentAccessToken(),
                                 new GraphRequest.GraphJSONObjectCallback() {
@@ -157,11 +161,19 @@ public class LoginActivity extends Activity {
         return (user != null && user.get("usernameSet") != null && user.get("usernameSet").equals("t"));
     }
 
-    public boolean isLoggedIn() {
+    private boolean isLoggedIn() {
         AccessToken accessToken = AccessToken.getCurrentAccessToken();
         //todo reexamine
         return (accessToken != null && !accessToken.isExpired()/* && accessToken.getPermissions().size() == ParseAndFacebookUtils.permissions.size()*/);
     }
+
+    private void setupParseInstallation() {
+        ParseInstallation installation = ParseInstallation.getCurrentInstallation();
+        installation.put("userId", ParseUser.getCurrentUser().getObjectId());
+        installation.saveInBackground();
+        ParsePush.subscribeInBackground("global");
+    }
+
 
     private void switchViews(boolean switchToSignUp) {
         LinearLayout oldLayout = (LinearLayout) findViewById(switchToSignUp?R.id.buttons_layout:R.id.sign_up_layout);

@@ -1,4 +1,4 @@
-package com.auriferous.tiberius.Activities;
+package com.auriferous.atch.Activities;
 
 import android.content.Intent;
 import android.location.Location;
@@ -6,10 +6,10 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.auriferous.tiberius.AtchApplication;
-import com.auriferous.tiberius.Callbacks.ViewUpdateCallback;
-import com.auriferous.tiberius.R;
-import com.auriferous.tiberius.Users.User;
+import com.auriferous.atch.AtchApplication;
+import com.auriferous.atch.Callbacks.ViewUpdateCallback;
+import com.auriferous.atch.R;
+import com.auriferous.atch.Users.User;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;

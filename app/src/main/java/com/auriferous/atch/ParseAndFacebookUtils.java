@@ -1,12 +1,12 @@
-package com.auriferous.tiberius;
+package com.auriferous.atch;
 
 import android.location.Location;
 import android.util.Log;
 
-import com.auriferous.tiberius.Callbacks.FuncCallback;
-import com.auriferous.tiberius.Messages.MessageList;
-import com.auriferous.tiberius.Users.User;
-import com.auriferous.tiberius.Users.UserList;
+import com.auriferous.atch.Callbacks.FuncCallback;
+import com.auriferous.atch.Messages.MessageList;
+import com.auriferous.atch.Users.User;
+import com.auriferous.atch.Users.UserList;
 import com.parse.FindCallback;
 import com.parse.FunctionCallback;
 import com.parse.GetCallback;
@@ -185,15 +185,20 @@ public class ParseAndFacebookUtils {
     public static void getAllMessagesFromHistory(final ParseObject messageHistory, final FuncCallback<MessageList> callback){
         ArrayList<String> messageList = (ArrayList<String>)messageHistory.get("messageList");
 
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("Message");
-        query.whereContainedIn("objectId", messageList);
-        query.orderByAscending("createdAt");
-        query.findInBackground(new FindCallback<ParseObject>() {
-            @Override
-            public void done(List<ParseObject> messages, ParseException e) {
-                callback.done(new MessageList(messages));
-            }
-        });
+        if(messageList != null) {
+            ParseQuery<ParseObject> query = ParseQuery.getQuery("Message");
+            query.whereContainedIn("objectId", messageList);
+            query.orderByAscending("createdAt");
+            query.findInBackground(new FindCallback<ParseObject>() {
+                @Override
+                public void done(List<ParseObject> messages, ParseException e) {
+                    callback.done(new MessageList(messages));
+                }
+            });
+        }
+        else {
+            callback.done(new MessageList(new ArrayList<ParseObject>()));
+        }
     }
 
 

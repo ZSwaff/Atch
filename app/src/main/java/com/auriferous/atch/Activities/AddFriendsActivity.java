@@ -1,4 +1,4 @@
-package com.auriferous.tiberius.Activities;
+package com.auriferous.atch.Activities;
 
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
@@ -7,14 +7,14 @@ import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.SearchView;
 
-import com.auriferous.tiberius.Callbacks.ViewUpdateCallback;
-import com.auriferous.tiberius.Users.UserListAdapter;
-import com.auriferous.tiberius.Callbacks.FuncCallback;
-import com.auriferous.tiberius.ParseAndFacebookUtils;
-import com.auriferous.tiberius.R;
-import com.auriferous.tiberius.Users.UserListAdapterSection;
-import com.auriferous.tiberius.Users.User;
-import com.auriferous.tiberius.Users.UserList;
+import com.auriferous.atch.Callbacks.ViewUpdateCallback;
+import com.auriferous.atch.Users.UserListAdapter;
+import com.auriferous.atch.Callbacks.FuncCallback;
+import com.auriferous.atch.ParseAndFacebookUtils;
+import com.auriferous.atch.R;
+import com.auriferous.atch.Users.UserListAdapterSection;
+import com.auriferous.atch.Users.User;
+import com.auriferous.atch.Users.UserList;
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
