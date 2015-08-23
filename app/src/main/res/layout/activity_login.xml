@@ -7,7 +7,6 @@
     android:orientation="vertical"
     tools:context="com.auriferous.atch.Activities.LoginActivity">
 
-
     <fragment
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
@@ -17,20 +16,21 @@
         tools:context=".MapActivity"
         android:name="com.google.android.gms.maps.SupportMapFragment" />
 
-
     <RelativeLayout
         android:id="@+id/buttons_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:weightSum="1">
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="fill_parent"
             android:layout_above="@+id/log_in_button"
             android:orientation="vertical"
-            android:background="#46abff"
-            android:alpha="0"></RelativeLayout>
+            android:background="#575757"
+            android:alpha=".5"></RelativeLayout>
+
         <Button
             android:id="@+id/log_in_button"
             style="?android:textAppearanceLarge"
@@ -44,7 +44,7 @@
             android:layout_marginTop="0dp"
             android:layout_marginRight="0dp"
             android:layout_marginBottom="0dp"
-            android:background="#bdbdbd"
+            android:background="#c5c5c5"
             android:layout_above="@+id/sign_up_switch_button"
             android:layout_alignParentStart="true"
             android:alpha="1" />
@@ -75,13 +75,14 @@
         android:orientation="vertical"
         android:weightSum="1"
         android:visibility="gone">
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="fill_parent"
             android:layout_above="@+id/username"
             android:orientation="vertical"
-            android:background="#46abff"
-            android:alpha="0"></RelativeLayout>
+            android:background="#575757"
+            android:alpha=".5"></RelativeLayout>
 
         <com.auriferous.atch.ActionEditText
             android:id="@+id/username"
@@ -89,15 +90,12 @@
             android:layout_height="wrap_content"
             android:layout_above="@+id/sign_up_button"
             android:hint="Pick a username"
-            android:padding="0dp"
+            android:padding="10dp"
             android:layout_margin="0dp"
-            android:layout_marginLeft="0dp"
-            android:layout_marginTop="0dp"
-            android:layout_marginRight="0dp"
-            android:layout_marginBottom="0dp"
             android:maxLines="1"
             android:singleLine="true"
             android:layout_alignParentStart="true"
+            android:background="#c5c5c5"
             android:alpha="1"
             android:imeOptions="actionGo" />
 

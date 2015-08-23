@@ -82,12 +82,12 @@ public class AtchApplication extends Application {
 
         User.init(this);
 
-        MapsInitializer.initialize(getApplicationContext());
+        MapsInitializer.initialize(this);
 
-        FacebookSdk.sdkInitialize(getApplicationContext());
+        FacebookSdk.sdkInitialize(this);
 
         Parse.initialize(this, "P4g0harOzaQTi9g3QyEqGPI3HkiPJxxz4SJObhCE", "GpAM5yqJzbltLQENhwJt0cMbrVyM9q4aHR8O3k2s");
-        ParseFacebookUtils.initialize(getApplicationContext());
+        ParseFacebookUtils.initialize(this);
     }
 
     private void logReleaseHashKey(){

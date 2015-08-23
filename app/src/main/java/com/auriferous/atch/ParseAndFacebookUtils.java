@@ -29,17 +29,36 @@ public class ParseAndFacebookUtils {
     public static final List<String> permissions = Arrays.asList("public_profile", "user_friends");
 
 
-    private static void getParseUserFromId(String parseId, final GetCallback<ParseUser> callback){
+    public static void getParseUserFromFbid(String fbid, final FuncCallback<ParseUser> callback){
         ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
-        userQuery.whereEqualTo("objectId", parseId);
-        userQuery.getFirstInBackground(callback);
+        userQuery.whereEqualTo("fbid", fbid);
+        userQuery.getFirstInBackground(new GetCallback<ParseUser>() {
+            @Override
+            public void done(ParseUser parseUser, ParseException e) {
+                if(callback != null)
+                    callback.done(parseUser);
+            }
+        });
+    }
+    public static void getParseUserFromUsername(String username, final FuncCallback<ParseUser> callback){
+        ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
+        userQuery.whereEqualTo("username", username);
+        userQuery.getFirstInBackground(new GetCallback<ParseUser>() {
+            @Override
+            public void done(ParseUser parseUser, ParseException e) {
+                if(callback != null)
+                    callback.done(parseUser);
+            }
+        });
     }
     public static void getUsersWithMatchingUsernameOrFullname(String strQuery, final FindCallback<ParseUser> callback){
+        strQuery = strQuery.toLowerCase();
+
         ParseQuery<ParseUser> usernameQuery = ParseUser.getQuery();
-        usernameQuery.whereContains("username", strQuery);
+        usernameQuery.whereContains("queryUsername", strQuery);
 
         ParseQuery<ParseUser> fullnameQuery = ParseUser.getQuery();
-        fullnameQuery.whereContains("fullname", strQuery);
+        fullnameQuery.whereContains("queryFullname", strQuery);
 
         List<ParseQuery<ParseUser>> queries = new ArrayList<>();
         queries.add(usernameQuery);

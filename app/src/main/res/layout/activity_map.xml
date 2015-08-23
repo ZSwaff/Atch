@@ -1,4 +1,47 @@
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:id="@+id/map" tools:context=".MapActivity"
-    android:name="com.google.android.gms.maps.SupportMapFragment" />
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    tools:context="com.auriferous.atch.Activities.LoginActivity">
+
+    <fragment
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/map"
+        tools:context=".MapActivity"
+        android:name="com.google.android.gms.maps.SupportMapFragment" />
+
+    <ImageButton
+        android:id="@+id/log_out_button"
+        android:src="@android:drawable/ic_lock_idle_lock"
+        android:scaleX="1.5"
+        android:scaleY="1.5"
+        android:onClick="logOut"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_margin="10dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:background="@android:color/transparent" />
+
+    <ImageButton
+        android:id="@+id/friends_button"
+        android:src="@android:drawable/stat_notify_chat"
+        android:scaleX="1.5"
+        android:scaleY="1.5"
+        android:onClick="switchToFriends"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_margin="10dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:background="@android:color/transparent" />
+
+</RelativeLayout>
