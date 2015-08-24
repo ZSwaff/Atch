@@ -21,6 +21,7 @@ import com.parse.ParseUser;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
 import java.util.HashMap;
 
 public class User {
@@ -36,10 +37,11 @@ public class User {
 
     private ParseObject privateData = null;
     private MarkerOptions marker = null;
+    private boolean loggedIn = false;
 
 
-    public static void init(AtchApplication aApp){
-        app = aApp;
+    public static void init(AtchApplication app){
+        User.app = app;
     }
 
     public static User getUserFromMap(String parseId){
@@ -137,7 +139,15 @@ public class User {
 
     public void setPrivateData(ParseObject privateData){
         this.privateData = privateData;
+        updateOnlineStatus();
         createMarker();
+    }
+    private void updateOnlineStatus() {
+        if (privateData == null) return;
+        Date udAt = privateData.getUpdatedAt();
+        if(udAt == null) return;
+        Date udAtPlus5 = new Date(udAt.getTime() + (5 * 60 * 1000));
+        loggedIn = udAtPlus5.after(new Date());
     }
     private void createMarker() {
         marker = null;

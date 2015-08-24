@@ -10,15 +10,23 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.auriferous.atch.AtchApplication;
 import com.auriferous.atch.ParseAndFacebookUtils;
 import com.auriferous.atch.R;
 
 import java.util.ArrayList;
 
 public class UserListAdapter extends BaseAdapter {
+    private static AtchApplication app;
+
     private final Context context;
     private ArrayList<UserListAdapterSection> sections;
     private String emptyMessage;
+
+
+    public static void init(AtchApplication app){
+        UserListAdapter.app = app;
+    }
 
 
     public UserListAdapter(Context context, UserListAdapterSection section, String emptyMessage) {
@@ -103,7 +111,7 @@ public class UserListAdapter extends BaseAdapter {
         return rowView;
     }
 
-    private View createUserView(User user, ViewGroup parent) {
+    private View createUserView(final User user, ViewGroup parent) {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         int layout = 0;
@@ -139,14 +147,19 @@ public class UserListAdapter extends BaseAdapter {
             friendButton.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     ParseAndFacebookUtils.sendFriendRequest(uid);
+                    user.setUserType(User.UserType.PENDING_THEM);
+                    app.updateView();
                 }
             });
 
-        Button acceptButton = (Button) rowView.findViewById(R.id.accept_button);
+        final Button acceptButton = (Button) rowView.findViewById(R.id.accept_button);
         if(acceptButton != null)
             acceptButton.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     ParseAndFacebookUtils.acceptFriendRequest(uid);
+                    user.setUserType(User.UserType.FRIEND);
+                    app.addFriend(user);
+                    app.updateView();
                 }
             });
 

@@ -11,7 +11,7 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="fill_parent"
         android:id="@+id/map"
         tools:context=".MapActivity"
         android:name="com.google.android.gms.maps.SupportMapFragment" />
@@ -29,7 +29,7 @@
             android:layout_above="@+id/log_in_button"
             android:orientation="vertical"
             android:background="#575757"
-            android:alpha=".5"></RelativeLayout>
+            android:alpha="0"></RelativeLayout>
 
         <Button
             android:id="@+id/log_in_button"

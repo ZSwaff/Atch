@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -37,19 +38,12 @@ public class ChatActivity extends BaseFriendsActivity {
 
         setupChatHistory();
 
-        final EditText messageBox = (EditText) findViewById(R.id.message_box);
+        EditText messageBox = (EditText) findViewById(R.id.message_box);
         messageBox.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_SEND) {
-                    String newMessage = messageBox.getText().toString();
-                    ParseAndFacebookUtils.sendMessage(messageHistory, newMessage, new FuncCallback<Object>() {
-                        @Override
-                        public void done(Object o) {
-                            setupChatHistory();
-                        }
-                    });
-                    messageBox.setText("");
+                    sendMessage(null);
                     return true;
                 }
                 return false;
@@ -93,7 +87,24 @@ public class ChatActivity extends BaseFriendsActivity {
     }
 
 
-    private void setupChatHistory(){
+    public void sendMessage(View view) {
+        EditText messageBox = (EditText) findViewById(R.id.message_box);
+        String newMessage = messageBox.getText().toString();
+        ParseAndFacebookUtils.sendMessage(messageHistory, newMessage, new FuncCallback<Object>() {
+            @Override
+            public void done(Object o) {
+                setupChatHistory();
+            }
+        });
+        messageBox.setText("");
+    }
+
+
+    public String getChatterObjectId(){
+        return chatRecipient.getId();
+    }
+
+    public void setupChatHistory(){
         final ChatActivity chatActivity = this;
         ParseAndFacebookUtils.getOrCreateMessageHistory(chatRecipient.getId(), new FunctionCallback<ParseObject>() {
             @Override

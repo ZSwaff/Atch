@@ -23,8 +23,8 @@ public class AtchAgreementActivity extends Activity {
 
 
     public void engageApp(View view){
-        startService(new Intent(this, LocationUpdateService.class));
+        ((AtchApplication)getApplication()).startLocationUpdates();
 
-        startActivity(new Intent(getApplicationContext(), MapActivity.class));
+        startActivity(new Intent(getApplication(), MapActivity.class));
     }
 }

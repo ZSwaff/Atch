@@ -4,16 +4,18 @@ import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 
 import com.auriferous.atch.AtchApplication;
 import com.auriferous.atch.Callbacks.ViewUpdateCallback;
+import com.auriferous.atch.LocationUpdateService;
 import com.auriferous.atch.R;
 import com.auriferous.atch.Users.User;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -56,10 +58,21 @@ public class MapActivity  extends BaseFriendsActivity {
 
 
     public void logOut(View view) {
-        //todo implement
+        ((AtchApplication)getApplication()).stopLocationUpdates();
+
+        startActivity(new Intent(getApplicationContext(), AtchAgreementActivity.class));
     }
     public void switchToFriends(View view) {
         startActivity(new Intent(getApplicationContext(), ViewFriendsActivity.class));
+    }
+    public void findMyLocation(View view) {
+        try {
+            Location myLoc = map.getMyLocation();
+            if(myLoc != null)
+                map.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(new LatLng(myLoc.getLatitude(), myLoc.getLongitude()), 13, 0, 0)), 700, null);
+        }
+        catch (IllegalStateException iSE) {}
+        map.getMyLocation();
     }
 
 
@@ -76,6 +89,7 @@ public class MapActivity  extends BaseFriendsActivity {
         map.setIndoorEnabled(false);
         map.getUiSettings().setMapToolbarEnabled(false);
         map.getUiSettings().setTiltGesturesEnabled(false);
+        map.getUiSettings().setMyLocationButtonEnabled(false);
 
         map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override

@@ -22,6 +22,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.auriferous.atch.ActionEditText;
+import com.auriferous.atch.AtchParsePushReceiver;
 import com.auriferous.atch.Callbacks.FuncCallback;
 import com.auriferous.atch.ParseAndFacebookUtils;
 import com.auriferous.atch.R;
@@ -290,6 +291,7 @@ public class LoginActivity extends FragmentActivity {
         ParsePush.subscribeInBackground("global");
     }
     private void proceedToAtchAgreement(){
+        AtchParsePushReceiver.cancelAllNotifications(this);
         startActivity(new Intent(getApplicationContext(), AtchAgreementActivity.class));
     }
 }

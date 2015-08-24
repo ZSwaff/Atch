@@ -9,7 +9,9 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="I'm atch"
+        style="?android:textAppearanceLarge"
+        android:textStyle="bold"
+        android:text="I'M ATCH"
         android:id="@+id/button"
         android:onClick="engageApp"
         android:layout_centerVertical="true"

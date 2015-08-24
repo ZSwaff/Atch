@@ -2,6 +2,7 @@ package com.auriferous.atch;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
@@ -12,6 +13,7 @@ import android.util.Log;
 import com.auriferous.atch.Callbacks.ViewUpdateCallback;
 import com.auriferous.atch.Users.User;
 import com.auriferous.atch.Users.UserList;
+import com.auriferous.atch.Users.UserListAdapter;
 import com.facebook.FacebookSdk;
 import com.google.android.gms.maps.MapsInitializer;
 import com.parse.FindCallback;
@@ -35,6 +37,7 @@ public class AtchApplication extends Application {
     private volatile Activity currentActivity = null;
     private volatile ViewUpdateCallback viewUpdateCallback = null;
 
+    private volatile Intent locationUpdateServiceIntent = null;
     private volatile Location currentLocation = null;
     private volatile Date lastUpdateTime = null;
 
@@ -52,8 +55,18 @@ public class AtchApplication extends Application {
         this.viewUpdateCallback = viewUpdateCallback;
     }
     public void updateView() {
-        if (viewUpdateCallback != null)
+        if (viewUpdateCallback != null){
             viewUpdateCallback.updateView();
+        }
+    }
+
+    public void startLocationUpdates(){
+        locationUpdateServiceIntent = new Intent(this, LocationUpdateService.class);
+        startService(locationUpdateServiceIntent);
+    }
+    public void stopLocationUpdates(){
+        stopService(locationUpdateServiceIntent);
+        locationUpdateServiceIntent = null;
     }
 
     public Location getCurrentLocation() {
@@ -80,7 +93,10 @@ public class AtchApplication extends Application {
         super.onCreate();
         //logReleaseHashKey();
 
+        AtchParsePushReceiver.init(this);
+        AtchParsePushReceiver.cancelAllNotifications(this);
         User.init(this);
+        UserListAdapter.init(this);
 
         MapsInitializer.initialize(this);
 
@@ -131,5 +147,8 @@ public class AtchApplication extends Application {
                 });
             }
         });
+    }
+    public void addFriend(User newFriend){
+        friendsList.addUser(newFriend);
     }
 }

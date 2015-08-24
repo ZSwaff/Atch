@@ -45,16 +45,7 @@ public class AddFriendsActivity extends BaseFriendsActivity {
         setContentView(R.layout.activity_add_friends);
         if(getActionBar() != null) getActionBar().setDisplayHomeAsUpEnabled(true);
 
-        setViewUpdateCallback(new ViewUpdateCallback() {
-            @Override
-            public void updateView() {
-                fillListView();
-            }
-        });
-        fillListView();
-
         populateFacebookFriendList();
-
         ParseAndFacebookUtils.getUsersWhoHaveRequestedToFriendCurrentUser(new FuncCallback<UserList>() {
             @Override
             public void done(UserList list) {
@@ -62,6 +53,21 @@ public class AddFriendsActivity extends BaseFriendsActivity {
                 updateCurrentView();
             }
         });
+        ParseAndFacebookUtils.getUsersWhoCurrentUserHasRequestedToFriend(new FuncCallback<UserList>() {
+            @Override
+            public void done(UserList userList) {
+                //done only to populate the user hashmap
+                return;
+            }
+        });
+
+        setViewUpdateCallback(new ViewUpdateCallback() {
+            @Override
+            public void updateView() {
+                fillListView();
+            }
+        });
+        fillListView();
     }
     @Override
     protected void onResume() {

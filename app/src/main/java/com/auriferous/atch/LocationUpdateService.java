@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.util.Date;
@@ -19,8 +20,8 @@ public class LocationUpdateService extends Service implements
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
-    GoogleApiClient mGoogleApiClient;
-    LocationRequest mLocationRequest;
+    GoogleApiClient googleApiClient;
+    LocationRequest locationRequest;
 
 
     @Override
@@ -29,26 +30,33 @@ public class LocationUpdateService extends Service implements
 
         buildGoogleApiClient();
         createLocationRequest();
-        mGoogleApiClient.connect();
+        googleApiClient.connect();
     }
     protected void buildGoogleApiClient() {
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
+        googleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
     }
     protected void createLocationRequest() {
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(60000);
-        mLocationRequest.setFastestInterval(60000);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest = new LocationRequest();
+        locationRequest.setInterval(60000);
+        locationRequest.setFastestInterval(60000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
+
+    @Override
+    public void onDestroy() {
+        googleApiClient.disconnect();
+
+        super.onDestroy();
     }
 
 
     @Override
     public void onConnected(Bundle connectionHint) {
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
     }
     @Override
     public void onConnectionSuspended(int code) {
@@ -62,7 +70,7 @@ public class LocationUpdateService extends Service implements
 
     @Override
     public void onLocationChanged(Location location) {
-        AtchApplication app = (AtchApplication)(getApplication());
+        AtchApplication app = (AtchApplication)getApplication();
         app.setCurrentLocation(location);
 
         ParseAndFacebookUtils.updateMyLocation(location);

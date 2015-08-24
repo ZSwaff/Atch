@@ -110,15 +110,33 @@ public class ParseAndFacebookUtils {
         });
     }
 
+    public static void getUsersWhoCurrentUserHasRequestedToFriend(final FuncCallback<UserList> callback) {
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("FriendRequest");
+        query.whereEqualTo("fromUser", ParseUser.getCurrentUser());
+        query.whereEqualTo("state", "requested");
+        query.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> requests, ParseException e) {
+                ArrayList<String> userObjIds = new ArrayList<>();
+                for (ParseObject req : requests)
+                    userObjIds.add(req.getParseObject("toUser").getObjectId());
 
-    public static void getPendingFriendRequestsToCurrentUser(final FindCallback<ParseObject> callback) {
+                ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
+                userQuery.whereContainedIn("objectId", userObjIds);
+                userQuery.findInBackground(new FindCallback<ParseUser>() {
+                    @Override
+                    public void done(List<ParseUser> users, ParseException e) {
+                        callback.done(new UserList(users, User.UserType.PENDING_THEM));
+                    }
+                });
+            }
+        });
+    }
+    public static void getUsersWhoHaveRequestedToFriendCurrentUser(final FuncCallback<UserList> callback) {
         ParseQuery<ParseObject> query = ParseQuery.getQuery("FriendRequest");
         query.whereEqualTo("toUser", ParseUser.getCurrentUser());
         query.whereEqualTo("state", "requested");
-        query.findInBackground(callback);
-    }
-    public static void getUsersWhoHaveRequestedToFriendCurrentUser(final FuncCallback<UserList> callback) {
-        getPendingFriendRequestsToCurrentUser(new FindCallback<ParseObject>() {
+        query.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> requests, ParseException e) {
                 ArrayList<String> userObjIds = new ArrayList<>();
