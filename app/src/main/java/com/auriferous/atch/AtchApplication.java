@@ -10,6 +10,7 @@ import android.location.Location;
 import android.util.Base64;
 import android.util.Log;
 
+import com.auriferous.atch.Callbacks.FuncCallback;
 import com.auriferous.atch.Callbacks.ViewUpdateCallback;
 import com.auriferous.atch.Users.User;
 import com.auriferous.atch.Users.UserList;
@@ -61,10 +62,12 @@ public class AtchApplication extends Application {
     }
 
     public void startLocationUpdates(){
+        if(locationUpdateServiceIntent != null) return;
         locationUpdateServiceIntent = new Intent(this, LocationUpdateService.class);
         startService(locationUpdateServiceIntent);
     }
     public void stopLocationUpdates(){
+        if(locationUpdateServiceIntent == null) return;
         stopService(locationUpdateServiceIntent);
         locationUpdateServiceIntent = null;
     }
@@ -142,6 +145,13 @@ public class AtchApplication extends Application {
                         for (ParseUser user : list)
                             friendsList.addUser(User.getOrCreateUser(user, User.UserType.FRIEND));
 
+                        ParseAndFacebookUtils.updateFriendDataWithMostRecentLocations(friendsList, new FuncCallback<Object>() {
+                            @Override
+                            public void done(Object o) {
+                                updateView();
+                            }
+                        });
+
                         updateView();
                     }
                 });
@@ -150,5 +160,8 @@ public class AtchApplication extends Application {
     }
     public void addFriend(User newFriend){
         friendsList.addUser(newFriend);
+    }
+    public void removeFriend(User newEnemy){
+        friendsList.removeUser(newEnemy);
     }
 }

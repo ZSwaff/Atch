@@ -8,6 +8,36 @@
     android:paddingBottom="10dp"
     tools:context="com.auriferous.atch.Activities.ChatActivity">
 
+    <TextView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/fullname"
+        android:text="Name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:gravity="center_vertical"
+        android:minHeight="?android:attr/listPreferredItemHeightSmall"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:layout_alignParentTop="true"
+        android:layout_toStartOf="@+id/meet_here" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Here"
+        android:id="@+id/meet_here"
+        android:onClick="sendMessageMeetHere"
+        android:layout_alignParentTop="true"
+        android:layout_toStartOf="@+id/meet_there" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="There"
+        android:id="@+id/meet_there"
+        android:layout_alignParentEnd="true"
+        android:onClick="sendMessageMeetThere" />
+
     <ListView xmlns:android="http://schemas.android.com/apk/res/android"
         android:focusable="true"
         android:focusableInTouchMode="true"
@@ -20,7 +50,8 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="5dp"
         android:layout_above="@+id/message_box"
-        android:smoothScrollbar="true">
+        android:smoothScrollbar="true"
+        android:layout_below="@+id/meet_here">
     </ListView>
 
     <Button

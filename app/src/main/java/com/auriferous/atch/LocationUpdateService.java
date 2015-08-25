@@ -77,7 +77,7 @@ public class LocationUpdateService extends Service implements
         app.setLastUpdateTime(new Date());
 
         //todo questionable about whether this is the best place to call this
-        ParseAndFacebookUtils.updateFriendDataWithMostRecentLocations(app.getFriendsList());
+        ParseAndFacebookUtils.updateFriendDataWithMostRecentLocations(app.getFriendsList(), null);
     }
 
 

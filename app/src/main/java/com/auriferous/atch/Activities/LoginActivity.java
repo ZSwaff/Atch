@@ -86,7 +86,7 @@ public class LoginActivity extends FragmentActivity {
 
             @Override
             public void onError(FacebookException exception) {
-                Log.e("xxx", exception.toString());
+                Log.e("xxxerr", exception.toString());
             }
         });
 

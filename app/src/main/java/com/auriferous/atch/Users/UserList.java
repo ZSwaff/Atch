@@ -36,6 +36,10 @@ public class UserList {
             this.users.add(user);
     }
 
+    public void removeUser(User user) {
+        users.remove(user);
+    }
+
     public void addDataToUnknownUser(ParseObject privateDatum){
         ParseUser goalUser = privateDatum.getParseUser("user");
         String goalId = goalUser.getObjectId();

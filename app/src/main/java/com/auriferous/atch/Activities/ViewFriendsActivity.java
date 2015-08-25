@@ -8,6 +8,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 
 import com.auriferous.atch.Users.User;
 import com.auriferous.atch.Users.UserListAdapter;
@@ -78,8 +79,10 @@ public class ViewFriendsActivity extends BaseFriendsActivity {
             public void onItemClick(AdapterView<?> adapter, View v, int position, long id){
                 User item = (User)adapter.getItemAtPosition(position);
                 Intent intent = new Intent(getApplicationContext(), ChatActivity.class);
-                intent.putExtra("chatterParseId", item.getId());
-                startActivity(intent);
+                if(item != null) {
+                    intent.putExtra("chatterParseId", item.getId());
+                    startActivity(intent);
+                }
             }
         });
     }

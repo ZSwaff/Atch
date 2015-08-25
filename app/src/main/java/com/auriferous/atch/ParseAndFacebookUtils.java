@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 public class ParseAndFacebookUtils {
     public static final List<String> permissions = Arrays.asList("public_profile", "user_friends");
@@ -46,7 +47,7 @@ public class ParseAndFacebookUtils {
         userQuery.getFirstInBackground(new GetCallback<ParseUser>() {
             @Override
             public void done(ParseUser parseUser, ParseException e) {
-                if(callback != null)
+                if (callback != null)
                     callback.done(parseUser);
             }
         });
@@ -74,10 +75,9 @@ public class ParseAndFacebookUtils {
     public static void sendFriendRequest(String targetParseId) {
         final ParseUser targetUser = User.getUserFromMap(targetParseId).getUser();
         if (targetUser == null) {
-            Log.e("xxx", "sendFriendRequest(...) failed, requested User not in userMap");
+            Log.e("xxxerr", "sendFriendRequest(...) failed, requested User not in userMap");
         }
 
-        //todo implement the below code on the cloud which checks if duplicate
         ParseQuery<ParseObject> query = ParseQuery.getQuery("FriendRequest");
         query.whereEqualTo("toUser", targetUser);
         query.findInBackground(new FindCallback<ParseObject>() {
@@ -93,10 +93,29 @@ public class ParseAndFacebookUtils {
             }
         });
     }
+    public static void cancelFriendRequest(String targetParseId) {
+        final ParseUser targetUser = User.getUserFromMap(targetParseId).getUser();
+        if (targetUser == null) {
+            Log.e("xxxerr", "cancelFriendRequest(...) failed, requested User not in userMap");
+        }
+
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("FriendRequest");
+        query.whereEqualTo("toUser", targetUser);
+        query.getFirstInBackground(new GetCallback<ParseObject>() {
+            @Override
+            public void done(ParseObject parseObject, ParseException e) {
+                HashMap<String, Object> params = new HashMap<>();
+                params.put("friendRequestId", parseObject.getObjectId());
+                ParseCloud.callFunctionInBackground("cancelFriendRequest", params);
+            }
+        });
+    }
+
+
     public static void acceptFriendRequest(String senderParseId) {
         final ParseUser targetUser = User.getUserFromMap(senderParseId).getUser();
         if (targetUser == null) {
-            Log.e("xxx", "acceptFriendRequest(...) failed, requested User not in userMap");
+            Log.e("xxxerr", "acceptFriendRequest(...) failed, requested User not in userMap");
         }
 
         ParseQuery<ParseObject> query = ParseQuery.getQuery("FriendRequest");
@@ -108,6 +127,32 @@ public class ParseAndFacebookUtils {
                 friendRequest.saveInBackground();
             }
         });
+    }
+    public static void rejectFriendRequest(String senderParseId) {
+        final ParseUser targetUser = User.getUserFromMap(senderParseId).getUser();
+        if (targetUser == null) {
+            Log.e("xxxerr", "rejectFriendRequest(...) failed, requested User not in userMap");
+        }
+
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("FriendRequest");
+        query.whereEqualTo("fromUser", targetUser);
+        query.getFirstInBackground(new GetCallback<ParseObject>() {
+            @Override
+            public void done(ParseObject friendRequest, ParseException e) {
+                friendRequest.put("state", "rejected");
+                friendRequest.saveInBackground();
+            }
+        });
+    }
+    public static void unfriendFriend(String uid){
+        final ParseUser targetUser = User.getUserFromMap(uid).getUser();
+        if (targetUser == null) {
+            Log.e("xxxerr", "unfriendFriend(...) failed, requested User not in userMap");
+        }
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("friendId", uid);
+        ParseCloud.callFunctionInBackground("deleteFriend", params);
     }
 
     public static void getUsersWhoCurrentUserHasRequestedToFriend(final FuncCallback<UserList> callback) {
@@ -167,20 +212,24 @@ public class ParseAndFacebookUtils {
         query.getFirstInBackground(new GetCallback<ParseObject>() {
             @Override
             public void done(ParseObject parseObject, ParseException e) {
-                parseObject.put("location",loc);
+                if(parseObject == null) return;
+                parseObject.put("location", loc);
                 parseObject.saveInBackground();
             }
         });
     }
-    public static void updateFriendDataWithMostRecentLocations(final UserList friends){
+    public static void updateFriendDataWithMostRecentLocations(final UserList friends, final FuncCallback<Object> callback){
         ParseQuery<ParseObject> userQuery = ParseQuery.getQuery("FriendData");
         userQuery.whereNotEqualTo("user", ParseUser.getCurrentUser());
         userQuery.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> parseObjects, ParseException e) {
+                if(parseObjects == null) return;
                 for (ParseObject privateDatum : parseObjects) {
                     friends.addDataToUnknownUser(privateDatum);
                 }
+                if(callback != null)
+                    callback.done(null);
             }
         });
     }
@@ -201,12 +250,6 @@ public class ParseAndFacebookUtils {
     }
 
 
-    public static void sendMessage(final ParseObject messageHistory, final String messageText){
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("messageText", messageText);
-        params.put("messageHistoryId", messageHistory.getObjectId());
-        ParseCloud.callFunctionInBackground("sendMessage", params);
-    }
     public static void sendMessage(final ParseObject messageHistory, final String messageText, final FuncCallback<Object> callback){
         HashMap<String, Object> params = new HashMap<>();
         params.put("messageText", messageText);
@@ -243,16 +286,6 @@ public class ParseAndFacebookUtils {
         JSONArray ret = new JSONArray();
         for(int i = 0; i < list.size(); i++){
             ret.put(list.get(i));
-        }
-        return ret;
-    }
-    public static ArrayList<String> convertArray(JSONArray arr){
-        ArrayList<String> ret = new ArrayList<>();
-        for(int i = 0; i < arr.length(); i++){
-            try {
-                ret.add((String) arr.get(i));
-            }
-            catch (JSONException jE) {}
         }
         return ret;
     }

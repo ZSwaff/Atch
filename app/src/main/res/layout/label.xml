@@ -8,6 +8,7 @@
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="Friends"
         android:id="@+id/label"
+        android:paddingLeft="16dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />

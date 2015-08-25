@@ -1,15 +1,23 @@
 package com.auriferous.atch.Users;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.auriferous.atch.Activities.ChatActivity;
 import com.auriferous.atch.AtchApplication;
 import com.auriferous.atch.ParseAndFacebookUtils;
 import com.auriferous.atch.R;
@@ -17,6 +25,8 @@ import com.auriferous.atch.R;
 import java.util.ArrayList;
 
 public class UserListAdapter extends BaseAdapter {
+    private static final int ITEM_LEFT_PADDING = 16;
+
     private static AtchApplication app;
 
     private final Context context;
@@ -126,8 +136,6 @@ public class UserListAdapter extends BaseAdapter {
                 layout = R.layout.pending_them_list_item;
                 break;
             case FACEBOOK_FRIEND:
-                layout = R.layout.facebook_friend_list_item;
-                break;
             case RANDOM:
                 layout = R.layout.random_list_item;
                 break;
@@ -163,12 +171,126 @@ public class UserListAdapter extends BaseAdapter {
                 }
             });
 
+
+        final Button unfriendButton = (Button) rowView.findViewById(R.id.unfriend_button);
+        if(unfriendButton != null)
+            unfriendButton.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    ParseAndFacebookUtils.unfriendFriend(uid);
+                    user.setUserType(User.UserType.RANDOM);
+                    app.removeFriend(user);
+                    app.updateView();
+                }
+            });
+        final Button rejectButton = (Button) rowView.findViewById(R.id.reject_button);
+        if(rejectButton != null)
+            rejectButton.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    ParseAndFacebookUtils.rejectFriendRequest(uid);
+                    user.setUserType(User.UserType.RANDOM);
+                    app.updateView();
+                }
+            });
+        final Button cancelButton = (Button) rowView.findViewById(R.id.cancel_button);
+        if(cancelButton != null)
+            cancelButton.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    ParseAndFacebookUtils.cancelFriendRequest(uid);
+                    user.setUserType(User.UserType.RANDOM);
+                    app.updateView();
+                }
+            });
+
+
         Bitmap profPic = user.getProfPic();
         if(profPic != null) {
             ImageView imageView = (ImageView) rowView.findViewById(R.id.prof_pic);
             imageView.setImageBitmap(profPic);
         }
 
+        initListener(rowView);
         return rowView;
+    }
+    private void initListener(final View rowView) {
+        rowView.setOnTouchListener(new View.OnTouchListener() {
+            final float slop = ViewConfiguration.get(context).getScaledTouchSlop();
+
+            boolean buttonEnabled = false;
+            int initialX = 0;
+            boolean newEvent = true;
+
+            @Override
+            public boolean onTouch(final View view, MotionEvent event) {
+                final View viewToMove = view.findViewById(R.id.main_view);
+                if (viewToMove == null) return true;
+                final Button swipeButton = (Button) ((ViewGroup)view.findViewById(R.id.button_view)).getChildAt(0);
+                int sButtonWidth = swipeButton.getMeasuredWidth();
+
+                int currentX = (int) event.getX();
+                int offset = currentX - initialX;
+                if(offset > sButtonWidth)
+                    offset = sButtonWidth;
+                if(-offset > sButtonWidth)
+                    offset = -sButtonWidth;
+
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    initialX = (int) event.getX();
+                    newEvent = true;
+                    if (!buttonEnabled)
+                        viewToMove.setPadding((int) convertDpToPixel(ITEM_LEFT_PADDING), 0, 0, 0);
+                }
+                else if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                    if (buttonEnabled && offset > -slop) {
+                        buttonEnabled = false;
+                        swipeButton.setEnabled(buttonEnabled);
+                    }
+
+                    if (!buttonEnabled && offset < -slop) {
+                        viewToMove.setPadding(offset + (int) convertDpToPixel(ITEM_LEFT_PADDING), 0, 0, 0);
+                        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) viewToMove.getLayoutParams();
+                        params.setMargins(0, 0, -offset, 0);
+                        viewToMove.requestLayout();
+
+                        if (offset == -sButtonWidth) {
+                            buttonEnabled = true;
+                        }
+
+                        swipeButton.setEnabled(buttonEnabled);
+                    }
+
+                    if (Math.abs(offset) > slop)
+                        newEvent = false;
+                }
+                else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
+                    if(!buttonEnabled) {
+                        resetRow(viewToMove);
+                    }
+                }
+                return true;
+            }
+        });
+    }
+
+    private void resetRow(final View viewToMove){
+        ValueAnimator animator = ValueAnimator.ofInt(viewToMove.getPaddingLeft(), (int) convertDpToPixel(ITEM_LEFT_PADDING));
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                int paddingAmount = (Integer) valueAnimator.getAnimatedValue();
+                viewToMove.setPadding(paddingAmount, 0, 0, 0);
+                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) viewToMove.getLayoutParams();
+                params.setMargins(0, 0, -paddingAmount, 0);
+                viewToMove.requestLayout();
+            }
+        });
+        animator.setDuration(150);
+        animator.start();
+    }
+
+    public float convertDpToPixel(float dp){
+        Resources resources = context.getResources();
+        DisplayMetrics metrics = resources.getDisplayMetrics();
+        float px = dp * (metrics.densityDpi / 160f);
+        return px;
     }
 }

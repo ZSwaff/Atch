@@ -14,9 +14,16 @@ public class AtchAgreementActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_atch_agreement);
-
-        ((AtchApplication)getApplication()).populateFriendList();
     }
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        AtchApplication app = (AtchApplication)getApplication();
+        app.stopLocationUpdates();
+        app.populateFriendList();
+    }
+
 
     @Override
     public void onBackPressed() {}

@@ -103,7 +103,6 @@ public class ChatActivity extends BaseFriendsActivity {
     public String getChatterObjectId(){
         return chatRecipient.getId();
     }
-
     public void setupChatHistory(){
         final ChatActivity chatActivity = this;
         ParseAndFacebookUtils.getOrCreateMessageHistory(chatRecipient.getId(), new FunctionCallback<ParseObject>() {
@@ -120,7 +119,6 @@ public class ChatActivity extends BaseFriendsActivity {
             }
         });
     }
-
     private void fillListView() {
         MessageListAdapter arrayAdapter = new MessageListAdapter(this, messageList, ParseUser.getCurrentUser(), "No messages");
 

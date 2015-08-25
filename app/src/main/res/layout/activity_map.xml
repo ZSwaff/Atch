@@ -2,71 +2,181 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="fill_parent"
     android:gravity="center_horizontal"
     android:orientation="vertical"
+    android:descendantFocusability="blocksDescendants"
     tools:context="com.auriferous.atch.Activities.LoginActivity">
 
-    <fragment
+    <RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/map_view"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
+
+        <fragment
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/map"
+            tools:context=".MapActivity"
+            android:name="com.google.android.gms.maps.SupportMapFragment" />
+
+        <ImageButton
+            android:id="@+id/log_out_button"
+            android:src="@android:drawable/ic_lock_idle_lock"
+            android:scaleX="1.5"
+            android:scaleY="1.5"
+            android:onClick="logOut"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:layout_margin="10dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:background="@android:color/transparent" />
+
+        <ImageButton
+            android:id="@+id/friends_button"
+            android:src="@android:drawable/stat_notify_chat"
+            android:scaleX="1.5"
+            android:scaleY="1.5"
+            android:onClick="switchToFriends"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:layout_margin="10dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:background="@android:color/transparent" />
+
+        <ImageButton
+            android:id="@+id/my_location_button"
+            android:src="@android:drawable/ic_dialog_map"
+            android:scaleX="1.2"
+            android:scaleY="1.2"
+            android:onClick="findMyLocation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:layout_margin="10dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:background="@android:color/transparent" />
+
+    </RelativeLayout>
+
+    <com.auriferous.atch.BannerTouchView
+        android:id="@+id/map_banner"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/map"
-        tools:context=".MapActivity"
-        android:name="com.google.android.gms.maps.SupportMapFragment" />
-
-    <ImageButton
-        android:id="@+id/log_out_button"
-        android:src="@android:drawable/ic_lock_idle_lock"
-        android:scaleX="1.5"
-        android:scaleY="1.5"
-        android:onClick="logOut"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:layout_margin="10dp"
-        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:background="@android:color/transparent" />
-
-    <ImageButton
-        android:id="@+id/friends_button"
-        android:src="@android:drawable/stat_notify_chat"
-        android:scaleX="1.5"
-        android:scaleY="1.5"
-        android:onClick="switchToFriends"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:layout_margin="10dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
-        android:background="@android:color/transparent" />
-
-    <ImageButton
-        android:id="@+id/my_location_button"
-        android:src="@android:drawable/ic_dialog_map"
-        android:scaleX="1.2"
-        android:scaleY="1.2"
-        android:onClick="findMyLocation"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:layout_margin="10dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:background="@android:color/transparent" />
-
-    <!--
-    <com.auriferous.atch.Activities.BannerTouchView
-        android:id="@+id/touchBanner"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:layout_margin="10dp"
         android:layout_alignParentStart="true"
-        android:layout_alignParentBottom="true" />
-        -->
+        android:alpha="1"
+        android:background="@color/primary_material_light"
+        android:paddingLeft="0dp"
+        android:paddingRight="0dp">
+
+        <RelativeLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/title_bar"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:alpha="1"
+            android:background="@android:color/darker_gray">
+
+            <TextView xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/fullname"
+                android:text="Name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:gravity="center_vertical"
+                android:minHeight="?android:attr/listPreferredItemHeightSmall"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:layout_alignParentTop="true"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp"
+                android:layout_toStartOf="@+id/meet_here" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Here"
+                android:id="@+id/meet_here"
+                android:onClick="sendMessageMeetHere"
+                android:layout_alignParentTop="true"
+                android:layout_toStartOf="@+id/meet_there" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="There"
+                android:id="@+id/meet_there"
+                android:layout_alignParentEnd="true"
+                android:onClick="sendMessageMeetThere" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin"
+            android:paddingBottom="10dp"
+            android:layout_below="@+id/title_bar"
+            android:descendantFocusability="afterDescendants">
+
+            <ListView xmlns:android="http://schemas.android.com/apk/res/android"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:id="@+id/listview"
+                android:divider="@null"
+                android:dividerHeight="0dp"
+                android:stackFromBottom="true"
+                android:transcriptMode="normal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+                android:layout_above="@+id/message_box"
+                android:smoothScrollbar="true"
+                android:layout_alignParentTop="true"
+                android:minHeight="0dp">
+            </ListView>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Send"
+                android:id="@+id/send_button"
+                android:layout_below="@+id/listview"
+                android:layout_alignParentEnd="true"
+                android:onClick="sendMessage"
+                android:layout_alignParentBottom="true" />
+
+            <com.auriferous.atch.ActionEditText
+                android:id="@+id/message_box"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Type a message"
+                android:inputType="text|textMultiLine|textCapSentences|textAutoCorrect"
+                android:lines="5"
+                android:minLines="1"
+                android:maxLines="5"
+                android:scrollHorizontally="false"
+                android:imeOptions="actionSend"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@+id/send_button"
+                android:focusable="true"
+                android:focusableInTouchMode="true"/>
+
+        </RelativeLayout>
+
+    </com.auriferous.atch.BannerTouchView>
 
 </RelativeLayout>
