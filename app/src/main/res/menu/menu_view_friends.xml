@@ -7,8 +7,4 @@
         android:title="Add friends"
         android:icon="@android:drawable/ic_menu_add"
         app:showAsAction="collapseActionView|ifRoom" />
-    <item android:id="@+id/switch_to_map"
-        android:title="Map"
-        android:icon="@android:drawable/ic_dialog_map"
-        app:showAsAction="collapseActionView|ifRoom" />
 </menu>

@@ -13,6 +13,8 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
 
+import com.auriferous.atch.Callbacks.FuncCallback;
+
 public class BannerTouchView extends RelativeLayout {
     private int titleBarHeight;
     private int windowHeight;
@@ -50,7 +52,26 @@ public class BannerTouchView extends RelativeLayout {
         params.setMargins(0, getBottomHeight(), 0, 0);
         requestLayout();
 
-        titleBarHeight = findViewById(R.id.title_bar).getMeasuredHeight();
+        titleBarHeight = findViewById(R.id.title_bar).getHeight();
+    }
+
+    public void takeDown(){
+        ValueAnimator animator = ValueAnimator.ofInt(0, getBottomHeight());
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                int paddingAmount = (Integer) valueAnimator.getAnimatedValue();
+                if (paddingAmount == 0) {
+                    allTheWayUp = false;
+                    setVisibility(GONE);
+                }
+                layoutParams.topMargin = paddingAmount;
+                setLayoutParams(layoutParams);
+                invalidate();
+            }
+        });
+        animator.setDuration(300);
+        animator.start();
     }
 
     @Override

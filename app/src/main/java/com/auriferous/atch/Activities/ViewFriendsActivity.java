@@ -54,7 +54,7 @@ public class ViewFriendsActivity extends BaseFriendsActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.home || id == R.id.switch_to_map) {
+        if (id == R.id.home) {
             NavUtils.navigateUpFromSameTask(this);
             return true;
         }

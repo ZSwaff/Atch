@@ -1,5 +1,6 @@
 package com.auriferous.atch.Activities;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
@@ -101,6 +102,16 @@ public class MapActivity  extends BaseFriendsActivity {
         return true;
     }
 
+    @Override
+    public void onBackPressed(){
+        if(inChat){
+            inChat = false;
+            banner.takeDown();
+        }
+        else
+            super.onBackPressed();
+    }
+
 
     public void logOut(View view) {
         startActivity(new Intent(getApplicationContext(), AtchAgreementActivity.class));
@@ -128,6 +139,7 @@ public class MapActivity  extends BaseFriendsActivity {
         }
     }
     private void setUpMap() {
+        final Activity act = this;
         map.setMyLocationEnabled(true);
         map.setIndoorEnabled(false);
         map.getUiSettings().setMapToolbarEnabled(false);
@@ -228,9 +240,6 @@ public class MapActivity  extends BaseFriendsActivity {
         });
     }
 
-    public String getChatterObjectId(){
-        return chatRecipient.getId();
-    }
     public void setupChatHistory(){
         final MapActivity activity = this;
         ParseAndFacebookUtils.getOrCreateMessageHistory(chatRecipient.getId(), new FunctionCallback<ParseObject>() {

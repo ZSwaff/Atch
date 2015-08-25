@@ -16,9 +16,9 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:gravity="center_vertical"
         android:minHeight="?android:attr/listPreferredItemHeightSmall"
+        android:layout_alignParentTop="true"
         android:focusable="false"
         android:focusableInTouchMode="false"
-        android:layout_alignParentTop="true"
         android:layout_toStartOf="@+id/meet_here" />
 
     <Button
