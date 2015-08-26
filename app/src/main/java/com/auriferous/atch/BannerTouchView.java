@@ -4,6 +4,8 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Point;
+import android.os.Bundle;
+import android.os.ResultReceiver;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -13,6 +15,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.RelativeLayout;
 
 import com.auriferous.atch.Callbacks.FuncCallback;
@@ -21,7 +24,9 @@ public class BannerTouchView extends RelativeLayout {
     public int titleBarHeight = 70;
     private int windowHeight;
 
+    InputMethodManager imm;
     ViewGroup.MarginLayoutParams layoutParams;
+
     private float lastY = 0;
     private int activePointerId = -1;
 
@@ -43,6 +48,7 @@ public class BannerTouchView extends RelativeLayout {
         titleBarHeight = (int)convertDpToPixel(titleBarHeight, context);
 
         slop = ViewConfiguration.get(context).getScaledTouchSlop();
+        imm = (InputMethodManager)getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
     }
 
 
@@ -100,6 +106,7 @@ public class BannerTouchView extends RelativeLayout {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        imm.hideSoftInputFromWindow(getWindowToken(), 0);
         layoutParams = (ViewGroup.MarginLayoutParams) getLayoutParams();
 
         switch (event.getAction() & MotionEvent.ACTION_MASK) {

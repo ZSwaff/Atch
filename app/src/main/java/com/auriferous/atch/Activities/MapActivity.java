@@ -39,6 +39,7 @@ import java.util.ArrayList;
 public class MapActivity  extends BaseFriendsActivity {
     private GoogleMap map;
     private BannerTouchView banner;
+    private boolean locLoaded = false;
 
     private boolean inChat = false;
     private User chatRecipient;
@@ -100,7 +101,6 @@ public class MapActivity  extends BaseFriendsActivity {
         super.onRestart();
 
         String type = getIntent().getStringExtra("type");
-        Log.d("xxx","type is null " + (type == null));
         String chatterPID;
         if (type != null && type.equals("message")) {
             chatterPID = getIntent().getStringExtra("chatterParseId");
@@ -142,6 +142,10 @@ public class MapActivity  extends BaseFriendsActivity {
     }
     public void findMyLocation(View view) {
         Location myLoc = map.getMyLocation();
+        if(myLoc == null) {
+            locLoaded = false;
+            return;
+        }
         panTo(new LatLng(myLoc.getLatitude(), myLoc.getLongitude()));
     }
     public void panTo(LatLng pos){
@@ -213,6 +217,15 @@ public class MapActivity  extends BaseFriendsActivity {
                     }
                 } else
                     findMyLocation(null);
+            }
+        });
+        map.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
+            @Override
+            public void onMyLocationChange(Location location) {
+                if(!locLoaded){
+                    locLoaded = true;
+                    findMyLocation(null);
+                }
             }
         });
 
