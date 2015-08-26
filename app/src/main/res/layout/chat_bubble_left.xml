@@ -11,11 +11,13 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginRight="50dp"
-        android:layout_marginEnd="50dp"
+        android:layout_marginRight="70dp"
+        android:layout_marginEnd="70dp"
         android:layout_marginTop="3dp"
         android:layout_marginBottom="3dp"
-        android:padding="5dp"
+        android:padding="2dp"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
         android:background="@drawable/chat_left_background"
         android:textColor="#010101" />
 </RelativeLayout>

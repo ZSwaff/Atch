@@ -8,7 +8,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.auriferous.atch.Activities.AddFriendsActivity;
-import com.auriferous.atch.Activities.ChatActivity;
+import com.auriferous.atch.Activities.MapActivity;
 import com.auriferous.atch.Activities.ViewFriendsActivity;
 import com.parse.ParseAnalytics;
 import com.parse.ParsePushBroadcastReceiver;
@@ -45,15 +45,8 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
             catch (JSONException jE) {}
 
             Activity currActivity = app.getCurrentActivity();
-            if(currActivity != null) {
-                if(currActivity instanceof ChatActivity){
-                    if((chatRecipientObjectId != null && ((ChatActivity)currActivity).getChatterObjectId().equals(chatRecipientObjectId)))
-                        ((ChatActivity)currActivity).setupChatHistory();
-                    else
-                        setupAndDeliverNotification(context, intent);
-                }
-                else
-                    setupAndDeliverNotification(context, intent);
+            if(currActivity != null && chatRecipientObjectId != null && currActivity instanceof MapActivity && ((MapActivity)currActivity).isChattingWithPerson(chatRecipientObjectId)) {
+                ((MapActivity)currActivity).setupChatHistory();
             }
             else
                 setupAndDeliverNotification(context, intent);
@@ -114,11 +107,13 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
 
         if(type.equals("message")) {
             if (chatRecipientObjectId != null) {
-                Intent activityIntent = new Intent(context, ChatActivity.class);
+                Intent activityIntent = new Intent(context, MapActivity.class);
                 activityIntent.putExtras(intent.getExtras());
+                activityIntent.putExtra("type", "message");
                 activityIntent.putExtra("chatterParseId", chatRecipientObjectId);
                 activityIntent.addFlags(268435456);
                 activityIntent.addFlags(67108864);
+                activityIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 context.startActivity(activityIntent);
             }
         }
@@ -129,6 +124,7 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
                 activityIntent.putExtra("frienderParseId", friendRecipientObjectId);
                 activityIntent.addFlags(268435456);
                 activityIntent.addFlags(67108864);
+                activityIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 context.startActivity(activityIntent);
             }
         }
@@ -139,6 +135,7 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
                 activityIntent.putExtra("frienderParseId", friendRecipientObjectId);
                 activityIntent.addFlags(268435456);
                 activityIntent.addFlags(67108864);
+                activityIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 context.startActivity(activityIntent);
             }
         }

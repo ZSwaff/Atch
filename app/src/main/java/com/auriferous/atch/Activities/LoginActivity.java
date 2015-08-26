@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 
 import android.graphics.Rect;
+import android.graphics.drawable.LayerDrawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -100,14 +101,27 @@ public class LoginActivity extends FragmentActivity {
             map.getUiSettings().setCompassEnabled(false);
             map.getUiSettings().setRotateGesturesEnabled(false);
 
-            double lat = 37.427325;
-            double lng = -122.169882;
-            LatLngBounds mapBounds = new LatLngBounds(new LatLng(lat-.04, lng-.04), new LatLng(lat+.04, lng+.04));
-            try {
-                map.moveCamera(CameraUpdateFactory.newLatLngBounds(mapBounds, 0));
-            }
-            catch (IllegalStateException iSE) {}
+            map.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+                @Override
+                public void onMapLoaded() {
+                    double lat = 37.427325;
+                    double lng = -122.169882;
+                    LatLngBounds mapBounds = new LatLngBounds(new LatLng(lat-.015, lng-.015), new LatLng(lat+.015, lng+.015));
+                    map.animateCamera(CameraUpdateFactory.newLatLngBounds(mapBounds, 0), 2000, null);
+                }
+            });
         }
+
+        final View view = (findViewById(R.id.buttons_layout));
+        ViewTreeObserver vto = view.getViewTreeObserver();
+        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                map.setPadding(0, 0, 0, findViewById(R.id.log_in_button).getMeasuredHeight()+findViewById(R.id.sign_up_switch_button).getMeasuredHeight());
+                ViewTreeObserver obs = view.getViewTreeObserver();
+                obs.removeOnGlobalLayoutListener(this);
+            }
+        });
 
 
         Button signUpSwitchButton = (Button) findViewById(R.id.sign_up_switch_button);
@@ -291,6 +305,7 @@ public class LoginActivity extends FragmentActivity {
         ParsePush.subscribeInBackground("global");
     }
     private void proceedToAtchAgreement(){
+        setupParseInstallation();
         AtchParsePushReceiver.cancelAllNotifications(this);
         startActivity(new Intent(getApplicationContext(), AtchAgreementActivity.class));
     }

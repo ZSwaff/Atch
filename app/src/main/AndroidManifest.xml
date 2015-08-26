@@ -74,12 +74,6 @@
             android:parentActivityName="com.auriferous.atch.Activities.ViewFriendsActivity"
             android:screenOrientation="portrait" >
         </activity>
-        <activity
-            android:name="com.auriferous.atch.Activities.ChatActivity"
-            android:label="Chat"
-            android:parentActivityName="com.auriferous.atch.Activities.MapActivity"
-            android:screenOrientation="portrait" >
-        </activity>
 
         <service
             android:name="com.auriferous.atch.LocationUpdateService"

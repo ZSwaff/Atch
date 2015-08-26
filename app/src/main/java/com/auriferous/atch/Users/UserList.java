@@ -29,11 +29,12 @@ public class UserList {
     }
 
     public void addUser(User user) {
-        users.add(user);
+        if (!users.contains(user))
+            users.add(user);
     }
     public void addAllUsers(List<User> users) {
         for (User user : users)
-            this.users.add(user);
+            addUser(user);
     }
 
     public void removeUser(User user) {

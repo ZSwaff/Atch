@@ -9,6 +9,7 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.auriferous.atch.AtchApplication;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -105,6 +106,7 @@ public class User {
             }
             @Override
             protected void onPostExecute(Void voids) {
+                createMarker();
                 if (app != null)
                     app.updateView();
             }
@@ -113,7 +115,7 @@ public class User {
     }
     private void setMarkerIconBitmap(){
         //todo different size for different screens?
-        markerIcon = Bitmap.createScaledBitmap(profPic, 130, 130, false);
+        markerIcon = Bitmap.createScaledBitmap(profPic, 170, 170, false);
     }
     private static Bitmap getCircular(Bitmap bm) {
         int radius = bm.getWidth();
@@ -152,14 +154,15 @@ public class User {
     private void createMarker() {
         marker = null;
         if (privateData == null) return;
-        ParseGeoPoint loc = privateData.getParseGeoPoint("location");
+        LatLng loc = getLocation();
+        if (loc == null) return;
 
         //todo change default marker
         if(profPic == null)
-            marker = new MarkerOptions().position(new LatLng(loc.getLatitude(), loc.getLongitude()))
+            marker = new MarkerOptions().position(loc)
                     .snippet(user.getObjectId());
         else
-            marker = new MarkerOptions().position(new LatLng(loc.getLatitude(), loc.getLongitude()))
+            marker = new MarkerOptions().position(loc)
                     .snippet(user.getObjectId())
                     .icon(BitmapDescriptorFactory.fromBitmap(markerIcon))
                     .anchor(.5f, .5f);
@@ -187,6 +190,11 @@ public class User {
     }
     public UserType getUserType() {
         return userType;
+    }
+    public LatLng getLocation() {
+        ParseGeoPoint loc = privateData.getParseGeoPoint("location");
+        if (loc == null) return null;
+        return new LatLng(loc.getLatitude(), loc.getLongitude());
     }
 
     public void setUserType(UserType userType) {

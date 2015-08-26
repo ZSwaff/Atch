@@ -175,15 +175,13 @@ public class AddFriendsActivity extends BaseFriendsActivity {
         sections.add(new UserListAdapterSection("Pending requests", usersWhoSentFriendRequests));
         sections.add(new UserListAdapterSection("Facebook friends", facebookFriends));
 
-        UserListAdapter arrayAdapter = new UserListAdapter(this, sections, "No suggestions");
-
         ListView listView = (ListView) findViewById(R.id.listview);
+        UserListAdapter arrayAdapter = new UserListAdapter(this, sections, "No suggestions", (UserListAdapter)listView.getAdapter());
         listView.setAdapter(arrayAdapter);
     }
     private void fillListViewSearch() {
-        UserListAdapter arrayAdapter = new UserListAdapter(this, new UserListAdapterSection("Search results", searchResults), "No search results");
-
-        final ListView listView = (ListView) findViewById(R.id.listview);
+        ListView listView = (ListView) findViewById(R.id.listview);
+        UserListAdapter arrayAdapter = new UserListAdapter(this, new UserListAdapterSection("Search results", searchResults), "No search results", (UserListAdapter)listView.getAdapter());
         listView.setAdapter(arrayAdapter);
     }
 }

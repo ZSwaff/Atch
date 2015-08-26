@@ -17,15 +17,19 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.auriferous.atch.Activities.ChatActivity;
+import com.auriferous.atch.Activities.MapActivity;
 import com.auriferous.atch.AtchApplication;
 import com.auriferous.atch.ParseAndFacebookUtils;
 import com.auriferous.atch.R;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class UserListAdapter extends BaseAdapter {
-    private static final int ITEM_LEFT_PADDING = 16;
+    private static final int ITEM_LEFT_PADDING = 10;
+    private static final int ITEM_RIGHT_MARGIN = 20;
 
     private static AtchApplication app;
 
@@ -33,22 +37,25 @@ public class UserListAdapter extends BaseAdapter {
     private ArrayList<UserListAdapterSection> sections;
     private String emptyMessage;
 
+    private HashSet<String> viewsAccessed = new HashSet<>();
+    private HashMap<String, View> allViews = new HashMap<>();
+
 
     public static void init(AtchApplication app){
         UserListAdapter.app = app;
     }
 
 
-    public UserListAdapter(Context context, UserListAdapterSection section, String emptyMessage) {
-        this.context = context;
-        sections = new ArrayList<>();
-        sections.add(section);
-        this.emptyMessage = emptyMessage;
+    public UserListAdapter(Context context, UserListAdapterSection section, String emptyMessage, UserListAdapter oldAdapter) {
+        this(context, new ArrayList<>(Arrays.asList(new UserListAdapterSection[] {section})), emptyMessage, oldAdapter);
     }
-    public UserListAdapter(Context context, ArrayList<UserListAdapterSection> sections, String emptyMessage) {
+    public UserListAdapter(Context context, ArrayList<UserListAdapterSection> sections, String emptyMessage, UserListAdapter oldAdapter) {
         this.context = context;
         this.sections = sections;
         this.emptyMessage = emptyMessage;
+
+        if(oldAdapter != null)
+            allViews = oldAdapter.allViews;
     }
 
 
@@ -92,8 +99,17 @@ public class UserListAdapter extends BaseAdapter {
                 return createLabelView(section.getLabel(), parent);
             position--;
 
-            if(position < users.size())
-                return createUserView(users.get(position), parent);
+            if(position < users.size()) {
+                String uid = users.get(position).getId();
+                if(!viewsAccessed.contains(uid)){
+                    viewsAccessed.add(uid);
+                    if(allViews.containsKey(uid))
+                        return allViews.get(uid);
+                }
+                View v = createUserView(users.get(position), parent);
+                allViews.put(uid, v);
+                return v;
+            }
             position -= users.size();
         }
         if (position == 0)
@@ -208,14 +224,14 @@ public class UserListAdapter extends BaseAdapter {
             imageView.setImageBitmap(profPic);
         }
 
-        initListener(rowView);
+        initListener(user, rowView, context);
         return rowView;
     }
-    private void initListener(final View rowView) {
-        rowView.setOnTouchListener(new View.OnTouchListener() {
-            final float slop = ViewConfiguration.get(context).getScaledTouchSlop();
+    private void initListener(final User user, final View rowView, final Context context) {
+        rowView.setOnTouchListener(new View.OnTouchListener(){
+            float slop = ViewConfiguration.get(context).getScaledTouchSlop();
 
-            boolean buttonEnabled = false;
+            public boolean buttonEnabled = false;
             int initialX = 0;
             boolean newEvent = true;
 
@@ -240,15 +256,10 @@ public class UserListAdapter extends BaseAdapter {
                         viewToMove.setPadding((int) convertDpToPixel(ITEM_LEFT_PADDING), 0, 0, 0);
                 }
                 else if (event.getAction() == MotionEvent.ACTION_MOVE) {
-                    if (buttonEnabled && offset > -slop) {
-                        buttonEnabled = false;
-                        swipeButton.setEnabled(buttonEnabled);
-                    }
-
                     if (!buttonEnabled && offset < -slop) {
                         viewToMove.setPadding(offset + (int) convertDpToPixel(ITEM_LEFT_PADDING), 0, 0, 0);
                         ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) viewToMove.getLayoutParams();
-                        params.setMargins(0, 0, -offset, 0);
+                        params.setMargins(0, 0, -offset + (int) convertDpToPixel(ITEM_RIGHT_MARGIN), 0);
                         viewToMove.requestLayout();
 
                         if (offset == -sButtonWidth) {
@@ -262,29 +273,39 @@ public class UserListAdapter extends BaseAdapter {
                         newEvent = false;
                 }
                 else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
+                    if (buttonEnabled && offset > -slop) {
+                        buttonEnabled = false;
+                        swipeButton.setEnabled(buttonEnabled);
+                    }
+                    else if (Math.abs(offset) < slop) {
+                        if(user.getUserType() == User.UserType.FRIEND) {
+                            Intent intent = new Intent(context, MapActivity.class);
+                            intent.putExtra("type", "message");
+                            intent.putExtra("chatterParseId", user.getId());
+                            intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                            context.startActivity(intent);
+                        }
+                    }
+
                     if(!buttonEnabled) {
-                        resetRow(viewToMove);
+                        ValueAnimator animator = ValueAnimator.ofInt(viewToMove.getPaddingLeft(), (int) convertDpToPixel(ITEM_LEFT_PADDING));
+                        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                            @Override
+                            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                                int paddingAmount = (Integer) valueAnimator.getAnimatedValue();
+                                viewToMove.setPadding(paddingAmount, 0, 0, 0);
+                                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) viewToMove.getLayoutParams();
+                                params.setMargins(0, 0, -paddingAmount + (int) convertDpToPixel(ITEM_RIGHT_MARGIN), 0);
+                                viewToMove.requestLayout();
+                            }
+                        });
+                        animator.setDuration(150);
+                        animator.start();
                     }
                 }
                 return true;
             }
         });
-    }
-
-    private void resetRow(final View viewToMove){
-        ValueAnimator animator = ValueAnimator.ofInt(viewToMove.getPaddingLeft(), (int) convertDpToPixel(ITEM_LEFT_PADDING));
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                int paddingAmount = (Integer) valueAnimator.getAnimatedValue();
-                viewToMove.setPadding(paddingAmount, 0, 0, 0);
-                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) viewToMove.getLayoutParams();
-                params.setMargins(0, 0, -paddingAmount, 0);
-                viewToMove.requestLayout();
-            }
-        });
-        animator.setDuration(150);
-        animator.start();
     }
 
     public float convertDpToPixel(float dp){

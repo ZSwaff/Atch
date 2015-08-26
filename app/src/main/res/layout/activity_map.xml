@@ -83,9 +83,9 @@
             xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/title_bar"
             android:layout_width="fill_parent"
-            android:layout_height="80dp"
+            android:layout_height="70dp"
             android:alpha="1"
-            android:background="@android:color/darker_gray">
+            android:background="@color/primary_material_dark">
 
             <TextView xmlns:android="http://schemas.android.com/apk/res/android"
                 android:id="@+id/fullname"
@@ -97,11 +97,13 @@
                 android:minHeight="?android:attr/listPreferredItemHeightSmall"
                 android:focusable="false"
                 android:focusableInTouchMode="false"
-                android:layout_alignParentTop="true"
                 android:paddingLeft="@dimen/activity_horizontal_margin"
                 android:paddingTop="5dp"
                 android:paddingBottom="5dp"
-                android:layout_toStartOf="@+id/meet_here" />
+                android:layout_centerVertical="true"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@+id/meet_here"
+                android:textColor="@android:color/primary_text_dark" />
 
             <Button
                 android:layout_width="wrap_content"
@@ -109,16 +111,21 @@
                 android:text="Here"
                 android:id="@+id/meet_here"
                 android:onClick="sendMessageMeetHere"
-                android:layout_alignParentTop="true"
-                android:layout_toStartOf="@+id/meet_there" />
+                android:layout_alignTop="@+id/fullname"
+                android:layout_toStartOf="@+id/meet_there"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"/>
 
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="There"
                 android:id="@+id/meet_there"
+                android:onClick="sendMessageMeetThere"
+                android:layout_alignTop="@+id/fullname"
                 android:layout_alignParentEnd="true"
-                android:onClick="sendMessageMeetThere" />
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"/>
 
         </RelativeLayout>
 
@@ -126,8 +133,8 @@
             xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingRight="@dimen/activity_horizontal_margin"
+            android:paddingLeft="0dp"
+            android:paddingRight="0dp"
             android:paddingBottom="10dp"
             android:layout_below="@+id/title_bar"
             android:descendantFocusability="afterDescendants">
@@ -139,12 +146,14 @@
                 android:stackFromBottom="true"
                 android:transcriptMode="normal"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_marginBottom="5dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
                 android:layout_above="@+id/message_box"
                 android:smoothScrollbar="true"
                 android:layout_alignParentTop="true"
-                android:minHeight="0dp">
+                android:layout_alignParentEnd="true">
             </ListView>
 
             <Button
@@ -152,10 +161,12 @@
                 android:layout_height="wrap_content"
                 android:text="Send"
                 android:id="@+id/send_button"
+                android:onClick="sendMessage"
                 android:layout_below="@+id/listview"
                 android:layout_alignParentEnd="true"
-                android:onClick="sendMessage"
-                android:layout_alignParentBottom="true" />
+                android:layout_marginRight="5dp"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"/>
 
             <com.auriferous.atch.ActionEditText
                 android:id="@+id/message_box"
@@ -172,7 +183,8 @@
                 android:layout_alignParentStart="true"
                 android:layout_toStartOf="@+id/send_button"
                 android:focusable="true"
-                android:focusableInTouchMode="true"/>
+                android:focusableInTouchMode="true"
+                android:layout_marginLeft="5dp"/>
 
         </RelativeLayout>
 

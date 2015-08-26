@@ -29,7 +29,7 @@
             android:layout_above="@+id/log_in_button"
             android:orientation="vertical"
             android:background="#575757"
-            android:alpha="0"></RelativeLayout>
+            android:alpha=".5"></RelativeLayout>
 
         <Button
             android:id="@+id/log_in_button"

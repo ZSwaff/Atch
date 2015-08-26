@@ -59,7 +59,9 @@ public class ViewFriendsActivity extends BaseFriendsActivity {
             return true;
         }
         if (id == R.id.switch_to_add_friends) {
-            startActivity(new Intent(getApplicationContext(), AddFriendsActivity.class));
+            Intent intent = new Intent(getApplicationContext(), AddFriendsActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            startActivity(intent);
             return true;
         }
 
@@ -69,21 +71,9 @@ public class ViewFriendsActivity extends BaseFriendsActivity {
 
     private void fillListView() {
         UserList friends = ((AtchApplication) getApplication()).getFriendsList();
-        UserListAdapter arrayAdapter = new UserListAdapter(this, new UserListAdapterSection("Friends", friends), "No friends yet");
 
         ListView listView = (ListView) findViewById(R.id.listview);
+        UserListAdapter arrayAdapter = new UserListAdapter(this, new UserListAdapterSection("Friends", friends), "No friends yet", (UserListAdapter)listView.getAdapter());
         listView.setAdapter(arrayAdapter);
-
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
-            @Override
-            public void onItemClick(AdapterView<?> adapter, View v, int position, long id){
-                User item = (User)adapter.getItemAtPosition(position);
-                Intent intent = new Intent(getApplicationContext(), ChatActivity.class);
-                if(item != null) {
-                    intent.putExtra("chatterParseId", item.getId());
-                    startActivity(intent);
-                }
-            }
-        });
     }
 }

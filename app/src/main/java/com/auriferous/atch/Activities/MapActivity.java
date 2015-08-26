@@ -1,9 +1,9 @@
 package com.auriferous.atch.Activities;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
@@ -47,6 +47,12 @@ public class MapActivity  extends BaseFriendsActivity {
 
 
     @Override
+    protected void onNewIntent(Intent intent){
+        super.onNewIntent(intent);
+        setIntent(intent);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
@@ -69,33 +75,46 @@ public class MapActivity  extends BaseFriendsActivity {
             @Override
             public void updateView() {
                 addMarkers();
+                fillListView();
             }
         });
         setUpMapIfNeeded();
+        fillListView();
     }
     @Override
     protected void onResume() {
         super.onResume();
 
-        if(inChat) {
-            setViewUpdateCallback(new ViewUpdateCallback() {
-                @Override
-                public void updateView() {
-                    addMarkers();
-                }
-            });
-            addMarkers();
-        }
-        else {
-            setViewUpdateCallback(new ViewUpdateCallback() {
-                @Override
-                public void updateView() {
-                    fillListView();
-                }
-            });
-            fillListView();
+        setViewUpdateCallback(new ViewUpdateCallback() {
+            @Override
+            public void updateView() {
+                addMarkers();
+                fillListView();
+            }
+        });
+        addMarkers();
+        fillListView();
+    }
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+
+        String type = getIntent().getStringExtra("type");
+        Log.d("xxx","type is null " + (type == null));
+        String chatterPID;
+        if (type != null && type.equals("message")) {
+            chatterPID = getIntent().getStringExtra("chatterParseId");
+            if (chatterPID != null) {
+                enableDisableBanner(true, chatterPID);
+                banner.putAllTheWayUp();
+                getIntent().removeExtra("type");
+                getIntent().removeExtra("message");
+
+                panTo(chatRecipient.getLocation());
+            }
         }
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -106,7 +125,7 @@ public class MapActivity  extends BaseFriendsActivity {
     public void onBackPressed(){
         if(inChat){
             inChat = false;
-            banner.takeDown();
+            enableDisableBanner(false, null);
         }
         else
             super.onBackPressed();
@@ -117,18 +136,41 @@ public class MapActivity  extends BaseFriendsActivity {
         startActivity(new Intent(getApplicationContext(), AtchAgreementActivity.class));
     }
     public void switchToFriends(View view) {
-        startActivity(new Intent(getApplicationContext(), ViewFriendsActivity.class));
+        Intent intent = new Intent(getApplicationContext(), ViewFriendsActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        startActivity(intent);
     }
     public void findMyLocation(View view) {
-        try {
-            Location myLoc = map.getMyLocation();
-            if(myLoc != null)
-                map.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(new LatLng(myLoc.getLatitude(), myLoc.getLongitude()), 13, 0, 0)), 700, null);
-        }
-        catch (IllegalStateException iSE) {}
-        map.getMyLocation();
+        Location myLoc = map.getMyLocation();
+        panTo(new LatLng(myLoc.getLatitude(), myLoc.getLongitude()));
+    }
+    public void panTo(LatLng pos){
+        if(pos != null)
+            map.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(pos, 13, 0, 0)), 700, null);
     }
 
+
+    private void enableDisableBanner(boolean enable, String chatterParseId){
+        inChat = enable;
+
+        if(inChat) {
+            //todo pan to user if offscreen or at edge
+
+            banner.setupBanner(findViewById(R.id.map_view).getHeight());
+            map.setPadding(0, 0, 0, banner.titleBarHeight);
+            findViewById(R.id.my_location_button).setPadding(10,10,10,10+banner.titleBarHeight);
+
+            chatRecipient = User.getUserFromMap(chatterParseId);
+            ((TextView) findViewById(R.id.fullname)).setText(chatRecipient.getFullname());
+
+            setupChatHistory();
+        }
+        else {
+            banner.takeAllTheWayDown();
+            map.setPadding(0, 0, 0, 0);
+            findViewById(R.id.my_location_button).setPadding(10, 10, 10, 10);
+        }
+    }
 
     private void setUpMapIfNeeded() {
         if (map == null) {
@@ -139,44 +181,63 @@ public class MapActivity  extends BaseFriendsActivity {
         }
     }
     private void setUpMap() {
-        final Activity act = this;
         map.setMyLocationEnabled(true);
         map.setIndoorEnabled(false);
         map.getUiSettings().setMapToolbarEnabled(false);
         map.getUiSettings().setTiltGesturesEnabled(false);
         map.getUiSettings().setMyLocationButtonEnabled(false);
+        map.getUiSettings().setRotateGesturesEnabled(false);
+        map.getUiSettings().setCompassEnabled(false);
 
         map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(final Marker marker) {
-                inChat = true;
-
-                chatRecipient = User.getUserFromMap(marker.getSnippet());
-                ((TextView)findViewById(R.id.fullname)).setText(chatRecipient.getFullname());
-
-                setupChatHistory();
-                setViewUpdateCallback(new ViewUpdateCallback() {
-                    @Override
-                    public void updateView() {
-                        fillListView();
-                    }
-                });
-                fillListView();
-
-                banner.setVisibility(View.VISIBLE);
-                banner.setupBanner();
+                enableDisableBanner(true, marker.getSnippet());
                 return true;
+            }
+        });
+        map.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+            @Override
+            public void onMapLoaded() {
+                String type = getIntent().getStringExtra("type");
+                String chatterPID;
+                if (type != null && type.equals("message")) {
+                    chatterPID = getIntent().getStringExtra("chatterParseId");
+                    if (chatterPID != null) {
+                        enableDisableBanner(true, chatterPID);
+                        banner.putAllTheWayUp();
+                        getIntent().removeExtra("type");
+                        getIntent().removeExtra("message");
+
+                        panTo(chatRecipient.getLocation());
+                    }
+                } else
+                    findMyLocation(null);
             }
         });
 
         addMarkers();
     }
-    public void addMarkers(){
+    public void addMarkers() {
         map.clear();
         AtchApplication app = (AtchApplication)(getApplication());
         ArrayList<User> friends = app.getFriendsList().getAllUsers();
 
-        final double minRadialDist = .04; //in degrees
+        for (User friend : friends) {
+            MarkerOptions marker = friend.getMarker();
+            if(marker != null)
+                map.addMarker(marker);
+        }
+    }
+
+    //old marker zoom in on friends idea
+    /*
+    public void addMarkers() {
+        map.clear();
+        AtchApplication app = (AtchApplication)(getApplication());
+        ArrayList<User> friends = app.getFriendsList().getAllUsers();
+
+        final double minRadialDist = .008; //in degrees
         final double maxRadius = 8000; //in meters
 
         double lat = 37.427325;
@@ -208,6 +269,7 @@ public class MapActivity  extends BaseFriendsActivity {
         }
         catch (IllegalStateException iSE) {}
     }
+    * */
 
 
 
@@ -240,6 +302,12 @@ public class MapActivity  extends BaseFriendsActivity {
         });
     }
 
+    public boolean isChattingWithPerson(String chatterObjId){
+        boolean ret = (inChat && chatRecipient != null && chatRecipient.getId().equals(chatterObjId));
+        if(ret) ;
+            //todo notify somehow
+        return ret;
+    }
     public void setupChatHistory(){
         final MapActivity activity = this;
         ParseAndFacebookUtils.getOrCreateMessageHistory(chatRecipient.getId(), new FunctionCallback<ParseObject>() {

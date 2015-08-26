@@ -268,11 +268,11 @@ public class ParseAndFacebookUtils {
         if(messageList != null) {
             ParseQuery<ParseObject> query = ParseQuery.getQuery("Message");
             query.whereContainedIn("objectId", messageList);
-            query.orderByAscending("createdAt");
+            query.orderByDescending("createdAt");
             query.findInBackground(new FindCallback<ParseObject>() {
                 @Override
                 public void done(List<ParseObject> messages, ParseException e) {
-                    callback.done(new MessageList(messages));
+                    callback.done(new MessageList(messages, true));
                 }
             });
         }
