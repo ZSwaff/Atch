@@ -9,7 +9,6 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import com.auriferous.atch.AtchApplication;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -31,7 +30,7 @@ public class User {
 
 
     private ParseUser user = null;
-    UserType userType = UserType.RANDOM;
+    private UserType userType = UserType.RANDOM;
 
     private Bitmap profPic = null;
     private Bitmap markerIcon = null;
@@ -89,7 +88,38 @@ public class User {
     }
 
 
-    public void setFacebookProfilePicture(){
+    public void setPrivateData(ParseObject privateData){
+        this.privateData = privateData;
+        updateOnlineStatus();
+        createMarker();
+    }
+    private void updateOnlineStatus() {
+        if (privateData == null) return;
+        Date udAt = privateData.getUpdatedAt();
+        if(udAt == null) return;
+        Date udAtPlus5 = new Date(udAt.getTime() + (5 * 60 * 1000));
+        loggedIn = udAtPlus5.after(new Date());
+    }
+    private void createMarker() {
+        marker = null;
+        if (privateData == null) return;
+        LatLng loc = getLocation();
+        if (loc == null) return;
+
+        //todo change default marker
+        if(profPic == null)
+            marker = new MarkerOptions().position(loc)
+                    .snippet(user.getObjectId());
+        else
+            marker = new MarkerOptions().position(loc)
+                    .snippet(user.getObjectId())
+                    .icon(BitmapDescriptorFactory.fromBitmap(markerIcon))
+                    .anchor(.5f, .5f);
+
+        app.updateView();
+    }
+
+    private void setFacebookProfilePicture(){
         final String fbid = user.getString("fbid");
 
         AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>(){
@@ -139,45 +169,12 @@ public class User {
         return bmOut;
     }
 
-    public void setPrivateData(ParseObject privateData){
-        this.privateData = privateData;
-        updateOnlineStatus();
-        createMarker();
-    }
-    private void updateOnlineStatus() {
-        if (privateData == null) return;
-        Date udAt = privateData.getUpdatedAt();
-        if(udAt == null) return;
-        Date udAtPlus5 = new Date(udAt.getTime() + (5 * 60 * 1000));
-        loggedIn = udAtPlus5.after(new Date());
-    }
-    private void createMarker() {
-        marker = null;
-        if (privateData == null) return;
-        LatLng loc = getLocation();
-        if (loc == null) return;
-
-        //todo change default marker
-        if(profPic == null)
-            marker = new MarkerOptions().position(loc)
-                    .snippet(user.getObjectId());
-        else
-            marker = new MarkerOptions().position(loc)
-                    .snippet(user.getObjectId())
-                    .icon(BitmapDescriptorFactory.fromBitmap(markerIcon))
-                    .anchor(.5f, .5f);
-
-        app.updateView();
-    }
 
     public ParseUser getUser() {
         return user;
     }
-    public Bitmap getProfPic() {
-        return profPic;
-    }
-    public MarkerOptions getMarker() {
-        return marker;
+    public String getId(){
+        return user.getObjectId();
     }
     public String getFullname(){
         return user.getString("fullname");
@@ -185,11 +182,12 @@ public class User {
     public String getUsername(){
         return user.getUsername();
     }
-    public String getId(){
-        return user.getObjectId();
+
+    public Bitmap getProfPic() {
+        return profPic;
     }
-    public UserType getUserType() {
-        return userType;
+    public MarkerOptions getMarker() {
+        return marker;
     }
     public LatLng getLocation() {
         ParseGeoPoint loc = privateData.getParseGeoPoint("location");
@@ -197,15 +195,14 @@ public class User {
         return new LatLng(loc.getLatitude(), loc.getLongitude());
     }
 
-    public void setUserType(UserType userType) {
-        this.userType = userType;
-        app.updateView();
+    public UserType getUserType() {
+        return userType;
     }
 
 
-    @Override
-    public String toString() {
-        return getFullname();
+    public void setUserType(UserType userType) {
+        this.userType = userType;
+        app.updateView();
     }
 
 

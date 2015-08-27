@@ -3,9 +3,6 @@ package com.auriferous.atch.Activities;
 import android.app.Activity;
 import android.content.Intent;
 
-import android.graphics.Rect;
-import android.graphics.drawable.LayerDrawable;
-import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
@@ -19,21 +16,18 @@ import android.view.ViewTreeObserver;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.RelativeLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.auriferous.atch.ActionEditText;
 import com.auriferous.atch.AtchParsePushReceiver;
-import com.auriferous.atch.Callbacks.FuncCallback;
+import com.auriferous.atch.Callbacks.SimpleCallback;
+import com.auriferous.atch.Callbacks.VariableCallback;
 import com.auriferous.atch.ParseAndFacebookUtils;
 import com.auriferous.atch.R;
-import com.auriferous.atch.Users.User;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
-import com.facebook.GraphRequest;
-import com.facebook.GraphResponse;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -41,16 +35,12 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.parse.LogInCallback;
 import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
 import com.parse.ParseInstallation;
 import com.parse.ParsePush;
 import com.parse.ParseUser;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class LoginActivity extends FragmentActivity {
     private GoogleMap map;
@@ -67,6 +57,7 @@ public class LoginActivity extends FragmentActivity {
         setContentView(R.layout.activity_login);
 
 
+        //if the user is already logged in, bypass this screen
         if (ParseUser.getCurrentUser() != null)
             proceedToAtchAgreement();
 
@@ -92,6 +83,11 @@ public class LoginActivity extends FragmentActivity {
         });
 
 
+        setupMap();
+
+        setupViews();
+    }
+    private void setupMap() {
         if (map == null) {
             SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
             map = mapFragment.getMap();
@@ -111,7 +107,8 @@ public class LoginActivity extends FragmentActivity {
                 }
             });
         }
-
+    }
+    private void setupViews() {
         final View view = (findViewById(R.id.buttons_layout));
         ViewTreeObserver vto = view.getViewTreeObserver();
         vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -171,7 +168,6 @@ public class LoginActivity extends FragmentActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {}
         });
-
         Button mSignUpButton = (Button) findViewById(R.id.sign_up_button);
         mSignUpButton.setOnClickListener(new OnClickListener() {
             @Override
@@ -204,7 +200,7 @@ public class LoginActivity extends FragmentActivity {
     private void checkParseForFbAccount(final AccessToken token) {
         final Activity activity = this;
         String fbid = token.getUserId();
-        ParseAndFacebookUtils.getParseUserFromFbid(fbid, new FuncCallback<ParseUser>() {
+        ParseAndFacebookUtils.getParseUserFromFbid(fbid, new VariableCallback<ParseUser>() {
             @Override
             public void done(ParseUser parseUser) {
                 if (parseUser != null) {
@@ -226,30 +222,13 @@ public class LoginActivity extends FragmentActivity {
     private void attemptSignUp() {
         final Activity activity = this;
         final String username = usernameView.getText().toString();
-        isValidUsername(new FuncCallback<Boolean>() {
+        isValidUsername(new SimpleCallback() {
             @Override
-            public void done(Boolean aBoolean) {
+            public void done() {
                 ParseFacebookUtils.logInWithReadPermissionsInBackground(activity, ParseAndFacebookUtils.permissions, new LogInCallback() {
                     @Override
                     public void done(ParseUser parseUser, ParseException e) {
-                        setupParseInstallation();
-                        GraphRequest request = GraphRequest.newMeRequest(
-                                AccessToken.getCurrentAccessToken(),
-                                new GraphRequest.GraphJSONObjectCallback() {
-                                    @Override
-                                    public void onCompleted(JSONObject object, GraphResponse response) {
-                                        try {
-                                            ParseUser.getCurrentUser().setUsername(username);
-                                            ParseUser.getCurrentUser().put("queryUsername", username.toLowerCase());
-                                            ParseUser.getCurrentUser().put("fbid", object.getString("id"));
-                                            ParseUser.getCurrentUser().put("fullname", object.getString("name"));
-                                            ParseUser.getCurrentUser().put("queryFullname", object.getString("name").toLowerCase());
-                                            ParseUser.getCurrentUser().saveInBackground();
-                                        } catch (JSONException e) {
-                                        }
-                                    }
-                                });
-                        request.executeAsync();
+                        ParseAndFacebookUtils.setFacebookInfoAboutCurrentUser(username);
 
                         proceedToAtchAgreement();
                     }
@@ -257,7 +236,7 @@ public class LoginActivity extends FragmentActivity {
             }
         });
     }
-    private void isValidUsername(final FuncCallback<Boolean> calledIfValid){
+    private void isValidUsername(final SimpleCallback calledIfValid){
         usernameView.setError(null);
         final ActionEditText focusView = usernameView;
         final String username = usernameView.getText().toString();
@@ -277,7 +256,7 @@ public class LoginActivity extends FragmentActivity {
             usernameView.requestFocus();
             return;
         }
-        ParseAndFacebookUtils.getParseUserFromUsername(username, new FuncCallback<ParseUser>() {
+        ParseAndFacebookUtils.getParseUserFromUsername(username, new VariableCallback<ParseUser>() {
             @Override
             public void done(ParseUser parseUser) {
                 if(parseUser != null){
@@ -285,7 +264,7 @@ public class LoginActivity extends FragmentActivity {
                     focusView.requestFocus();
                 }
                 else{
-                    calledIfValid.done(true);
+                    calledIfValid.done();
                 }
             }
         });
@@ -307,6 +286,6 @@ public class LoginActivity extends FragmentActivity {
     private void proceedToAtchAgreement(){
         setupParseInstallation();
         AtchParsePushReceiver.cancelAllNotifications(this);
-        startActivity(new Intent(getApplicationContext(), AtchAgreementActivity.class));
+        startActivity(new Intent(getApplication(), AtchAgreementActivity.class));
     }
 }

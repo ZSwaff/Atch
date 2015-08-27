@@ -3,29 +3,21 @@ package com.auriferous.atch;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Point;
-import android.os.Bundle;
-import android.os.ResultReceiver;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.Log;
-import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.RelativeLayout;
-
-import com.auriferous.atch.Callbacks.FuncCallback;
 
 public class BannerTouchView extends RelativeLayout {
     public int titleBarHeight = 70;
     private int windowHeight;
 
-    InputMethodManager imm;
-    ViewGroup.MarginLayoutParams layoutParams;
+    private InputMethodManager imm;
+    private ViewGroup.MarginLayoutParams layoutParams;
 
     private float lastY = 0;
     private int activePointerId = -1;
@@ -33,7 +25,7 @@ public class BannerTouchView extends RelativeLayout {
     private float slop;
     private boolean panned = false;
 
-    private boolean allTheWayUp = false;
+    public boolean allTheWayUp = false;
 
 
     public BannerTouchView(Context context) {
@@ -62,35 +54,26 @@ public class BannerTouchView extends RelativeLayout {
         requestLayout();
     }
     public void takeAllTheWayDown(){
-        ValueAnimator animator = ValueAnimator.ofInt(layoutParams.topMargin, getBottomHeight());
+        animate(layoutParams.topMargin, getBottomHeight());
+    }
+    public void putAllTheWayUp(){
+        animate(layoutParams.topMargin, 0);
+    }
+
+    private void animate(int start, int finish) {
+        ValueAnimator animator = ValueAnimator.ofInt(start, finish);
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 int paddingAmount = (Integer) valueAnimator.getAnimatedValue();
+
                 if (paddingAmount == getBottomHeight()) {
                     allTheWayUp = false;
                     setVisibility(GONE);
                 }
-                layoutParams.topMargin = paddingAmount;
-                if(getBottomHeight() - layoutParams.topMargin < 400)
-                    layoutParams.bottomMargin = (getBottomHeight() - layoutParams.topMargin) - 400;
-                else
-                    layoutParams.bottomMargin = 0;
-                setLayoutParams(layoutParams);
-                invalidate();
-            }
-        });
-        animator.setDuration(200);
-        animator.start();
-    }
-    public void putAllTheWayUp(){
-        ValueAnimator animator = ValueAnimator.ofInt(layoutParams.topMargin, 0);
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                int paddingAmount = (Integer) valueAnimator.getAnimatedValue();
                 if(paddingAmount == 0)
                     allTheWayUp = true;
+
                 layoutParams.topMargin = paddingAmount;
                 if(getBottomHeight() - layoutParams.topMargin < 400)
                     layoutParams.bottomMargin = (getBottomHeight() - layoutParams.topMargin) - 400;
@@ -100,9 +83,10 @@ public class BannerTouchView extends RelativeLayout {
                 invalidate();
             }
         });
-        animator.setDuration(200);
+        animator.setDuration(600);
         animator.start();
     }
+
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -194,10 +178,10 @@ public class BannerTouchView extends RelativeLayout {
         return true;
     }
 
+
     public int getBottomHeight() {
         return (windowHeight - titleBarHeight);
     }
-
     public float convertDpToPixel(float dp, Context context){
         Resources resources = context.getResources();
         DisplayMetrics metrics = resources.getDisplayMetrics();

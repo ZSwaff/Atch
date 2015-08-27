@@ -9,26 +9,14 @@ import android.widget.SearchView;
 
 import com.auriferous.atch.Callbacks.ViewUpdateCallback;
 import com.auriferous.atch.Users.UserListAdapter;
-import com.auriferous.atch.Callbacks.FuncCallback;
+import com.auriferous.atch.Callbacks.VariableCallback;
 import com.auriferous.atch.ParseAndFacebookUtils;
 import com.auriferous.atch.R;
 import com.auriferous.atch.Users.UserListAdapterSection;
 import com.auriferous.atch.Users.User;
 import com.auriferous.atch.Users.UserList;
-import com.facebook.AccessToken;
-import com.facebook.GraphRequest;
-import com.facebook.GraphResponse;
-import com.parse.FindCallback;
-import com.parse.ParseException;
-import com.parse.ParseQuery;
-import com.parse.ParseUser;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class AddFriendsActivity extends BaseFriendsActivity {
     private volatile UserList usersWhoSentFriendRequests = new UserList(User.UserType.PENDING_YOU);
@@ -46,28 +34,19 @@ public class AddFriendsActivity extends BaseFriendsActivity {
         if(getActionBar() != null) getActionBar().setDisplayHomeAsUpEnabled(true);
 
         populateFacebookFriendList();
-        ParseAndFacebookUtils.getUsersWhoHaveRequestedToFriendCurrentUser(new FuncCallback<UserList>() {
+        ParseAndFacebookUtils.getUsersWhoHaveRequestedToFriendCurrentUser(new VariableCallback<UserList>() {
             @Override
             public void done(UserList list) {
                 usersWhoSentFriendRequests = list;
                 updateCurrentView();
             }
         });
-        ParseAndFacebookUtils.getUsersWhoCurrentUserHasRequestedToFriend(new FuncCallback<UserList>() {
+        ParseAndFacebookUtils.getUsersWhoCurrentUserHasRequestedToFriend(new VariableCallback<UserList>() {
             @Override
             public void done(UserList userList) {
                 //done only to populate the user hashmap
-                return;
             }
         });
-
-        setViewUpdateCallback(new ViewUpdateCallback() {
-            @Override
-            public void updateView() {
-                fillListView();
-            }
-        });
-        fillListView();
     }
     @Override
     protected void onResume() {
@@ -121,46 +100,22 @@ public class AddFriendsActivity extends BaseFriendsActivity {
 
     //populates once results come in from Facebook, then Parse
     private void populateFacebookFriendList(){
-        GraphRequest request = GraphRequest.newMyFriendsRequest(
-                AccessToken.getCurrentAccessToken(),
-                new GraphRequest.GraphJSONArrayCallback() {
-                    @Override
-                    public void onCompleted(JSONArray array, GraphResponse response) {
-                        facebookFriends = new UserList(User.UserType.FACEBOOK_FRIEND);
+        ParseAndFacebookUtils.getAllFacebookFriends(new VariableCallback<UserList>(){
+            @Override
+            public void done(UserList list) {
+                facebookFriends = list;
+                fillListView();
+            }
 
-                        ArrayList<String> fbids = new ArrayList<>();
-
-                        for (int i = 0; i < array.length(); i++) {
-                            try {
-                                JSONObject obj = array.getJSONObject(i);
-                                fbids.add(obj.getString("id"));
-                            } catch (JSONException e) {}
-                        }
-
-                        ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
-                        userQuery.whereContainedIn("fbid", fbids);
-                        userQuery.orderByAscending("fullname");
-                        userQuery.findInBackground(new FindCallback<ParseUser>() {
-                            @Override
-                            public void done(List<ParseUser> list, ParseException e) {
-                                for (ParseUser user : list)
-                                    facebookFriends.addUser(User.getOrCreateUser(user, User.UserType.FACEBOOK_FRIEND));
-
-                                updateCurrentView();
-                            }
-                        });
-                    }
-                });
-        request.executeAsync();
+        });
     }
     //populates once results come in from Parse
     private void populateSearchResults(){
-        ParseAndFacebookUtils.getUsersWithMatchingUsernameOrFullname(searchTerm, new FindCallback<ParseUser>() {
+        ParseAndFacebookUtils.getUsersWithMatchingUsernameOrFullname(searchTerm, new VariableCallback<UserList>() {
             @Override
-            public void done(List<ParseUser> list, ParseException e) {
-                if (list == null) return;
-                searchResults = new UserList(list, User.UserType.RANDOM);
-                searchResults.sortByPriorityForSearch();
+            public void done(UserList list) {
+                searchResults = list;
+                fillListView();
             }
         });
     }

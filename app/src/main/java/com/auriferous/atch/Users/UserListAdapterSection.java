@@ -10,10 +10,11 @@ public class UserListAdapterSection {
         this.users = users;
     }
 
-    public String getLabel() {
-        return label;
-    }
+
     public UserList getUsers() {
         return users;
+    }
+    public String getLabel() {
+        return label;
     }
 }

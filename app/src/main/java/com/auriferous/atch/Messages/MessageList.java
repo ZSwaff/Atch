@@ -27,7 +27,4 @@ public class MessageList {
     public ArrayList<Message> getAllMessages() {
         return messages;
     }
-    public void setAllMessages(ArrayList<Message> messages) {
-        this.messages = messages;
-    }
 }

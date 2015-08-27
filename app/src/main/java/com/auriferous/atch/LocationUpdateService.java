@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.util.Log;
 import android.widget.Toast;
 
 import java.util.Date;
@@ -72,9 +71,9 @@ public class LocationUpdateService extends Service implements
     public void onLocationChanged(Location location) {
         AtchApplication app = (AtchApplication)getApplication();
         app.setCurrentLocation(location);
+        app.setLastUpdateTime(new Date());
 
         ParseAndFacebookUtils.updateMyLocation(location);
-        app.setLastUpdateTime(new Date());
 
         //todo questionable about whether this is the best place to call this
         ParseAndFacebookUtils.updateFriendDataWithMostRecentLocations(app.getFriendsList(), null);

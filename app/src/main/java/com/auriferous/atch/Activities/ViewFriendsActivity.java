@@ -5,12 +5,8 @@ import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 
-import com.auriferous.atch.Users.User;
 import com.auriferous.atch.Users.UserListAdapter;
 import com.auriferous.atch.AtchApplication;
 import com.auriferous.atch.Callbacks.ViewUpdateCallback;
@@ -24,18 +20,11 @@ public class ViewFriendsActivity extends BaseFriendsActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_friends);
         if(getActionBar() != null) getActionBar().setDisplayHomeAsUpEnabled(true);
-
-        setViewUpdateCallback(new ViewUpdateCallback() {
-            @Override
-            public void updateView() {
-                fillListView();
-            }
-        });
-        fillListView();
     }
     @Override
     protected void onResume() {
         super.onResume();
+
         setViewUpdateCallback(new ViewUpdateCallback() {
             @Override
             public void updateView() {
@@ -59,8 +48,8 @@ public class ViewFriendsActivity extends BaseFriendsActivity {
             return true;
         }
         if (id == R.id.switch_to_add_friends) {
-            Intent intent = new Intent(getApplicationContext(), AddFriendsActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            Intent intent = new Intent(getApplication(), AddFriendsActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             startActivity(intent);
             return true;
         }

@@ -7,6 +7,14 @@
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginLeft="70dp"
+        android:layout_marginStart="70dp"
+        android:padding="2dp"
         android:background="@drawable/chat_right_background">
 
         <TextView
@@ -15,15 +23,10 @@
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="chat"
             android:id="@+id/label"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginLeft="70dp"
-            android:layout_marginStart="70dp"
             android:layout_marginTop="3dp"
-            android:padding="2dp"
-            android:paddingLeft="8dp"
-            android:paddingRight="8dp"
+            android:layout_marginBottom="3dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
             android:textColor="#010101"/>
 
         <TextView
@@ -32,11 +35,13 @@
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:text="date"
             android:id="@+id/date"
-            android:textColor="#010101"
-            android:layout_marginTop="-5dp"
-            android:layout_marginBottom="3dp"
+            android:textColor="#959595"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="-7dp"
+            android:layout_marginBottom="5dp"
             android:layout_below="@+id/label"
-            android:layout_alignEnd="@+id/label" />
+            android:layout_alignEnd="@+id/label"
+            android:visibility="gone"/>
 
     </RelativeLayout>
 

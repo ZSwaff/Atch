@@ -17,12 +17,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
-    public static final int NOTIFICATION_ID = 492304;
+    private static final int NOTIFICATION_ID = 492304;
 
-    static AtchApplication app = null;
+    private static AtchApplication app = null;
 
 
-    static void init(AtchApplication app) {
+    public static void init(AtchApplication app) {
         AtchParsePushReceiver.app = app;
     }
 
@@ -45,27 +45,23 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
             catch (JSONException jE) {}
 
             Activity currActivity = app.getCurrentActivity();
-            if(currActivity != null && chatRecipientObjectId != null && currActivity instanceof MapActivity && ((MapActivity)currActivity).isChattingWithPerson(chatRecipientObjectId)) {
-                ((MapActivity)currActivity).setupChatHistory();
-            }
+            if(currActivity != null && chatRecipientObjectId != null && currActivity instanceof MapActivity && ((MapActivity)currActivity).isChattingWithPerson(chatRecipientObjectId))
+                ((MapActivity)currActivity).refreshChatHistory();
             else
                 setupAndDeliverNotification(context, intent);
         }
         else
             setupAndDeliverNotification(context, intent);
     }
-
     private void setupAndDeliverNotification(Context context, Intent intent) {
         JSONObject pushData = null;
-
         try {
             pushData = new JSONObject(intent.getStringExtra("com.parse.Data"));
         } catch (JSONException jE) {}
 
         String action = null;
-        if (pushData != null) {
+        if (pushData != null)
             action = pushData.optString("action", null);
-        }
 
         if (action != null) {
             Bundle notification = intent.getExtras();
@@ -76,7 +72,7 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
             context.sendBroadcast(broadcastIntent);
         }
 
-        Notification notification = this.getNotification(context, intent);
+        Notification notification = getNotification(context, intent);
         if(context != null && notification != null) {
             NotificationManager nm = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -92,16 +88,16 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
     @Override
     protected void onPushOpen(Context context, Intent intent) {
         ParseAnalytics.trackAppOpenedInBackground(intent);
-        String type = null;
 
+        String type = null;
         String chatRecipientObjectId = null;
         String friendRecipientObjectId = null;
 
         try {
             JSONObject cls = new JSONObject(intent.getStringExtra("com.parse.Data"));
+            type = cls.optString("type", null);
             chatRecipientObjectId = cls.optString("chatterParseId", null);
             friendRecipientObjectId = cls.optString("frienderParseId", null);
-            type = cls.optString("type", null);
         }
         catch (JSONException var6) {}
 
@@ -113,7 +109,7 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
                 activityIntent.putExtra("chatterParseId", chatRecipientObjectId);
                 activityIntent.addFlags(268435456);
                 activityIntent.addFlags(67108864);
-                activityIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                activityIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 context.startActivity(activityIntent);
             }
         }
@@ -124,18 +120,20 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
                 activityIntent.putExtra("frienderParseId", friendRecipientObjectId);
                 activityIntent.addFlags(268435456);
                 activityIntent.addFlags(67108864);
-                activityIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                activityIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 context.startActivity(activityIntent);
             }
         }
         else if(type.equals("friendAccept")) {
             if (friendRecipientObjectId != null) {
+                app.populateFriendList();
+
                 Intent activityIntent = new Intent(context, ViewFriendsActivity.class);
                 activityIntent.putExtras(intent.getExtras());
                 activityIntent.putExtra("frienderParseId", friendRecipientObjectId);
                 activityIntent.addFlags(268435456);
                 activityIntent.addFlags(67108864);
-                activityIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                activityIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 context.startActivity(activityIntent);
             }
         }

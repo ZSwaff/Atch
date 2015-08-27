@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ExpandableListAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -40,6 +41,7 @@ public class UserListAdapter extends BaseAdapter {
     private final Context context;
     private ArrayList<UserListAdapterSection> sections;
     private String emptyMessage;
+
 
     private HashSet<String> viewsAccessed = new HashSet<>();
     private HashMap<String, View> allViews = new HashMap<>();
@@ -286,7 +288,7 @@ public class UserListAdapter extends BaseAdapter {
                             Intent intent = new Intent(context, MapActivity.class);
                             intent.putExtra("type", "message");
                             intent.putExtra("chatterParseId", user.getId());
-                            intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                             context.startActivity(intent);
                         }
                     }
@@ -312,7 +314,8 @@ public class UserListAdapter extends BaseAdapter {
         });
     }
 
-    public float convertDpToPixel(float dp){
+
+    private float convertDpToPixel(float dp){
         Resources resources = context.getResources();
         DisplayMetrics metrics = resources.getDisplayMetrics();
         float px = dp * (metrics.densityDpi / 160f);

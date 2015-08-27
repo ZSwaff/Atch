@@ -1,5 +1,5 @@
 package com.auriferous.atch.Callbacks;
 
-public interface FuncCallback <T> {
+public interface VariableCallback<T> {
     void done(T t);
 }

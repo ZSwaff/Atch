@@ -24,19 +24,11 @@ public class UserList {
     public ArrayList<User> getAllUsers() {
         return users;
     }
-    public void setAllUsers(ArrayList<User> users) {
-        this.users = users;
-    }
 
     public void addUser(User user) {
         if (!users.contains(user))
             users.add(user);
     }
-    public void addAllUsers(List<User> users) {
-        for (User user : users)
-            addUser(user);
-    }
-
     public void removeUser(User user) {
         users.remove(user);
     }
@@ -50,6 +42,7 @@ public class UserList {
                 user.setPrivateData(privateDatum);
         }
     }
+
 
     public void sortByPriorityForSearch() {
         ArrayList<User> friends = new ArrayList<>();
@@ -78,14 +71,5 @@ public class UserList {
         users.addAll(pendingYou);
         users.addAll(fbFriends);
         users.addAll(other);
-    }
-
-
-    @Override
-    public String toString() {
-        String res = "";
-        for(User user : users)
-            res += "\n" + user.toString();
-        return res.substring(1);
     }
 }

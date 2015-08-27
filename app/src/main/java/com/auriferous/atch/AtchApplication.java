@@ -10,26 +10,19 @@ import android.location.Location;
 import android.util.Base64;
 import android.util.Log;
 
-import com.auriferous.atch.Callbacks.FuncCallback;
+import com.auriferous.atch.Callbacks.SimpleCallback;
+import com.auriferous.atch.Callbacks.VariableCallback;
 import com.auriferous.atch.Callbacks.ViewUpdateCallback;
 import com.auriferous.atch.Users.User;
 import com.auriferous.atch.Users.UserList;
 import com.auriferous.atch.Users.UserListAdapter;
 import com.facebook.FacebookSdk;
 import com.google.android.gms.maps.MapsInitializer;
-import com.parse.FindCallback;
-import com.parse.GetCallback;
 import com.parse.Parse;
-import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
-import com.parse.ParseQuery;
-import com.parse.ParseRelation;
-import com.parse.ParseRole;
-import com.parse.ParseUser;
 
 import java.security.MessageDigest;
 import java.util.Date;
-import java.util.List;
 
 //laptop release qgG7TnZ3y6x5EIBELHxeOp5l0+0=
 //study mac release 28JFZmC2Z4KeVOdRPzxtEuX8UJM=
@@ -89,6 +82,12 @@ public class AtchApplication extends Application {
     public UserList getFriendsList() {
         return friendsList;
     }
+    public void addFriend(User newFriend){
+        friendsList.addUser(newFriend);
+    }
+    public void removeFriend(User newEnemy){
+        friendsList.removeUser(newEnemy);
+    }
 
 
     @Override
@@ -128,40 +127,20 @@ public class AtchApplication extends Application {
 
     //populates once results come in from Parse
     public void populateFriendList(){
-        friendsList = new UserList(User.UserType.FRIEND);
-
-        ParseQuery<ParseRole> roleQuery = ParseRole.getQuery();
-        roleQuery.whereEqualTo("name", "friendsOf_" + ParseUser.getCurrentUser().getObjectId());
-        roleQuery.getFirstInBackground(new GetCallback<ParseRole>() {
+        ParseAndFacebookUtils.getAllFriends(new VariableCallback<UserList>() {
             @Override
-            public void done(ParseRole role, ParseException e) {
-                if (role == null) return;
-                ParseRelation<ParseUser> relation = role.getRelation("users");
-                ParseQuery<ParseUser> friendQuery = relation.getQuery();
-                friendQuery.orderByAscending("fullname");
-                friendQuery.findInBackground(new FindCallback<ParseUser>() {
+            public void done(UserList userList) {
+                friendsList = userList;
+
+                ParseAndFacebookUtils.updateFriendDataWithMostRecentLocations(friendsList, new SimpleCallback() {
                     @Override
-                    public void done(List<ParseUser> list, ParseException e) {
-                        for (ParseUser user : list)
-                            friendsList.addUser(User.getOrCreateUser(user, User.UserType.FRIEND));
-
-                        ParseAndFacebookUtils.updateFriendDataWithMostRecentLocations(friendsList, new FuncCallback<Object>() {
-                            @Override
-                            public void done(Object o) {
-                                updateView();
-                            }
-                        });
-
+                    public void done() {
                         updateView();
                     }
                 });
+
+                updateView();
             }
         });
-    }
-    public void addFriend(User newFriend){
-        friendsList.addUser(newFriend);
-    }
-    public void removeFriend(User newEnemy){
-        friendsList.removeUser(newEnemy);
     }
 }

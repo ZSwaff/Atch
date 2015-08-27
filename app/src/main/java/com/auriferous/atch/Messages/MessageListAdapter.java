@@ -5,20 +5,26 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.auriferous.atch.R;
 import com.parse.ParseUser;
 
+import java.text.SimpleDateFormat;
+
 public class MessageListAdapter extends BaseAdapter {
     private final Context context;
+    private ListView listView;
+
     private MessageList messageList;
     private ParseUser currentUser;
     private String emptyMessage;
 
 
-    public MessageListAdapter(Context context, MessageList messageList, ParseUser currentUser, String emptyMessage) {
+    public MessageListAdapter(Context context, ListView listView, MessageList messageList, ParseUser currentUser, String emptyMessage) {
         this.context = context;
+        this.listView = listView;
         this.messageList = messageList;
         this.currentUser = currentUser;
         this.emptyMessage = emptyMessage;
@@ -44,7 +50,27 @@ public class MessageListAdapter extends BaseAdapter {
         if(messageList == null || messageList.getAllMessages() == null || messageList.getAllMessages().size() == 0)
             return createFullscreenLabelView(parent);
         if (position >= messageList.getAllMessages().size()) return null;
-        return createLabelView(messageList.getAllMessages().get(position), parent);
+
+        final View chatBubble = createLabelView(messageList.getAllMessages().get(position), parent);
+        chatBubble.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TextView date = (TextView)chatBubble.findViewById(R.id.date);
+                if(date.getVisibility() == View.GONE){
+                    int h = v.getMeasuredHeight();
+                    date.setVisibility(View.VISIBLE);
+                    v.invalidate();
+                    listView.scrollBy(0, h - v.getMeasuredHeight());
+                }
+                else{
+                    int h = v.getMeasuredHeight();
+                    date.setVisibility(View.GONE);
+                    v.invalidate();
+                    listView.scrollBy(0, h - v.getMeasuredHeight());
+                }
+            }
+        });
+        return chatBubble;
     }
 
     private View createFullscreenLabelView(ViewGroup parent) {
@@ -66,6 +92,9 @@ public class MessageListAdapter extends BaseAdapter {
 
         TextView label = (TextView) rowView.findViewById(R.id.label);
         label.setText(message.getMessageText());
+        TextView date = (TextView) rowView.findViewById(R.id.date);
+        SimpleDateFormat formatter = new SimpleDateFormat("h:mm a");
+        date.setText(formatter.format(message.getSendDate()));
 
         return rowView;
     }
