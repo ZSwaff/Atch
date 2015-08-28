@@ -13,6 +13,8 @@ import com.parse.ParseException;
 import com.parse.ParseInstallation;
 import com.parse.ParseUser;
 
+import java.util.Map;
+
 public class AtchAgreementActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +44,13 @@ public class AtchAgreementActivity extends Activity {
         ((AtchApplication)getApplication()).stopLocationUpdates();
     }
 
+    @Override
+    protected void onNewIntent(Intent intent){
+        super.onNewIntent(intent);
 
+        if(intent.getBooleanExtra("back", false))
+            overridePendingTransition(R.anim.slide_up_in, R.anim.slide_up_out);
+    }
     @Override
     public void onBackPressed() {}
 
@@ -58,6 +66,7 @@ public class AtchAgreementActivity extends Activity {
             public void done(ParseException e) {
                 Intent intent = new Intent(getApplication(), LoginActivity.class);
                 startActivity(intent);
+                overridePendingTransition(R.anim.slide_up_in, R.anim.slide_up_out);
             }
         });
     }
@@ -71,6 +80,8 @@ public class AtchAgreementActivity extends Activity {
     public void engageApp(){
         ((AtchApplication)getApplication()).startLocationUpdates();
 
-        startActivity(new Intent(getApplication(), MapActivity.class));
+        Intent intent = new Intent(getApplication(), MapActivity.class);
+        startActivity(intent);
+        overridePendingTransition(R.anim.slide_down_in, R.anim.slide_down_out);
     }
 }

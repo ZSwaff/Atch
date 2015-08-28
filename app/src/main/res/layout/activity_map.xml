@@ -24,42 +24,39 @@
 
         <ImageButton
             android:id="@+id/log_out_button"
-            android:src="@android:drawable/ic_lock_idle_lock"
-            android:scaleX="1.5"
-            android:scaleY="1.5"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="10dp"
+            android:src="@drawable/lock2"
+            android:scaleType="fitCenter"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:layout_margin="10dp"
+            android:padding="16dp"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:background="@android:color/transparent" />
+            android:background="@drawable/round_button_white" />
 
         <ImageButton
             android:id="@+id/friends_button"
-            android:src="@android:drawable/stat_notify_chat"
-            android:scaleX="1.5"
-            android:scaleY="1.5"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="10dp"
+            android:src="@drawable/list"
+            android:scaleType="fitCenter"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:layout_margin="10dp"
+            android:padding="16dp"
             android:layout_alignParentEnd="true"
             android:layout_alignParentTop="true"
-            android:background="@android:color/transparent" />
+            android:background="@drawable/round_button_white" />
 
         <ImageButton
             android:id="@+id/my_location_button"
-            android:src="@android:drawable/ic_dialog_map"
-            android:scaleX="1.2"
-            android:scaleY="1.2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="10dp"
+            android:src="@drawable/location"
+            android:scaleType="fitCenter"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:layout_margin="10dp"
+            android:padding="16dp"
             android:layout_alignParentEnd="true"
             android:layout_alignParentBottom="true"
-            android:background="@android:color/transparent" />
+            android:background="@drawable/round_button_white" />
 
     </RelativeLayout>
 
@@ -69,7 +66,6 @@
         android:layout_height="match_parent"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
-        android:alpha="1"
         android:background="@color/primary_material_light"
         android:paddingLeft="0dp"
         android:paddingRight="0dp"
@@ -102,25 +98,27 @@
                 android:layout_toStartOf="@+id/meet_here"
                 android:textColor="@android:color/primary_text_dark" />
 
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Here"
-                android:id="@+id/meet_here"
-                android:layout_alignTop="@+id/fullname"
-                android:layout_toStartOf="@+id/meet_there"
-                android:paddingLeft="8dp"
-                android:paddingRight="8dp"/>
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="There"
+            <ImageButton
                 android:id="@+id/meet_there"
-                android:layout_alignTop="@+id/fullname"
+                android:src="@drawable/there_white"
+                android:scaleType="fitCenter"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_margin="8dp"
+                android:layout_centerVertical="true"
                 android:layout_alignParentEnd="true"
-                android:paddingLeft="8dp"
-                android:paddingRight="8dp"/>
+                android:background="@android:color/transparent" />
+
+            <ImageButton
+                android:id="@+id/meet_here"
+                android:src="@drawable/here_white"
+                android:scaleType="fitCenter"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_margin="8dp"
+                android:layout_centerVertical="true"
+                android:layout_toStartOf="@+id/meet_there"
+                android:background="@android:color/transparent" />
 
         </RelativeLayout>
 
@@ -130,7 +128,7 @@
             android:layout_height="wrap_content"
             android:paddingLeft="0dp"
             android:paddingRight="0dp"
-            android:paddingBottom="10dp"
+            android:paddingBottom="3dp"
             android:layout_below="@+id/title_bar"
             android:descendantFocusability="afterDescendants">
 
@@ -142,25 +140,21 @@
                 android:transcriptMode="normal"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:layout_marginBottom="5dp"
                 android:paddingLeft="10dp"
                 android:paddingRight="10dp"
-                android:layout_above="@+id/message_box"
+                android:paddingBottom="0dp"
+                android:layout_marginBottom="0dp"
                 android:smoothScrollbar="true"
                 android:layout_alignParentTop="true"
-                android:layout_alignParentEnd="true">
+                android:layout_alignParentEnd="true"
+                android:layout_above="@+id/message_box">
             </ListView>
 
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Send"
-                android:id="@+id/send_button"
-                android:layout_below="@+id/listview"
-                android:layout_alignParentEnd="true"
-                android:layout_marginRight="5dp"
-                android:paddingLeft="8dp"
-                android:paddingRight="8dp"/>
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="2px"
+                android:background="@android:color/darker_gray"
+                android:layout_below="@+id/listview"/>
 
             <com.auriferous.atch.ActionEditText
                 android:id="@+id/message_box"
@@ -175,10 +169,26 @@
                 android:imeOptions="actionSend"
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentStart="true"
+                android:layout_marginTop="3dp"
                 android:layout_toStartOf="@+id/send_button"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
-                android:layout_marginLeft="5dp"/>
+                android:layout_marginLeft="5dp" />
+
+            <ImageButton
+                android:id="@+id/send_button"
+                android:src="@drawable/send"
+                android:background="@drawable/round_button"
+                android:scaleType="fitCenter"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:padding="8dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="-15dp"
+                android:layout_marginBottom="2dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignBottom="@+id/message_box" />
 
         </RelativeLayout>
 

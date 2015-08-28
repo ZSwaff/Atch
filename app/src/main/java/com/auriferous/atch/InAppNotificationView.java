@@ -1,5 +1,6 @@
 package com.auriferous.atch;
 
+import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Resources;
@@ -8,70 +9,54 @@ import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.RelativeLayout;
 
-import com.auriferous.atch.Callbacks.VariableCallback;
-
-public class BannerTouchView extends RelativeLayout {
+public class InAppNotificationView extends RelativeLayout {
     private InputMethodManager imm;
 
-    public int titleBarHeight = 70;
-    private int windowHeight;
-    public boolean isHeightInitialized = false;
+    public int barHeight = 70;
     private float slop;
 
-    private ViewGroup.MarginLayoutParams layoutParams;
-    public boolean allTheWayUp = false;
-    public boolean partiallyUp = false;
+    private MarginLayoutParams layoutParams;
+    public boolean down = false;
 
-    private float lastY = 0;
+    private float lastY = 0, lastX;
     private int activePointerId = -1;
-    private boolean panned = false;
+    boolean panned = false;
 
 
-    public BannerTouchView(Context context) {
+    public InAppNotificationView(Context context) {
         this(context, null, 0);
     }
-    public BannerTouchView(Context context, AttributeSet attrs) {
+    public InAppNotificationView(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
-    public BannerTouchView(Context context, AttributeSet attrs, int defStyle) {
+    public InAppNotificationView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
 
-        titleBarHeight = GeneralUtils.convertDpToPixel(titleBarHeight, context);
+        barHeight = GeneralUtils.convertDpToPixel(barHeight, context);
 
         imm = (InputMethodManager)getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         slop = ViewConfiguration.get(context).getScaledTouchSlop();
     }
 
-    public void setHeight(int height) {
-        windowHeight = height;
-        isHeightInitialized = true;
-    }
 
-    public void setupBanner(VariableCallback<Integer> callback){
-        if(partiallyUp) return;
-        partiallyUp = true;
+    public void setupBanner(){
         setVisibility(View.VISIBLE);
 
-        layoutParams = (ViewGroup.MarginLayoutParams)getLayoutParams();
-        layoutParams.setMargins(0, getBottomHeight() + titleBarHeight, 0, 0);
-        animate(layoutParams.topMargin, getBottomHeight(), 300, callback);
-    }
-    public void putAllTheWayUp(){
-        animate(layoutParams.topMargin, 0, 300, null);
+        layoutParams = (MarginLayoutParams)getLayoutParams();
+        layoutParams.setMargins(0, getBottomHeight(), 0, 0);
+        requestLayout();
     }
     public void takeAllTheWayDown(){
-        animate(layoutParams.topMargin, getBottomHeight(), 300, null);
+        animate(layoutParams.topMargin, getBottomHeight());
     }
-    public void removeBanner(VariableCallback<Integer> callback){
-        partiallyUp = false;
-        animate(layoutParams.topMargin, getBottomHeight() + titleBarHeight, 300, callback);
+    public void putAllTheWayUp(){
+        animate(layoutParams.topMargin, 0);
     }
 
-    private void animate(int start, int finish, int speed, final VariableCallback<Integer> callback) {
+    private void animate(int start, int finish) {
         ValueAnimator animator = ValueAnimator.ofInt(start, finish);
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -79,23 +64,36 @@ public class BannerTouchView extends RelativeLayout {
                 int paddingAmount = (Integer) valueAnimator.getAnimatedValue();
 
                 if (paddingAmount == getBottomHeight())
-                    allTheWayUp = false;
-                if (paddingAmount == getBottomHeight() + titleBarHeight && !partiallyUp)
-                    setVisibility(View.GONE);
+                    down = false;
                 if (paddingAmount == 0)
-                    allTheWayUp = true;
+                    down = true;
                 layoutParams.topMargin = paddingAmount;
 
-                layoutParams.bottomMargin = -layoutParams.topMargin;
+                layoutParams.bottomMargin = - layoutParams.topMargin;
 
                 setLayoutParams(layoutParams);
                 invalidate();
-
-                if (callback != null)
-                    callback.done(windowHeight - paddingAmount);
             }
         });
-        animator.setDuration(Math.abs((speed*Math.abs(finish-start))/getBottomHeight()));
+        animator.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+            }
+        });
+        animator.setDuration(300);
         animator.start();
     }
 
@@ -103,11 +101,11 @@ public class BannerTouchView extends RelativeLayout {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         imm.hideSoftInputFromWindow(getWindowToken(), 0);
-        layoutParams = (ViewGroup.MarginLayoutParams) getLayoutParams();
+        layoutParams = (MarginLayoutParams) getLayoutParams();
 
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN: {
-                panned = false;
+                lastX = event.getX();
                 lastY = event.getY();
 
                 activePointerId = event.getPointerId(0);
@@ -121,11 +119,11 @@ public class BannerTouchView extends RelativeLayout {
                 layoutParams.topMargin += dy;
                 if(layoutParams.topMargin <= 0) {
                     layoutParams.topMargin = 0;
-                    allTheWayUp = true;
+                    down = true;
                 }
                 if(layoutParams.topMargin >= getBottomHeight()) {
                     layoutParams.topMargin = getBottomHeight();
-                    allTheWayUp = false;
+                    down = false;
                 }
 
                 layoutParams.bottomMargin = - layoutParams.topMargin;
@@ -145,10 +143,10 @@ public class BannerTouchView extends RelativeLayout {
                 if(layoutParams.topMargin == getBottomHeight() && panned) return true;
                 if(layoutParams.topMargin == 0 && panned) return true;
 
-                if(!allTheWayUp)
-                    animate(layoutParams.topMargin, 0, 300, null);
+                if(!down)
+                    animate(layoutParams.topMargin, 0);
                 else
-                    animate(layoutParams.topMargin, getBottomHeight(), 300, null);
+                    animate(layoutParams.topMargin, getBottomHeight());
             }
             case MotionEvent.ACTION_POINTER_UP:
             {
@@ -168,6 +166,6 @@ public class BannerTouchView extends RelativeLayout {
 
 
     public int getBottomHeight() {
-        return (windowHeight - titleBarHeight);
+        return 5;
     }
 }

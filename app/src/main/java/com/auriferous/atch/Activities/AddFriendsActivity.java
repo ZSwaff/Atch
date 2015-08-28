@@ -1,5 +1,6 @@
 package com.auriferous.atch.Activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.view.Menu;
@@ -61,6 +62,21 @@ public class AddFriendsActivity extends BaseFriendsActivity {
     }
 
     @Override
+    protected void onNewIntent(Intent intent){
+        super.onNewIntent(intent);
+
+        overridePendingTransition(0, 0);
+    }
+    @Override
+    public void onBackPressed(){
+        Intent intent = new Intent(getApplication(), ViewFriendsActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        intent.putExtra("back", true);
+        startActivity(intent);
+        overridePendingTransition(0,0);
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_add_friends, menu);
 
@@ -89,8 +105,8 @@ public class AddFriendsActivity extends BaseFriendsActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.home) {
-            NavUtils.navigateUpFromSameTask(this);
+        if (id == android.R.id.home) {
+            onBackPressed();
             return true;
         }
 

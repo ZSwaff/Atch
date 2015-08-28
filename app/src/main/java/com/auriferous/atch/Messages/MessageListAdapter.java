@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -22,7 +23,7 @@ public class MessageListAdapter extends BaseAdapter {
     private String emptyMessage;
 
 
-    public MessageListAdapter(Context context, ListView listView, MessageList messageList, ParseUser currentUser, String emptyMessage) {
+    public MessageListAdapter(Context context, ListView listView, MessageList messageList, ParseUser currentUser, String emptyMessage, MessageListAdapter oldAdapter) {
         this.context = context;
         this.listView = listView;
         this.messageList = messageList;
@@ -54,20 +55,24 @@ public class MessageListAdapter extends BaseAdapter {
         final View chatBubble = createLabelView(messageList.getAllMessages().get(position), parent);
         chatBubble.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(final View v) {
                 TextView date = (TextView)chatBubble.findViewById(R.id.date);
-                if(date.getVisibility() == View.GONE){
-                    int h = v.getMeasuredHeight();
+                final int initalHeight = v.getMeasuredHeight();
+
+                if(date.getVisibility() == View.GONE)
                     date.setVisibility(View.VISIBLE);
-                    v.invalidate();
-                    listView.scrollBy(0, h - v.getMeasuredHeight());
-                }
-                else{
-                    int h = v.getMeasuredHeight();
+                else
                     date.setVisibility(View.GONE);
-                    v.invalidate();
-                    listView.scrollBy(0, h - v.getMeasuredHeight());
-                }
+
+                ViewTreeObserver vto = v.getViewTreeObserver();
+                vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        listView.scrollBy(0, v.getMeasuredHeight() - initalHeight);
+                        ViewTreeObserver obs = v.getViewTreeObserver();
+                        obs.removeOnGlobalLayoutListener(this);
+                    }
+                });
             }
         });
         return chatBubble;

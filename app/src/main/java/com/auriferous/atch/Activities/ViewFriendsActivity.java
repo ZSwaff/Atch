@@ -3,6 +3,7 @@ package com.auriferous.atch.Activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
@@ -35,6 +36,24 @@ public class ViewFriendsActivity extends BaseFriendsActivity {
     }
 
     @Override
+    protected void onNewIntent(Intent intent){
+        super.onNewIntent(intent);
+
+        if(intent.getBooleanExtra("back", false))
+            overridePendingTransition(0, 0);
+        else
+            overridePendingTransition(R.anim.slide_left_in, R.anim.slide_left_out);
+    }
+    @Override
+    public void onBackPressed(){
+        Intent intent = new Intent(getApplication(), MapActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        intent.putExtra("back", true);
+        startActivity(intent);
+        overridePendingTransition(R.anim.slide_right_in, R.anim.slide_right_out);
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_view_friends, menu);
         return true;
@@ -43,15 +62,15 @@ public class ViewFriendsActivity extends BaseFriendsActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.home) {
-            NavUtils.navigateUpFromSameTask(this);
+        if (id == android.R.id.home) {
+            onBackPressed();
             return true;
         }
-        if (id == R.id.switch_to_add_friends) {
+        if (id == R.id.switch_to_add_friends){
             Intent intent = new Intent(getApplication(), AddFriendsActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             startActivity(intent);
-            return true;
+            overridePendingTransition(0, 0);
         }
 
         return super.onOptionsItemSelected(item);
@@ -62,7 +81,7 @@ public class ViewFriendsActivity extends BaseFriendsActivity {
         UserList friends = ((AtchApplication) getApplication()).getFriendsList();
 
         ListView listView = (ListView) findViewById(R.id.listview);
-        UserListAdapter arrayAdapter = new UserListAdapter(this, new UserListAdapterSection("Friends", friends), "No friends yet", (UserListAdapter)listView.getAdapter());
+        UserListAdapter arrayAdapter = new UserListAdapter(this, new UserListAdapterSection(null, friends), "No friends yet", (UserListAdapter)listView.getAdapter());
         listView.setAdapter(arrayAdapter);
     }
 }

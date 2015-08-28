@@ -7,6 +7,6 @@
     <item
         android:id="@+id/switch_to_add_friends"
         android:title="Add friends"
-        android:icon="@android:drawable/ic_menu_add"
+        android:icon="@drawable/plus"
         app:showAsAction="collapseActionView|ifRoom" />
 </menu>

@@ -1,15 +1,16 @@
 package com.auriferous.atch.Activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
-import android.widget.ExpandableListView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -18,6 +19,7 @@ import com.auriferous.atch.BannerTouchView;
 import com.auriferous.atch.Callbacks.SimpleCallback;
 import com.auriferous.atch.Callbacks.VariableCallback;
 import com.auriferous.atch.Callbacks.ViewUpdateCallback;
+import com.auriferous.atch.GeneralUtils;
 import com.auriferous.atch.Messages.MessageList;
 import com.auriferous.atch.Messages.MessageListAdapter;
 import com.auriferous.atch.ParseAndFacebookUtils;
@@ -41,11 +43,11 @@ public class MapActivity  extends BaseFriendsActivity {
 
     private BannerTouchView banner;
     private boolean bannerShowingAtAll = false;
+    private boolean pendingImmediateChat = false;
 
     private User chatRecipient;
     private volatile ParseObject messageHistory;
     private volatile MessageList messageList;
-
 
 
     @Override
@@ -59,6 +61,23 @@ public class MapActivity  extends BaseFriendsActivity {
     }
     private void setupViews() {
         banner = (BannerTouchView)findViewById(R.id.map_banner);
+        banner.getBackground().setAlpha(242);
+
+        final View mapView = findViewById(R.id.map_view);
+        ViewTreeObserver vto = mapView.getViewTreeObserver();
+        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                banner.setHeight(mapView.getHeight());
+                ViewTreeObserver obs = mapView.getViewTreeObserver();
+                obs.removeOnGlobalLayoutListener(this);
+
+                if(pendingImmediateChat){
+                    pendingImmediateChat = false;
+                    immediateChat();
+                }
+            }
+        });
 
         EditText messageBox = (EditText) findViewById(R.id.message_box);
         messageBox.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -117,19 +136,7 @@ public class MapActivity  extends BaseFriendsActivity {
     protected void onResume() {
         super.onResume();
 
-        String type = getIntent().getStringExtra("type");
-        if (type != null && type.equals("message")) {
-            String chatterPID;
-            chatterPID = getIntent().getStringExtra("chatterParseId");
-            if (chatterPID != null) {
-                enableDisableBanner(true, chatterPID);
-                banner.putAllTheWayUp();
-                getIntent().removeExtra("type");
-                getIntent().removeExtra("message");
-
-                panTo(chatRecipient.getLocation());
-            }
-        }
+        immediateChat();
 
         setViewUpdateCallback(new ViewUpdateCallback() {
             @Override
@@ -142,22 +149,63 @@ public class MapActivity  extends BaseFriendsActivity {
         fillListView();
     }
 
+    public void immediateChat(){
+        if(!banner.isHeightInitialized) {
+            pendingImmediateChat = true;
+            return;
+        }
+
+        String type = getIntent().getStringExtra("type");
+        if (type != null) {
+            if (type.equals("message")) {
+                String chatterPID;
+                chatterPID = getIntent().getStringExtra("chatterParseId");
+                if (chatterPID != null) {
+                    enableBanner(chatterPID, new SimpleCallback() {
+                        @Override
+                        public void done() {
+                            banner.putAllTheWayUp();
+                        }
+                    });
+                    getIntent().removeExtra("type");
+                    getIntent().removeExtra("message");
+
+                    if(chatRecipient != null)
+                        panTo(chatRecipient.getLocation());
+                }
+            }
+            else if (type.equals("zoom")) {
+                String chatterPID;
+                chatterPID = getIntent().getStringExtra("chatterParseId");
+                if (chatterPID != null) {
+                    enableBanner(chatterPID, null);
+                    getIntent().removeExtra("type");
+                    getIntent().removeExtra("message");
+
+                    panTo(chatRecipient.getLocation());
+                }
+            }
+        }
+    }
+
 
     @Override
     protected void onNewIntent(Intent intent){
         super.onNewIntent(intent);
+
+        if(intent.getBooleanExtra("back", false))
+            overridePendingTransition(R.anim.slide_right_in, R.anim.slide_right_out);
+        intent.removeExtra("back");
+
         setIntent(intent);
     }
     @Override
     public void onBackPressed(){
         if(bannerShowingAtAll){
-            if(banner.allTheWayUp)
-                banner.takeAllTheWayDown(false);
-            else
-                enableDisableBanner(false, null);
+            if (banner.allTheWayUp) banner.takeAllTheWayDown();
+            else disableBanner();
         }
-        else
-            super.onBackPressed();
+        else logOut();
     }
 
 
@@ -169,13 +217,16 @@ public class MapActivity  extends BaseFriendsActivity {
 
     private void logOut() {
         Intent intent = new Intent(getApplication(), AtchAgreementActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        intent.putExtra("back", true);
         startActivity(intent);
+        overridePendingTransition(R.anim.slide_up_in, R.anim.slide_up_out);
     }
     private void switchToFriends() {
         Intent intent = new Intent(getApplication(), ViewFriendsActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         startActivity(intent);
+        overridePendingTransition(R.anim.slide_left_in, R.anim.slide_left_out);
     }
     private void findMyLocation() {
         Location myLoc = map.getMyLocation();
@@ -187,7 +238,7 @@ public class MapActivity  extends BaseFriendsActivity {
     }
     private void panTo(LatLng pos){
         if(pos != null)
-            map.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(pos, 13, 0, 0)), 700, null);
+            map.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(pos, 12, 0, 0)), 700, null);
     }
 
 
@@ -206,7 +257,7 @@ public class MapActivity  extends BaseFriendsActivity {
         map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(final Marker marker) {
-                enableDisableBanner(true, marker.getSnippet());
+                enableBanner(marker.getSnippet(), null);
                 return true;
             }
         });
@@ -271,24 +322,61 @@ public class MapActivity  extends BaseFriendsActivity {
     }
 
 
-    private void enableDisableBanner(boolean enable, String chatterParseId){
-        bannerShowingAtAll = enable;
+    private void enableBanner(final String chatterParseId, final SimpleCallback callback){
+        bannerShowingAtAll = true;
 
-        if(bannerShowingAtAll) {
-            banner.setupBanner(findViewById(R.id.map_view).getHeight());
-            map.setPadding(0, 0, 0, banner.titleBarHeight);
-            findViewById(R.id.my_location_button).setPadding(10,10,10,10+banner.titleBarHeight);
+        if(banner.partiallyUp){
+            if(callback != null)
+                callback.done();
+        }
 
+        final Context context = this;
+        banner.setupBanner(new VariableCallback<Integer>() {
+            @Override
+            public void done(Integer i) {
+                map.setPadding(0, 0, 0, i);
+                View myLocButton = findViewById(R.id.my_location_button);
+                ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) myLocButton.getLayoutParams();
+                layoutParams.bottomMargin = i + GeneralUtils.convertDpToPixel(10, context);
+                myLocButton.invalidate();
+
+                if (callback != null && i == banner.titleBarHeight)
+                    callback.done();
+            }
+        });
+
+        if(app.isFriendListLoaded()) {
             chatRecipient = User.getUserFromMap(chatterParseId);
-            ((TextView) findViewById(R.id.fullname)).setText(chatRecipient.getFullname());
 
+            ((TextView) banner.findViewById(R.id.fullname)).setText(chatRecipient.getFullname());
             refreshChatHistory();
         }
         else {
-            banner.setVisibility(View.GONE);
-            map.setPadding(0, 0, 0, 0);
-            findViewById(R.id.my_location_button).setPadding(10, 10, 10, 10);
+            app.setFriendListLoadedCallback(new SimpleCallback() {
+                @Override
+                public void done() {
+                    chatRecipient = User.getUserFromMap(chatterParseId);
+
+                    ((TextView) banner.findViewById(R.id.fullname)).setText(chatRecipient.getFullname());
+                    refreshChatHistory();
+                }
+            });
         }
+    }
+    private void disableBanner(){
+        bannerShowingAtAll = false;
+
+        final Context context = this;
+        banner.removeBanner(new VariableCallback<Integer>() {
+            @Override
+            public void done(Integer i) {
+                map.setPadding(0, 0, 0, i);
+                View myLocButton = findViewById(R.id.my_location_button);
+                ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams)myLocButton.getLayoutParams();
+                layoutParams.bottomMargin = i + GeneralUtils.convertDpToPixel(10, context);
+                myLocButton.invalidate();
+            }
+        });
     }
 
 
@@ -318,7 +406,7 @@ public class MapActivity  extends BaseFriendsActivity {
     }
     private void fillListView() {
         ListView listView = (ListView) findViewById(R.id.listview);
-        MessageListAdapter arrayAdapter = new MessageListAdapter(this, listView, messageList, ParseUser.getCurrentUser(), "No messages");
+        MessageListAdapter arrayAdapter = new MessageListAdapter(this, listView, messageList, ParseUser.getCurrentUser(), "No messages", (MessageListAdapter)listView.getAdapter());
         listView.setAdapter(arrayAdapter);
     }
 }

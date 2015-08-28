@@ -31,6 +31,9 @@ public class AtchApplication extends Application {
     private volatile Activity currentActivity = null;
     private volatile ViewUpdateCallback viewUpdateCallback = null;
 
+    private volatile boolean isFriendListLoaded = false;
+    private volatile SimpleCallback friendListLoadedCallback = null;
+
     private volatile Intent locationUpdateServiceIntent = null;
     private volatile Location currentLocation = null;
     private volatile Date lastUpdateTime = null;
@@ -43,6 +46,13 @@ public class AtchApplication extends Application {
     }
     public void setCurrentActivity(Activity currentActivity) {
         this.currentActivity = currentActivity;
+    }
+
+    public void setFriendListLoadedCallback(SimpleCallback friendListLoadedCallback) {
+        this.friendListLoadedCallback = friendListLoadedCallback;
+    }
+    public boolean isFriendListLoaded() {
+        return isFriendListLoaded;
     }
 
     public void setViewUpdateCallback(ViewUpdateCallback viewUpdateCallback) {
@@ -131,6 +141,12 @@ public class AtchApplication extends Application {
             @Override
             public void done(UserList userList) {
                 friendsList = userList;
+                if(!isFriendListLoaded){
+                    if(friendListLoadedCallback != null)
+                        friendListLoadedCallback.done();
+                    friendListLoadedCallback = null;
+                    isFriendListLoaded = true;
+                }
 
                 ParseAndFacebookUtils.updateFriendDataWithMostRecentLocations(friendsList, new SimpleCallback() {
                     @Override

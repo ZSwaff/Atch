@@ -286,6 +286,9 @@ public class LoginActivity extends FragmentActivity {
     private void proceedToAtchAgreement(){
         setupParseInstallation();
         AtchParsePushReceiver.cancelAllNotifications(this);
-        startActivity(new Intent(getApplication(), AtchAgreementActivity.class));
+        Intent intent = new Intent(getApplication(), AtchAgreementActivity.class);
+        finish();
+        startActivity(intent);
+        overridePendingTransition(R.anim.slide_down_in, R.anim.slide_down_out);
     }
 }

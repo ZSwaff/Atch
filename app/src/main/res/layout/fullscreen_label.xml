@@ -9,6 +9,8 @@
         android:text="List Empty"
         android:id="@+id/label"
         android:gravity="center"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"

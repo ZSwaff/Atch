@@ -1,5 +1,6 @@
 package com.auriferous.atch.Users;
 
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -11,6 +12,7 @@ import android.graphics.RectF;
 import android.os.AsyncTask;
 
 import com.auriferous.atch.AtchApplication;
+import com.auriferous.atch.R;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -106,10 +108,13 @@ public class User {
         LatLng loc = getLocation();
         if (loc == null) return;
 
+        Resources res = app.getResources();
         //todo change default marker
         if(profPic == null)
             marker = new MarkerOptions().position(loc)
-                    .snippet(user.getObjectId());
+                    .snippet(user.getObjectId())
+                    .icon(BitmapDescriptorFactory.fromBitmap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(app.getResources(), R.drawable.missing_user_outline), 170, 170, false)))
+                    .anchor(.5f, .5f);
         else
             marker = new MarkerOptions().position(loc)
                     .snippet(user.getObjectId())
@@ -129,9 +134,9 @@ public class User {
                     URL imageURL = new URL("https://graph.facebook.com/" + fbid + "/picture?type=large");
                     profPic = getCircular(BitmapFactory.decodeStream(imageURL.openConnection().getInputStream()));
                     setMarkerIconBitmap();
-                } catch (MalformedURLException mUE) {
-                } catch (IOException iOE) {
                 }
+                catch (MalformedURLException mUE) {}
+                catch (IOException iOE) {}
                 return null;
             }
             @Override

@@ -5,25 +5,21 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.os.Bundle;
-import android.os.ResultReceiver;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.ExpandableListAdapter;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.auriferous.atch.Activities.LoginActivity;
 import com.auriferous.atch.Activities.MapActivity;
 import com.auriferous.atch.AtchApplication;
+import com.auriferous.atch.GeneralUtils;
 import com.auriferous.atch.ParseAndFacebookUtils;
 import com.auriferous.atch.R;
 
@@ -33,15 +29,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class UserListAdapter extends BaseAdapter {
-    private static final int ITEM_LEFT_PADDING = 10;
-    private static final int ITEM_RIGHT_MARGIN = 20;
-
     private static AtchApplication app;
 
     private final Context context;
     private ArrayList<UserListAdapterSection> sections;
     private String emptyMessage;
 
+    private int leftPadding = 10;
 
     private HashSet<String> viewsAccessed = new HashSet<>();
     private HashMap<String, View> allViews = new HashMap<>();
@@ -60,6 +54,8 @@ public class UserListAdapter extends BaseAdapter {
         this.sections = sections;
         this.emptyMessage = emptyMessage;
 
+        leftPadding = GeneralUtils.convertDpToPixel(leftPadding, context);
+
         if(oldAdapter != null)
             allViews = oldAdapter.allViews;
     }
@@ -70,7 +66,7 @@ public class UserListAdapter extends BaseAdapter {
         int count = 0;
         for(UserListAdapterSection section : sections) {
             int size = section.getUsers().getAllUsers().size();
-                if(size != 0) count++;
+            if(size != 0 && section.getLabel() != null) count++;
             count += size;
         }
         if(count == 0) return 1;
@@ -82,8 +78,10 @@ public class UserListAdapter extends BaseAdapter {
             ArrayList<User> users = section.getUsers().getAllUsers();
 
             if (users.size() == 0) continue;
-            if (position == 0) return null;
-            position--;
+            if(section.getLabel() != null) {
+                if (position == 0) return null;
+                position--;
+            }
 
             if(position < users.size())
                 return users.get(position);
@@ -101,9 +99,11 @@ public class UserListAdapter extends BaseAdapter {
             ArrayList<User> users = section.getUsers().getAllUsers();
 
             if (users.size() == 0) continue;
-            if (position == 0)
-                return createLabelView(section.getLabel(), parent);
-            position--;
+            if(section.getLabel() != null) {
+                if (position == 0)
+                    return createLabelView(section.getLabel(), parent);
+                position--;
+            }
 
             if(position < users.size()) {
                 String uid = users.get(position).getId();
@@ -170,9 +170,27 @@ public class UserListAdapter extends BaseAdapter {
         fullname.setText(user.getFullname());
         username.setText(user.getUsername());
 
-        final String uid = user.getId();
+        Bitmap profPic = user.getProfPic();
+        if(profPic != null) {
+            ImageView imageView = (ImageView) rowView.findViewById(R.id.prof_pic);
+            imageView.setImageBitmap(profPic);
+        }
 
-        Button friendButton = (Button) rowView.findViewById(R.id.friend_button);
+        final String uid = user.getId();
+        ImageButton chatButton = (ImageButton) rowView.findViewById(R.id.chat_button);
+        if(chatButton != null)
+            chatButton.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    Intent intent = new Intent(context, MapActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                    intent.putExtra("type", "message");
+                    intent.putExtra("chatterParseId", user.getId());
+                    intent.putExtra("back", true);
+                    app.getCurrentActivity().startActivity(intent);
+                    app.getCurrentActivity().overridePendingTransition(R.anim.slide_right_in, R.anim.slide_right_out);
+                }
+            });
+        ImageButton friendButton = (ImageButton) rowView.findViewById(R.id.friend_button);
         if(friendButton != null)
             friendButton.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
@@ -181,8 +199,7 @@ public class UserListAdapter extends BaseAdapter {
                     app.updateView();
                 }
             });
-
-        final Button acceptButton = (Button) rowView.findViewById(R.id.accept_button);
+        ImageButton acceptButton = (ImageButton) rowView.findViewById(R.id.accept_button);
         if(acceptButton != null)
             acceptButton.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
@@ -194,7 +211,7 @@ public class UserListAdapter extends BaseAdapter {
             });
 
 
-        final Button unfriendButton = (Button) rowView.findViewById(R.id.unfriend_button);
+        Button unfriendButton = (Button) rowView.findViewById(R.id.unfriend_button);
         if(unfriendButton != null)
             unfriendButton.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
@@ -204,7 +221,7 @@ public class UserListAdapter extends BaseAdapter {
                     app.updateView();
                 }
             });
-        final Button rejectButton = (Button) rowView.findViewById(R.id.reject_button);
+        Button rejectButton = (Button) rowView.findViewById(R.id.reject_button);
         if(rejectButton != null)
             rejectButton.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
@@ -213,7 +230,7 @@ public class UserListAdapter extends BaseAdapter {
                     app.updateView();
                 }
             });
-        final Button cancelButton = (Button) rowView.findViewById(R.id.cancel_button);
+        Button cancelButton = (Button) rowView.findViewById(R.id.cancel_button);
         if(cancelButton != null)
             cancelButton.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
@@ -223,21 +240,15 @@ public class UserListAdapter extends BaseAdapter {
                 }
             });
 
-
-        Bitmap profPic = user.getProfPic();
-        if(profPic != null) {
-            ImageView imageView = (ImageView) rowView.findViewById(R.id.prof_pic);
-            imageView.setImageBitmap(profPic);
-        }
-
-        initListener(user, rowView, context);
+        initListener(user, rowView);
         return rowView;
     }
-    private void initListener(final User user, final View rowView, final Context context) {
+    private void initListener(final User user, final View rowView) {
+        final Context context = this.context;
         rowView.setOnTouchListener(new View.OnTouchListener(){
             float slop = ViewConfiguration.get(context).getScaledTouchSlop();
 
-            public boolean buttonEnabled = false;
+            public boolean allTheWayLeft = false;
             int initialX = 0;
             boolean newEvent = true;
 
@@ -255,70 +266,68 @@ public class UserListAdapter extends BaseAdapter {
                 if(-offset > sButtonWidth)
                     offset = -sButtonWidth;
 
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    initialX = (int) event.getX();
-                    newEvent = true;
-                    if (!buttonEnabled)
-                        viewToMove.setPadding((int) convertDpToPixel(ITEM_LEFT_PADDING), 0, 0, 0);
-                }
-                else if (event.getAction() == MotionEvent.ACTION_MOVE) {
-                    if (!buttonEnabled && offset < -slop) {
-                        viewToMove.setPadding(offset + (int) convertDpToPixel(ITEM_LEFT_PADDING), 0, 0, 0);
-                        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) viewToMove.getLayoutParams();
-                        params.setMargins(0, 0, -offset + (int) convertDpToPixel(ITEM_RIGHT_MARGIN), 0);
-                        viewToMove.requestLayout();
+                switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                    case MotionEvent.ACTION_DOWN: {
+                        initialX = (int) event.getX();
+                        newEvent = true;
 
-                        if (offset == -sButtonWidth) {
-                            buttonEnabled = true;
+                        break;
+                    }
+                    case MotionEvent.ACTION_MOVE: {
+                        if (!allTheWayLeft && offset < -slop) {
+                            viewToMove.setPadding(offset + leftPadding, 0, 0, 0);
+                            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) viewToMove.getLayoutParams();
+                            params.setMargins(0, 0, -offset, 0);
+                            viewToMove.requestLayout();
+
+                            if (offset == -sButtonWidth)
+                                allTheWayLeft = true;
+
+                            swipeButton.setEnabled(allTheWayLeft);
                         }
 
-                        swipeButton.setEnabled(buttonEnabled);
-                    }
+                        if (Math.abs(offset) > slop)
+                            newEvent = false;
 
-                    if (Math.abs(offset) > slop)
-                        newEvent = false;
-                }
-                else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
-                    if (buttonEnabled && offset > -slop) {
-                        buttonEnabled = false;
-                        swipeButton.setEnabled(buttonEnabled);
+                        break;
                     }
-                    else if (Math.abs(offset) < slop) {
-                        if(user.getUserType() == User.UserType.FRIEND) {
-                            Intent intent = new Intent(context, MapActivity.class);
-                            intent.putExtra("type", "message");
-                            intent.putExtra("chatterParseId", user.getId());
-                            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                            context.startActivity(intent);
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_CANCEL: {
+                        if (allTheWayLeft && offset > -slop) {
+                            allTheWayLeft = false;
+                            swipeButton.setEnabled(allTheWayLeft);
                         }
-                    }
-
-                    if(!buttonEnabled) {
-                        ValueAnimator animator = ValueAnimator.ofInt(viewToMove.getPaddingLeft(), (int) convertDpToPixel(ITEM_LEFT_PADDING));
-                        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                            @Override
-                            public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                                int paddingAmount = (Integer) valueAnimator.getAnimatedValue();
-                                viewToMove.setPadding(paddingAmount, 0, 0, 0);
-                                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) viewToMove.getLayoutParams();
-                                params.setMargins(0, 0, -paddingAmount + (int) convertDpToPixel(ITEM_RIGHT_MARGIN), 0);
-                                viewToMove.requestLayout();
+                        else if (Math.abs(offset) < slop) {
+                            if (user.getUserType() == User.UserType.FRIEND) {
+                                Intent intent = new Intent(context, MapActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                                intent.putExtra("type", "zoom");
+                                intent.putExtra("chatterParseId", user.getId());
+                                intent.putExtra("back", true);
+                                app.getCurrentActivity().startActivity(intent);
+                                app.getCurrentActivity().overridePendingTransition(R.anim.slide_right_in, R.anim.slide_right_out);
                             }
-                        });
-                        animator.setDuration(150);
-                        animator.start();
+                        }
+
+                        if (!allTheWayLeft) {
+                            ValueAnimator animator = ValueAnimator.ofInt(viewToMove.getPaddingLeft(), leftPadding);
+                            animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                                @Override
+                                public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                                    int paddingAmount = (Integer) valueAnimator.getAnimatedValue();
+                                    viewToMove.setPadding(paddingAmount, 0, 0, 0);
+                                    ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) viewToMove.getLayoutParams();
+                                    params.setMargins(0, 0, -paddingAmount + leftPadding, 0);
+                                    viewToMove.requestLayout();
+                                }
+                            });
+                            animator.setDuration(150);
+                            animator.start();
+                        }
                     }
                 }
                 return true;
             }
         });
-    }
-
-
-    private float convertDpToPixel(float dp){
-        Resources resources = context.getResources();
-        DisplayMetrics metrics = resources.getDisplayMetrics();
-        float px = dp * (metrics.densityDpi / 160f);
-        return px;
     }
 }

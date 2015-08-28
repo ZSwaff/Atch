@@ -89,6 +89,8 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
     protected void onPushOpen(Context context, Intent intent) {
         ParseAnalytics.trackAppOpenedInBackground(intent);
 
+        app.populateFriendList(); // todo this should not happen if the user isn't logged in or whatever
+
         String type = null;
         String chatRecipientObjectId = null;
         String friendRecipientObjectId = null;
@@ -107,9 +109,9 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
                 activityIntent.putExtras(intent.getExtras());
                 activityIntent.putExtra("type", "message");
                 activityIntent.putExtra("chatterParseId", chatRecipientObjectId);
+                activityIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 activityIntent.addFlags(268435456);
                 activityIntent.addFlags(67108864);
-                activityIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 context.startActivity(activityIntent);
             }
         }
@@ -118,22 +120,22 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
                 Intent activityIntent = new Intent(context, AddFriendsActivity.class);
                 activityIntent.putExtras(intent.getExtras());
                 activityIntent.putExtra("frienderParseId", friendRecipientObjectId);
+                activityIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 activityIntent.addFlags(268435456);
                 activityIntent.addFlags(67108864);
-                activityIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 context.startActivity(activityIntent);
             }
         }
         else if(type.equals("friendAccept")) {
             if (friendRecipientObjectId != null) {
-                app.populateFriendList();
+                //app.populateFriendList(); //todo maybe just add this friend
 
                 Intent activityIntent = new Intent(context, ViewFriendsActivity.class);
                 activityIntent.putExtras(intent.getExtras());
                 activityIntent.putExtra("frienderParseId", friendRecipientObjectId);
+                activityIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 activityIntent.addFlags(268435456);
                 activityIntent.addFlags(67108864);
-                activityIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 context.startActivity(activityIntent);
             }
         }
