@@ -11,16 +11,13 @@
 
     <ImageButton
         android:id="@+id/log_out_button"
-        android:src="@android:drawable/ic_lock_idle_lock"
-        android:scaleX="1.5"
-        android:scaleY="1.5"
-        android:onClick="logAllTheWayOut"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:layout_margin="10dp"
+        android:src="@drawable/exit"
+        android:scaleType="fitCenter"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"/>
+        android:layout_alignParentTop="true"
+        android:background="@android:color/transparent"/>
 
     <Button
         android:layout_width="wrap_content"
@@ -29,13 +26,18 @@
         android:textStyle="bold"
         android:text="I'M ATCH"
         android:id="@+id/engage_button"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_below="@+id/log_out_button"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="98dp" />
 
     <SeekBar
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:id="@+id/seekBar"
+        android:layout_marginLeft="80dp"
+        android:layout_marginRight="80dp"
+        android:layout_marginBottom="60dp"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_alignParentEnd="true" />
+
 </RelativeLayout>
