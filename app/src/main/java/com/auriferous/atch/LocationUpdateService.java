@@ -75,7 +75,6 @@ public class LocationUpdateService extends Service implements
 
         ParseAndFacebookUtils.updateMyLocation(location);
 
-        //todo questionable about whether this is the best place to call this
         ParseAndFacebookUtils.updateFriendDataWithMostRecentLocations(app.getFriendsList(), null);
     }
 

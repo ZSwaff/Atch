@@ -53,25 +53,27 @@
         </activity>
         <activity
             android:name="com.auriferous.atch.Activities.AtchAgreementActivity"
+            android:parentActivityName="com.auriferous.atch.Activities.LoginActivity"
             android:label="@string/title_activity_atch_agreement"
             android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name="com.auriferous.atch.Activities.MapActivity"
+            android:parentActivityName="com.auriferous.atch.Activities.AtchAgreementActivity"
             android:theme="@style/NoBarTheme"
             android:label="@string/title_activity_map"
             android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name="com.auriferous.atch.Activities.ViewFriendsActivity"
-            android:label="@string/title_activity_view_friends"
             android:parentActivityName="com.auriferous.atch.Activities.MapActivity"
+            android:label="@string/title_activity_view_friends"
             android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name="com.auriferous.atch.Activities.AddFriendsActivity"
-            android:label="Add friends"
             android:parentActivityName="com.auriferous.atch.Activities.ViewFriendsActivity"
+            android:label="Add friends"
             android:screenOrientation="portrait" >
         </activity>
 

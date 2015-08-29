@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.auriferous.atch.AtchApplication;
+import com.auriferous.atch.AtchParsePushReceiver;
+import com.auriferous.atch.ParseAndFacebookUtils;
 import com.auriferous.atch.R;
 import com.facebook.login.LoginManager;
 import com.parse.LogOutCallback;
@@ -21,7 +23,9 @@ public class AtchAgreementActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_atch_agreement);
 
+        ParseAndFacebookUtils.setupParseInstallation();
         ((AtchApplication)getApplication()).populateFriendList();
+        AtchParsePushReceiver.cancelAllNotifications(this);
 
 
         findViewById(R.id.engage_button).setOnClickListener(new View.OnClickListener() {
@@ -42,6 +46,7 @@ public class AtchAgreementActivity extends Activity {
         super.onResume();
 
         ((AtchApplication)getApplication()).stopLocationUpdates();
+        ((AtchApplication)getApplication()).setIsOnline(false);
     }
 
     @Override
@@ -78,6 +83,7 @@ public class AtchAgreementActivity extends Activity {
 
 
     public void engageApp(){
+        ((AtchApplication)getApplication()).setIsOnline(true);
         ((AtchApplication)getApplication()).startLocationUpdates();
 
         Intent intent = new Intent(getApplication(), MapActivity.class);

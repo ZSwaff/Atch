@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -174,11 +175,18 @@ public class UserListAdapter extends BaseAdapter {
         if(profPic != null) {
             ImageView imageView = (ImageView) rowView.findViewById(R.id.prof_pic);
             imageView.setImageBitmap(profPic);
+            imageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    user.setNewColor();
+                }
+            });
         }
 
         final String uid = user.getId();
         ImageButton chatButton = (ImageButton) rowView.findViewById(R.id.chat_button);
-        if(chatButton != null)
+        if(chatButton != null) {
+            chatButton.setImageBitmap(user.getChatIcon());
             chatButton.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     Intent intent = new Intent(context, MapActivity.class);
@@ -190,6 +198,7 @@ public class UserListAdapter extends BaseAdapter {
                     app.getCurrentActivity().overridePendingTransition(R.anim.slide_right_in, R.anim.slide_right_out);
                 }
             });
+        }
         ImageButton friendButton = (ImageButton) rowView.findViewById(R.id.friend_button);
         if(friendButton != null)
             friendButton.setOnClickListener(new View.OnClickListener() {
@@ -209,6 +218,11 @@ public class UserListAdapter extends BaseAdapter {
                     app.updateView();
                 }
             });
+        ImageButton fakeButton = (ImageButton) rowView.findViewById(R.id.fake_button);
+        if(fakeButton != null){
+            fakeButton.setEnabled(false);
+            fakeButton.setClickable(false);
+        }
 
 
         Button unfriendButton = (Button) rowView.findViewById(R.id.unfriend_button);
@@ -255,8 +269,9 @@ public class UserListAdapter extends BaseAdapter {
             @Override
             public boolean onTouch(final View view, MotionEvent event) {
                 final View viewToMove = view.findViewById(R.id.main_view);
-                if (viewToMove == null) return true;
-                final Button swipeButton = (Button) ((ViewGroup)view.findViewById(R.id.button_view)).getChildAt(0);
+                final ViewGroup buttonGroup = (ViewGroup)view.findViewById(R.id.button_view);
+                if (viewToMove == null || buttonGroup == null) return true;
+                final Button swipeButton = (Button) buttonGroup.getChildAt(0);
                 int sButtonWidth = swipeButton.getMeasuredWidth();
 
                 int currentX = (int) event.getX();

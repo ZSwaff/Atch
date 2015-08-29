@@ -61,7 +61,7 @@ public class MapActivity  extends BaseFriendsActivity {
     }
     private void setupViews() {
         banner = (BannerTouchView)findViewById(R.id.map_banner);
-        banner.getBackground().setAlpha(242);
+        banner.findViewById(R.id.body).getBackground().setAlpha(239);
 
         final View mapView = findViewById(R.id.map_view);
         ViewTreeObserver vto = mapView.getViewTreeObserver();
@@ -330,38 +330,26 @@ public class MapActivity  extends BaseFriendsActivity {
                 callback.done();
         }
 
+        chatRecipient = User.getUserFromMap(chatterParseId);
+
         final Context context = this;
         banner.setupBanner(new VariableCallback<Integer>() {
             @Override
             public void done(Integer i) {
-                map.setPadding(0, 0, 0, i);
+                map.setPadding(0, 0, 0, i - banner.shadowHeight);
                 View myLocButton = findViewById(R.id.my_location_button);
                 ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) myLocButton.getLayoutParams();
-                layoutParams.bottomMargin = i + GeneralUtils.convertDpToPixel(10, context);
+                layoutParams.bottomMargin = i - banner.shadowHeight + GeneralUtils.convertDpToPixel(10, context);
                 myLocButton.invalidate();
 
                 if (callback != null && i == banner.titleBarHeight)
                     callback.done();
             }
-        });
+        }, this, chatRecipient.getRelativeColor());
 
-        if(app.isFriendListLoaded()) {
-            chatRecipient = User.getUserFromMap(chatterParseId);
-
-            ((TextView) banner.findViewById(R.id.fullname)).setText(chatRecipient.getFullname());
-            refreshChatHistory();
-        }
-        else {
-            app.setFriendListLoadedCallback(new SimpleCallback() {
-                @Override
-                public void done() {
-                    chatRecipient = User.getUserFromMap(chatterParseId);
-
-                    ((TextView) banner.findViewById(R.id.fullname)).setText(chatRecipient.getFullname());
-                    refreshChatHistory();
-                }
-            });
-        }
+        ((TextView)banner.findViewById(R.id.fullname)).setText(chatRecipient.getFullname());
+        banner.findViewById(R.id.title_bar).setBackgroundColor(chatRecipient.getRelativeColor());
+        refreshChatHistory();
     }
     private void disableBanner(){
         bannerShowingAtAll = false;
@@ -370,10 +358,10 @@ public class MapActivity  extends BaseFriendsActivity {
         banner.removeBanner(new VariableCallback<Integer>() {
             @Override
             public void done(Integer i) {
-                map.setPadding(0, 0, 0, i);
+                map.setPadding(0, 0, 0, i - banner.shadowHeight);
                 View myLocButton = findViewById(R.id.my_location_button);
                 ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams)myLocButton.getLayoutParams();
-                layoutParams.bottomMargin = i + GeneralUtils.convertDpToPixel(10, context);
+                layoutParams.bottomMargin = i - banner.shadowHeight + GeneralUtils.convertDpToPixel(10, context);
                 myLocButton.invalidate();
             }
         });
@@ -382,10 +370,7 @@ public class MapActivity  extends BaseFriendsActivity {
 
     //chat functions
     public boolean isChattingWithPerson(String chatterObjId){
-        boolean ret = (bannerShowingAtAll && chatRecipient != null && chatRecipient.getId().equals(chatterObjId));
-        if(ret) ;
-            //todo notify somehow
-        return ret;
+        return (banner.allTheWayUp && chatRecipient != null && chatRecipient.getId().equals(chatterObjId));
     }
 
     public void refreshChatHistory(){

@@ -4,6 +4,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
@@ -12,6 +13,7 @@ import android.graphics.RectF;
 import android.os.AsyncTask;
 
 import com.auriferous.atch.AtchApplication;
+import com.auriferous.atch.GeneralUtils;
 import com.auriferous.atch.R;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
@@ -27,28 +29,34 @@ import java.util.Date;
 import java.util.HashMap;
 
 public class User {
+    private static HashMap<String, User> userCache = new HashMap<>();
+    private static UserInfoGroup infoGroup = null;
+
     private static AtchApplication app;
-    private static HashMap<String, User> userMap = new HashMap<>();
 
 
     private ParseUser user = null;
     private UserType userType = UserType.RANDOM;
 
+    private int relativeColor = Color.argb(256, 0, 0, 0);
+    private Bitmap rawFbPic = null;
     private Bitmap profPic = null;
     private Bitmap markerIcon = null;
+    private Bitmap chatIcon = null;
 
     private ParseObject privateData = null;
     private MarkerOptions marker = null;
     private boolean loggedIn = false;
 
 
-    public static void init(AtchApplication app){
+    public static void init(AtchApplication app, UserInfoGroup infoGroup){
         User.app = app;
+        User.infoGroup = infoGroup;
     }
 
     public static User getUserFromMap(String parseId){
-        if (!userMap.containsKey(parseId)) return null;
-        return userMap.get(parseId);
+        if (!userCache.containsKey(parseId)) return null;
+        return userCache.get(parseId);
     }
 
 
@@ -84,9 +92,19 @@ public class User {
     private User(ParseUser parseUser, UserType userType){
         user = parseUser;
         this.userType = userType;
-        setFacebookProfilePicture();
 
-        userMap.put(user.getObjectId(), this);
+        userCache.put(user.getObjectId(), this);
+
+        int color = infoGroup.getColor(user.getObjectId());
+        if(color != -1)
+            relativeColor = color;
+        else {
+            relativeColor = GeneralUtils.generateNewColor();
+            UserInfoGroup.autoSave(app, User.getUserCache());
+        }
+
+        setChatIcon();
+        setFacebookProfilePicture();
     }
 
 
@@ -109,7 +127,6 @@ public class User {
         if (loc == null) return;
 
         Resources res = app.getResources();
-        //todo change default marker
         if(profPic == null)
             marker = new MarkerOptions().position(loc)
                     .snippet(user.getObjectId())
@@ -131,9 +148,8 @@ public class User {
             @Override
             protected Void doInBackground(Void... voids) {
                 try {
-                    URL imageURL = new URL("https://graph.facebook.com/" + fbid + "/picture?type=large");
-                    profPic = getCircular(BitmapFactory.decodeStream(imageURL.openConnection().getInputStream()));
-                    setMarkerIconBitmap();
+                    URL imageURL = new URL("https://graph.facebook.com/" + fbid + "/picture?width=200&height=200");
+                    rawFbPic = BitmapFactory.decodeStream(imageURL.openConnection().getInputStream());
                 }
                 catch (MalformedURLException mUE) {}
                 catch (IOException iOE) {}
@@ -141,17 +157,29 @@ public class User {
             }
             @Override
             protected void onPostExecute(Void voids) {
-                createMarker();
-                if (app != null)
-                    app.updateView();
+                setProfPics();
             }
         };
         task.execute();
     }
+    private void setProfPics(){
+        if(rawFbPic != null) {
+            profPic = getCircularWithColor(rawFbPic, relativeColor);
+            setMarkerIconBitmap();
+        }
+        createMarker();
+        if (app != null)
+            app.updateView();
+    }
     private void setMarkerIconBitmap(){
-        //todo different size for different screens?
         markerIcon = Bitmap.createScaledBitmap(profPic, 170, 170, false);
     }
+    private void setChatIcon(){
+        Bitmap leftBubble = BitmapFactory.decodeResource(app.getResources(), R.drawable.left_chat_bubble_white);
+        Bitmap rightBubble = BitmapFactory.decodeResource(app.getResources(), R.drawable.right_chat_bubble);
+        chatIcon = GeneralUtils.layerImagesRecolorForeground(leftBubble, rightBubble, relativeColor);
+    }
+
     private static Bitmap getCircular(Bitmap bm) {
         int radius = bm.getWidth();
 
@@ -173,6 +201,37 @@ public class User {
 
         return bmOut;
     }
+    private static Bitmap getCircularWithColor(Bitmap bm, int color) {
+        int borderWidth = 14;
+        float radius = bm.getWidth();
+
+        Bitmap bmOut = Bitmap.createBitmap((int) radius + 2 * borderWidth, (int) radius + 2 * borderWidth, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bmOut);
+
+        Paint paint = new Paint();
+        paint.setAntiAlias(true);
+        paint.setStyle(Paint.Style.FILL);
+        paint.setColor(color);
+        canvas.drawCircle(radius / 2 + borderWidth, radius / 2 + borderWidth, radius / 2 + borderWidth, paint);
+
+        canvas.drawBitmap(getCircular(bm), borderWidth, borderWidth, null);
+
+        return bmOut;
+    }
+
+
+    public static HashMap<String, User> getUserCache() {
+        return userCache;
+    }
+    public int getRelativeColor() {
+        return relativeColor;
+    }
+    public void setNewColor() {
+        this.relativeColor = GeneralUtils.generateNewColor();
+        setProfPics();
+        setChatIcon();
+        UserInfoGroup.autoSave(app, User.getUserCache());
+    }
 
 
     public ParseUser getUser() {
@@ -190,6 +249,9 @@ public class User {
 
     public Bitmap getProfPic() {
         return profPic;
+    }
+    public Bitmap getChatIcon() {
+        return chatIcon;
     }
     public MarkerOptions getMarker() {
         return marker;

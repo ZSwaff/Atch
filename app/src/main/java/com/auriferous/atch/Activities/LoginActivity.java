@@ -19,6 +19,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.auriferous.atch.ActionEditText;
+import com.auriferous.atch.AtchApplication;
 import com.auriferous.atch.AtchParsePushReceiver;
 import com.auriferous.atch.Callbacks.SimpleCallback;
 import com.auriferous.atch.Callbacks.VariableCallback;
@@ -56,6 +57,7 @@ public class LoginActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        ((AtchApplication)getApplication()).setIsLoggedIn(false);
 
         //if the user is already logged in, bypass this screen
         if (ParseUser.getCurrentUser() != null)
@@ -154,20 +156,25 @@ public class LoginActivity extends FragmentActivity {
             public void afterTextChanged(Editable s) {
                 usernameView.setError(null);
                 String currentUsername = s.toString();
-                if(!currentUsername.matches("\\w*")){
+                if (!currentUsername.matches("\\w*")) {
                     usernameView.setError(getString(R.string.error_invalid_characters));
                     usernameView.requestFocus();
                 }
-                if(currentUsername.length() > 20){
+                if (currentUsername.length() > 20) {
                     usernameView.setError(getString(R.string.error_too_long));
                     usernameView.requestFocus();
                 }
             }
+
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
         });
+
         Button mSignUpButton = (Button) findViewById(R.id.sign_up_button);
         mSignUpButton.setOnClickListener(new OnClickListener() {
             @Override
@@ -259,11 +266,10 @@ public class LoginActivity extends FragmentActivity {
         ParseAndFacebookUtils.getParseUserFromUsername(username, new VariableCallback<ParseUser>() {
             @Override
             public void done(ParseUser parseUser) {
-                if(parseUser != null){
+                if (parseUser != null) {
                     focusView.setError(getString(R.string.error_taken_username));
                     focusView.requestFocus();
-                }
-                else{
+                } else {
                     calledIfValid.done();
                 }
             }
@@ -277,15 +283,9 @@ public class LoginActivity extends FragmentActivity {
         RelativeLayout newLayout = (RelativeLayout) findViewById(signUpScreen?R.id.sign_up_layout:R.id.buttons_layout);
         newLayout.setVisibility(View.VISIBLE);
     }
-    private void setupParseInstallation() {
-        ParseInstallation installation = ParseInstallation.getCurrentInstallation();
-        installation.put("userId", ParseUser.getCurrentUser().getObjectId());
-        installation.saveInBackground();
-        ParsePush.subscribeInBackground("global");
-    }
     private void proceedToAtchAgreement(){
-        setupParseInstallation();
-        AtchParsePushReceiver.cancelAllNotifications(this);
+        ((AtchApplication)getApplication()).setIsLoggedIn(true);
+
         Intent intent = new Intent(getApplication(), AtchAgreementActivity.class);
         finish();
         startActivity(intent);

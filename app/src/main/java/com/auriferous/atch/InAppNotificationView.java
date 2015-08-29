@@ -3,27 +3,30 @@ package com.auriferous.atch;
 import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.content.Context;
-import android.content.res.Resources;
+import android.os.Handler;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.ViewConfiguration;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.RelativeLayout;
 
-public class InAppNotificationView extends RelativeLayout {
-    private InputMethodManager imm;
+import com.auriferous.atch.Callbacks.SimpleCallback;
 
-    public int barHeight = 70;
+public class InAppNotificationView extends RelativeLayout {
+    public int barHeight = 90;
+    public int upperMargin = 0;
     private float slop;
 
     private MarginLayoutParams layoutParams;
-    public boolean down = false;
 
-    private float lastY = 0, lastX;
+    private float lastY = 0;
     private int activePointerId = -1;
-    boolean panned = false;
+    private boolean panned = false;
+
+    private SimpleCallback onClickCallback;
+    private SimpleCallback destroyCallback;
+    private Handler rescindViewHandler;
+    private Runnable rescindView;
 
 
     public InAppNotificationView(Context context) {
@@ -35,41 +38,47 @@ public class InAppNotificationView extends RelativeLayout {
     public InAppNotificationView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
 
-        barHeight = GeneralUtils.convertDpToPixel(barHeight, context);
+        rescindViewHandler = new Handler();
+        rescindView = new Runnable() {
+            @Override
+            public void run() {
+                returnUp();
+            }
+        };
 
-        imm = (InputMethodManager)getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        barHeight = GeneralUtils.convertDpToPixel(barHeight, context);
         slop = ViewConfiguration.get(context).getScaledTouchSlop();
     }
 
-
-    public void setupBanner(){
-        setVisibility(View.VISIBLE);
+    public void setCallbacks(SimpleCallback onClickCallback, SimpleCallback destroyCallback){
+        this.onClickCallback = onClickCallback;
+        this.destroyCallback = destroyCallback;
 
         layoutParams = (MarginLayoutParams)getLayoutParams();
-        layoutParams.setMargins(0, getBottomHeight(), 0, 0);
+        layoutParams.setMargins(0, -barHeight, 0, 0);
         requestLayout();
     }
-    public void takeAllTheWayDown(){
-        animate(layoutParams.topMargin, getBottomHeight());
-    }
-    public void putAllTheWayUp(){
-        animate(layoutParams.topMargin, 0);
+    public void setUpperMargin(int upperMargin){
+        this.upperMargin = upperMargin;
     }
 
-    private void animate(int start, int finish) {
+    public void deployDown(){
+        animate(barHeight - upperMargin, -upperMargin, true);
+        rescindViewHandler.postDelayed(rescindView, 3500);
+    }
+    public void returnUp(){
+        animate(layoutParams.bottomMargin, barHeight - upperMargin, false);
+    }
+
+    private void animate(int start, int finish, boolean deploying) {
         ValueAnimator animator = ValueAnimator.ofInt(start, finish);
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 int paddingAmount = (Integer) valueAnimator.getAnimatedValue();
 
-                if (paddingAmount == getBottomHeight())
-                    down = false;
-                if (paddingAmount == 0)
-                    down = true;
-                layoutParams.topMargin = paddingAmount;
-
-                layoutParams.bottomMargin = - layoutParams.topMargin;
+                layoutParams.bottomMargin = paddingAmount;
+                layoutParams.topMargin = -layoutParams.bottomMargin;
 
                 setLayoutParams(layoutParams);
                 invalidate();
@@ -93,20 +102,36 @@ public class InAppNotificationView extends RelativeLayout {
             public void onAnimationRepeat(Animator animation) {
             }
         });
-        animator.setDuration(300);
+        animator.setDuration(500);
         animator.start();
+
+        if(!deploying){
+            animator.addListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {}
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    destroyCallback.done();
+                }
+                @Override
+                public void onAnimationCancel(Animator animation) {}
+                @Override
+                public void onAnimationRepeat(Animator animation) {}
+            });
+        }
     }
 
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        imm.hideSoftInputFromWindow(getWindowToken(), 0);
         layoutParams = (MarginLayoutParams) getLayoutParams();
 
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN: {
-                lastX = event.getX();
+                rescindViewHandler.removeCallbacks(rescindView);
+
                 lastY = event.getY();
+                panned = false;
 
                 activePointerId = event.getPointerId(0);
                 break;
@@ -115,23 +140,18 @@ public class InAppNotificationView extends RelativeLayout {
                 final int pointerIndex = event.findPointerIndex(activePointerId);
                 final float currentY = event.getY(pointerIndex);
                 final float dy = currentY - lastY;
+                layoutParams.bottomMargin = -upperMargin - (int)dy;
 
-                layoutParams.topMargin += dy;
-                if(layoutParams.topMargin <= 0) {
-                    layoutParams.topMargin = 0;
-                    down = true;
-                }
-                if(layoutParams.topMargin >= getBottomHeight()) {
-                    layoutParams.topMargin = getBottomHeight();
-                    down = false;
-                }
+                if(layoutParams.bottomMargin < -upperMargin)
+                    layoutParams.bottomMargin = -upperMargin;
+                if(layoutParams.bottomMargin > barHeight - upperMargin)
+                    layoutParams.bottomMargin = barHeight - upperMargin;
 
-                layoutParams.bottomMargin = - layoutParams.topMargin;
-
+                layoutParams.topMargin = -layoutParams.bottomMargin;
                 setLayoutParams(layoutParams);
                 invalidate();
 
-                if(Math.abs(layoutParams.topMargin - getBottomHeight()) > slop)
+                if(Math.abs(layoutParams.bottomMargin + upperMargin) > slop)
                     panned = true;
 
                 break;
@@ -140,16 +160,18 @@ public class InAppNotificationView extends RelativeLayout {
             case MotionEvent.ACTION_CANCEL: {
                 activePointerId = -1;
 
-                if(layoutParams.topMargin == getBottomHeight() && panned) return true;
-                if(layoutParams.topMargin == 0 && panned) return true;
-
-                if(!down)
-                    animate(layoutParams.topMargin, 0);
+                if(Math.abs(layoutParams.bottomMargin + upperMargin) < slop) {
+                    if(panned)
+                        deployDown();
+                    else {
+                        returnUp();
+                        onClickCallback.done();
+                    }
+                }
                 else
-                    animate(layoutParams.topMargin, getBottomHeight());
+                    returnUp();
             }
-            case MotionEvent.ACTION_POINTER_UP:
-            {
+            case MotionEvent.ACTION_POINTER_UP: {
                 final int pointerIndex = (event.getAction() & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
                 final int pointerId = event.getPointerId(pointerIndex);
 
@@ -162,10 +184,5 @@ public class InAppNotificationView extends RelativeLayout {
             }
         }
         return true;
-    }
-
-
-    public int getBottomHeight() {
-        return 5;
     }
 }

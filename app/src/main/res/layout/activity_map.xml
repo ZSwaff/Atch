@@ -1,10 +1,12 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="fill_parent"
     android:gravity="center_horizontal"
     android:orientation="vertical"
+    android:alpha="1"
     tools:context="com.auriferous.atch.Activities.LoginActivity">
 
     <RelativeLayout
@@ -20,43 +22,47 @@
             android:layout_height="match_parent"
             android:id="@+id/map"
             tools:context=".MapActivity"
-            android:name="com.google.android.gms.maps.SupportMapFragment" />
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:elevation="0dp"/>
 
         <ImageButton
             android:id="@+id/log_out_button"
             android:src="@drawable/lock2"
             android:scaleType="fitCenter"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:layout_margin="10dp"
-            android:padding="16dp"
+            android:padding="12dp"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:background="@drawable/round_button_white" />
+            android:background="@drawable/round_button_white"
+            android:elevation="3dp"/>
 
         <ImageButton
             android:id="@+id/friends_button"
             android:src="@drawable/list"
             android:scaleType="fitCenter"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:layout_margin="10dp"
-            android:padding="16dp"
+            android:padding="12dp"
             android:layout_alignParentEnd="true"
             android:layout_alignParentTop="true"
-            android:background="@drawable/round_button_white" />
+            android:background="@drawable/round_button_white"
+            android:elevation="3dp"/>
 
         <ImageButton
             android:id="@+id/my_location_button"
             android:src="@drawable/location"
             android:scaleType="fitCenter"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:layout_margin="10dp"
-            android:padding="16dp"
+            android:padding="12dp"
             android:layout_alignParentEnd="true"
             android:layout_alignParentBottom="true"
-            android:background="@drawable/round_button_white" />
+            android:background="@drawable/round_button_white"
+            android:elevation="3dp"/>
 
     </RelativeLayout>
 
@@ -66,19 +72,28 @@
         android:layout_height="match_parent"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
-        android:background="@color/primary_material_light"
         android:paddingLeft="0dp"
         android:paddingRight="0dp"
         android:descendantFocusability="afterDescendants"
         android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/top_shadow"
+            android:layout_width="fill_parent"
+            android:layout_height="5dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/shadow"
+            android:layout_alignParentTop="true"/>
 
         <RelativeLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/title_bar"
             android:layout_width="fill_parent"
             android:layout_height="70dp"
+            android:layout_below="@+id/top_shadow"
             android:alpha="1"
-            android:background="@color/primary_material_dark">
+            android:background="@color/primary_material_dark"
+            android:elevation="5dp">
 
             <TextView xmlns:android="http://schemas.android.com/apk/res/android"
                 android:id="@+id/fullname"
@@ -124,12 +139,14 @@
 
         <RelativeLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/body"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:paddingLeft="0dp"
             android:paddingRight="0dp"
-            android:paddingBottom="3dp"
+            android:paddingBottom="0dp"
             android:layout_below="@+id/title_bar"
+            android:background="@color/primary_material_light"
             android:descendantFocusability="afterDescendants">
 
             <ListView
@@ -170,25 +187,27 @@
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentStart="true"
                 android:layout_marginTop="3dp"
+                android:layout_marginBottom="3dp"
                 android:layout_toStartOf="@+id/send_button"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
-                android:layout_marginLeft="5dp" />
+                android:layout_marginLeft="3dp" />
 
             <ImageButton
                 android:id="@+id/send_button"
                 android:src="@drawable/send"
                 android:background="@drawable/round_button"
                 android:scaleType="fitCenter"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:layout_width="55dp"
+                android:layout_height="55dp"
                 android:padding="8dp"
                 android:layout_marginRight="5dp"
-                android:layout_marginLeft="5dp"
+                android:layout_marginLeft="0dp"
                 android:layout_marginTop="-15dp"
                 android:layout_marginBottom="2dp"
                 android:layout_alignParentEnd="true"
-                android:layout_alignBottom="@+id/message_box" />
+                android:layout_alignBottom="@+id/message_box"
+                android:elevation="3dp"/>
 
         </RelativeLayout>
 

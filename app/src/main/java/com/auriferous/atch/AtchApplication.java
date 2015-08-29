@@ -7,6 +7,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.location.Location;
+import android.os.Handler;
 import android.util.Base64;
 import android.util.Log;
 
@@ -14,6 +15,7 @@ import com.auriferous.atch.Callbacks.SimpleCallback;
 import com.auriferous.atch.Callbacks.VariableCallback;
 import com.auriferous.atch.Callbacks.ViewUpdateCallback;
 import com.auriferous.atch.Users.User;
+import com.auriferous.atch.Users.UserInfoGroup;
 import com.auriferous.atch.Users.UserList;
 import com.auriferous.atch.Users.UserListAdapter;
 import com.facebook.FacebookSdk;
@@ -40,6 +42,10 @@ public class AtchApplication extends Application {
 
     private volatile UserList friendsList = new UserList(User.UserType.FRIEND);
 
+    private volatile boolean isLoggedIn = false;
+    private volatile boolean isOnline = false;
+    private volatile boolean isOnlineAndAppOpen = false;
+
 
     public Activity getCurrentActivity() {
         return currentActivity;
@@ -62,6 +68,25 @@ public class AtchApplication extends Application {
         if (viewUpdateCallback != null){
             viewUpdateCallback.updateView();
         }
+    }
+
+    public boolean isLoggedIn() {
+        return isLoggedIn;
+    }
+    public void setIsLoggedIn(boolean isLoggedIn) {
+        this.isLoggedIn = isLoggedIn;
+    }
+    public boolean isOnline() {
+        return isOnline;
+    }
+    public void setIsOnline(boolean isOnline) {
+        this.isOnline = isOnline;
+    }
+    public boolean isOnlineAndAppOpen() {
+        return isOnlineAndAppOpen;
+    }
+    public void setIsOnlineAndAppOpen(boolean isOnlineAndAppOpen) {
+        this.isOnlineAndAppOpen = isOnlineAndAppOpen;
     }
 
     public void startLocationUpdates(){
@@ -107,7 +132,9 @@ public class AtchApplication extends Application {
 
         AtchParsePushReceiver.init(this);
         AtchParsePushReceiver.cancelAllNotifications(this);
-        User.init(this);
+
+        UserInfoGroup infoGroup = UserInfoGroup.autoLoad(this);
+        User.init(this, infoGroup);
         UserListAdapter.init(this);
 
         MapsInitializer.initialize(this);
@@ -136,13 +163,13 @@ public class AtchApplication extends Application {
     }
 
     //populates once results come in from Parse
-    public void populateFriendList(){
+    public void populateFriendList() {
         ParseAndFacebookUtils.getAllFriends(new VariableCallback<UserList>() {
             @Override
             public void done(UserList userList) {
                 friendsList = userList;
-                if(!isFriendListLoaded){
-                    if(friendListLoadedCallback != null)
+                if (!isFriendListLoaded) {
+                    if (friendListLoadedCallback != null)
                         friendListLoadedCallback.done();
                     friendListLoadedCallback = null;
                     isFriendListLoaded = true;

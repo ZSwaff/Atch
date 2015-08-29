@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/notif_root"
+    android:layout_width="match_parent"
+    android:elevation="8dp"
+    android:layout_height="120dp">
+
+    <com.auriferous.atch.InAppNotificationView
+        android:id="@+id/notif"
+        android:layout_width="match_parent"
+        android:layout_height="90dp"
+        android:background="@color/primary_material_dark"
+        android:alpha="1">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="message"
+            android:id="@+id/message"
+            android:layout_marginBottom="30dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:textColor="@android:color/primary_text_dark" />
+
+    </com.auriferous.atch.InAppNotificationView>
+
+</RelativeLayout>

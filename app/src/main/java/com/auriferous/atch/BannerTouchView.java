@@ -1,23 +1,31 @@
 package com.auriferous.atch;
 
 import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.RelativeLayout;
 
+import com.auriferous.atch.Activities.MapActivity;
 import com.auriferous.atch.Callbacks.VariableCallback;
 
 public class BannerTouchView extends RelativeLayout {
     private InputMethodManager imm;
+    private Window window;
+    private int color;
 
-    public int titleBarHeight = 70;
+    public int titleBarHeight = 75;
+    public int shadowHeight = 5;
     private int windowHeight;
     public boolean isHeightInitialized = false;
     private float slop;
@@ -41,6 +49,7 @@ public class BannerTouchView extends RelativeLayout {
         super(context, attrs, defStyle);
 
         titleBarHeight = GeneralUtils.convertDpToPixel(titleBarHeight, context);
+        shadowHeight = GeneralUtils.convertDpToPixel(shadowHeight, context);
 
         imm = (InputMethodManager)getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         slop = ViewConfiguration.get(context).getScaledTouchSlop();
@@ -51,17 +60,20 @@ public class BannerTouchView extends RelativeLayout {
         isHeightInitialized = true;
     }
 
-    public void setupBanner(VariableCallback<Integer> callback){
+    public void setupBanner(VariableCallback<Integer> callback, Activity activity, int color){
         if(partiallyUp) return;
         partiallyUp = true;
         setVisibility(View.VISIBLE);
+
+        window = activity.getWindow();
+        this.color = color;
 
         layoutParams = (ViewGroup.MarginLayoutParams)getLayoutParams();
         layoutParams.setMargins(0, getBottomHeight() + titleBarHeight, 0, 0);
         animate(layoutParams.topMargin, getBottomHeight(), 300, callback);
     }
     public void putAllTheWayUp(){
-        animate(layoutParams.topMargin, 0, 300, null);
+        animate(layoutParams.topMargin, -shadowHeight, 300, null);
     }
     public void takeAllTheWayDown(){
         animate(layoutParams.topMargin, getBottomHeight(), 300, null);
@@ -82,14 +94,16 @@ public class BannerTouchView extends RelativeLayout {
                     allTheWayUp = false;
                 if (paddingAmount == getBottomHeight() + titleBarHeight && !partiallyUp)
                     setVisibility(View.GONE);
-                if (paddingAmount == 0)
+                if (paddingAmount == -shadowHeight)
                     allTheWayUp = true;
                 layoutParams.topMargin = paddingAmount;
 
-                layoutParams.bottomMargin = -layoutParams.topMargin;
+                layoutParams.bottomMargin = -layoutParams.topMargin - shadowHeight;
 
                 setLayoutParams(layoutParams);
                 invalidate();
+
+                updateWindow(layoutParams.topMargin);
 
                 if (callback != null)
                     callback.done(windowHeight - paddingAmount);
@@ -119,8 +133,8 @@ public class BannerTouchView extends RelativeLayout {
                 final float dy = currentY - lastY;
 
                 layoutParams.topMargin += dy;
-                if(layoutParams.topMargin <= 0) {
-                    layoutParams.topMargin = 0;
+                if(layoutParams.topMargin <= -shadowHeight) {
+                    layoutParams.topMargin = -shadowHeight;
                     allTheWayUp = true;
                 }
                 if(layoutParams.topMargin >= getBottomHeight()) {
@@ -128,12 +142,16 @@ public class BannerTouchView extends RelativeLayout {
                     allTheWayUp = false;
                 }
 
-                layoutParams.bottomMargin = - layoutParams.topMargin;
+                layoutParams.bottomMargin = - layoutParams.topMargin - shadowHeight;
 
                 setLayoutParams(layoutParams);
                 invalidate();
 
-                if(Math.abs(layoutParams.topMargin - getBottomHeight()) > slop)
+                updateWindow(layoutParams.topMargin);
+
+                if(!allTheWayUp && Math.abs(layoutParams.topMargin - getBottomHeight()) > slop)
+                    panned = true;
+                if(allTheWayUp && layoutParams.topMargin > slop)
                     panned = true;
 
                 break;
@@ -143,10 +161,10 @@ public class BannerTouchView extends RelativeLayout {
                 activePointerId = -1;
 
                 if(layoutParams.topMargin == getBottomHeight() && panned) return true;
-                if(layoutParams.topMargin == 0 && panned) return true;
+                if(layoutParams.topMargin == -shadowHeight && panned) return true;
 
                 if(!allTheWayUp)
-                    animate(layoutParams.topMargin, 0, 300, null);
+                    animate(layoutParams.topMargin, -shadowHeight, 300, null);
                 else
                     animate(layoutParams.topMargin, getBottomHeight(), 300, null);
             }
@@ -166,6 +184,20 @@ public class BannerTouchView extends RelativeLayout {
         return true;
     }
 
+    private void updateWindow(int topMargin){
+        if(Build.VERSION.SDK_INT < 21) return;
+
+        //todo revisit
+//        if(topMargin == -shadowHeight) {
+//            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+//            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+//            window.setStatusBarColor(color);
+//        }
+//        else {
+//            window.clearFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+//            window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+//        }
+    }
 
     public int getBottomHeight() {
         return (windowHeight - titleBarHeight);

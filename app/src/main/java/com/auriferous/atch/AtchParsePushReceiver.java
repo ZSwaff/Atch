@@ -3,13 +3,20 @@ package com.auriferous.atch;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.auriferous.atch.Activities.AddFriendsActivity;
+import com.auriferous.atch.Activities.AtchAgreementActivity;
+import com.auriferous.atch.Activities.BaseFriendsActivity;
 import com.auriferous.atch.Activities.MapActivity;
 import com.auriferous.atch.Activities.ViewFriendsActivity;
+import com.auriferous.atch.Callbacks.SimpleCallback;
+import com.auriferous.atch.Users.User;
 import com.parse.ParseAnalytics;
 import com.parse.ParsePushBroadcastReceiver;
 
@@ -33,25 +40,60 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
 
 
     @Override
-    protected void onPushReceive(Context context, Intent intent) {
+    protected void onPushReceive(final Context context, final Intent intent) {
         if(app != null) {
             app.updateView();
 
+            String type = null;
             String chatRecipientObjectId = null;
+            String friendRecipientObjectId = null;
+            String atchage = null;
+
             try {
                 JSONObject cls = new JSONObject(intent.getStringExtra("com.parse.Data"));
+                type = cls.optString("type", null);
                 chatRecipientObjectId = cls.optString("chatterParseId", null);
+                friendRecipientObjectId = cls.optString("frienderParseId", null);
+                atchage = cls.optString("alert", null);
+            } catch (JSONException var6) {
             }
-            catch (JSONException jE) {}
 
             Activity currActivity = app.getCurrentActivity();
-            if(currActivity != null && chatRecipientObjectId != null && currActivity instanceof MapActivity && ((MapActivity)currActivity).isChattingWithPerson(chatRecipientObjectId))
-                ((MapActivity)currActivity).refreshChatHistory();
-            else
+            if (currActivity != null && chatRecipientObjectId != null && currActivity instanceof MapActivity && ((MapActivity) currActivity).isChattingWithPerson(chatRecipientObjectId)){
+                ((MapActivity) currActivity).refreshChatHistory();
+            }
+            else if(app.isOnlineAndAppOpen() && currActivity instanceof BaseFriendsActivity){
+                User user = null;
+                String message ="";
+                if(type.equals("message")) {
+                    user = User.getUserFromMap(chatRecipientObjectId);
+                    if(atchage != null)
+                        message = atchage;
+                    else
+                        message = "new atchage from " + user.getUsername();
+                }
+                else if(type.equals("friendRequest")) {
+                    user = User.getUserFromMap(friendRecipientObjectId);
+                    message = "Friend request from " + user.getUsername();
+                }
+                else if(type.equals("friendAccept")) {
+                    user = User.getUserFromMap(friendRecipientObjectId);
+                    message = user.getUsername() + "accepted your friend request";
+                }
+                ((BaseFriendsActivity)currActivity).createNotification(message, (user != null)?user.getRelativeColor():-1, new SimpleCallback() {
+                    @Override
+                    public void done() {
+                        onPushOpen(context, intent);
+                    }
+                });
+            }
+            else {
                 setupAndDeliverNotification(context, intent);
+            }
         }
-        else
+        else {
             setupAndDeliverNotification(context, intent);
+        }
     }
     private void setupAndDeliverNotification(Context context, Intent intent) {
         JSONObject pushData = null;
@@ -89,7 +131,13 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
     protected void onPushOpen(Context context, Intent intent) {
         ParseAnalytics.trackAppOpenedInBackground(intent);
 
-        app.populateFriendList(); // todo this should not happen if the user isn't logged in or whatever
+        if(!app.isFriendListLoaded()){
+            Intent activityIntent = new Intent(context, AtchAgreementActivity.class);
+            activityIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            activityIntent.addFlags(268435456);
+            activityIntent.addFlags(67108864);
+            context.startActivity(activityIntent);
+        }
 
         String type = null;
         String chatRecipientObjectId = null;
@@ -105,39 +153,35 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
 
         if(type.equals("message")) {
             if (chatRecipientObjectId != null) {
-                Intent activityIntent = new Intent(context, MapActivity.class);
-                activityIntent.putExtras(intent.getExtras());
-                activityIntent.putExtra("type", "message");
-                activityIntent.putExtra("chatterParseId", chatRecipientObjectId);
-                activityIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                activityIntent.addFlags(268435456);
-                activityIntent.addFlags(67108864);
-                context.startActivity(activityIntent);
+                createIntentAndStart(context, MapActivity.class, intent, "message", chatRecipientObjectId, null);
             }
         }
         else if(type.equals("friendRequest")) {
             if (friendRecipientObjectId != null) {
-                Intent activityIntent = new Intent(context, AddFriendsActivity.class);
-                activityIntent.putExtras(intent.getExtras());
-                activityIntent.putExtra("frienderParseId", friendRecipientObjectId);
-                activityIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                activityIntent.addFlags(268435456);
-                activityIntent.addFlags(67108864);
-                context.startActivity(activityIntent);
+                createIntentAndStart(context, AddFriendsActivity.class, intent, "friendRequest", null, friendRecipientObjectId);
             }
         }
         else if(type.equals("friendAccept")) {
             if (friendRecipientObjectId != null) {
-                //app.populateFriendList(); //todo maybe just add this friend
-
-                Intent activityIntent = new Intent(context, ViewFriendsActivity.class);
-                activityIntent.putExtras(intent.getExtras());
-                activityIntent.putExtra("frienderParseId", friendRecipientObjectId);
-                activityIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                activityIntent.addFlags(268435456);
-                activityIntent.addFlags(67108864);
-                context.startActivity(activityIntent);
+                createIntentAndStart(context, ViewFriendsActivity.class, intent, "friendAccept", null, friendRecipientObjectId);
             }
         }
+    }
+
+    private void createIntentAndStart(Context context, Class resultClass, Intent oldIntent, String type, String chatterParseId, String frienderParseId) {
+        Intent activityIntent = new Intent(context, resultClass);
+        activityIntent.putExtras(oldIntent.getExtras());
+        activityIntent.putExtra("type", type);
+        activityIntent.putExtra("chatterParseId", chatterParseId);
+        activityIntent.putExtra("frienderParseId", frienderParseId);
+        activityIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        activityIntent.addFlags(268435456);
+        activityIntent.addFlags(67108864);
+
+//        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+//        stackBuilder.addParentStack(resultClass);
+//        stackBuilder.addNextIntent(activityIntent);
+//        context.startActivities(stackBuilder.getIntents());
+        context.startActivity(activityIntent);
     }
 }

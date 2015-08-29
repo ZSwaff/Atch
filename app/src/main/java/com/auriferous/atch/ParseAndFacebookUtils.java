@@ -17,7 +17,9 @@ import com.parse.GetCallback;
 import com.parse.ParseCloud;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
+import com.parse.ParseInstallation;
 import com.parse.ParseObject;
+import com.parse.ParsePush;
 import com.parse.ParseQuery;
 import com.parse.ParseRelation;
 import com.parse.ParseRole;
@@ -35,6 +37,13 @@ import java.util.List;
 public class ParseAndFacebookUtils {
     public static final List<String> permissions = Arrays.asList("public_profile", "user_friends");
 
+
+    public static void setupParseInstallation() {
+        ParseInstallation installation = ParseInstallation.getCurrentInstallation();
+        installation.put("userId", ParseUser.getCurrentUser().getObjectId());
+        installation.saveInBackground();
+        ParsePush.subscribeInBackground("global");
+    }
 
     //note that the callback here gets called both when the friends are retrieved and when those friends' locations are
     public static void getAllFriends(final VariableCallback<UserList> callback){

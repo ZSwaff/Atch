@@ -2,7 +2,7 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="66dp"
     android:descendantFocusability="blocksDescendants" >
 
     <RelativeLayout
@@ -24,7 +24,7 @@
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
             android:enabled="false"
-            android:background="#e2e2e2"
+            android:background="@android:color/transparent"
             android:layout_marginRight="0dp"
             android:layout_marginLeft="0dp"
             android:layout_marginTop="0dp"
@@ -43,7 +43,8 @@
         android:paddingRight="0dp"
         android:layout_marginRight="0dp"
         android:alpha="1"
-        android:background="@color/primary_material_light">
+        android:background="@color/primary_material_light"
+        android:descendantFocusability="afterDescendants">
 
         <ImageView
             android:layout_width="60dp"
@@ -77,23 +78,25 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceListItemSmall"
             android:gravity="center_vertical"
-            android:layout_alignBottom="@+id/prof_pic"
+            android:layout_below="@+id/fullname"
             android:layout_toRightOf="@+id/prof_pic"
             android:layout_marginLeft="5dp"
             android:layout_marginStart="5dp"
             android:layout_marginBottom="5dp"
-            android:layout_toStartOf="@+id/fake_button" />
+            android:layout_marginTop="-18dp"
+            android:layout_toStartOf="@+id/fake_button"
+            android:textColor="#989898" />
 
         <ImageButton
             android:id="@+id/fake_button"
-            android:src="@drawable/there"
+            android:src="@drawable/plus_gray"
             android:scaleType="fitCenter"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:layout_margin="13dp"
+            android:layout_margin="21dp"
             android:layout_marginLeft="6dp"
             android:layout_marginRight="24dp"
             android:background="@android:color/transparent" />
