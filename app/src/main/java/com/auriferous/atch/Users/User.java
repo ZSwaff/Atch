@@ -10,6 +10,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.location.Location;
 import android.os.AsyncTask;
 
 import com.auriferous.atch.AtchApplication;
@@ -30,7 +31,7 @@ import java.util.HashMap;
 
 public class User {
     private static HashMap<String, User> userCache = new HashMap<>();
-    private static UserInfoGroup infoGroup = null;
+    private static UserInfoSaveable infoGroup = null;
 
     private static AtchApplication app;
 
@@ -39,7 +40,9 @@ public class User {
     private UserType userType = UserType.RANDOM;
 
     private int relativeColor = Color.argb(256, 0, 0, 0);
+    private int lighterColor = Color.argb(256, 0, 0, 0);
     private Bitmap rawFbPic = null;
+    private Bitmap circProfPic = null;
     private Bitmap profPic = null;
     private Bitmap markerIcon = null;
     private Bitmap chatIcon = null;
@@ -49,7 +52,7 @@ public class User {
     private boolean loggedIn = false;
 
 
-    public static void init(AtchApplication app, UserInfoGroup infoGroup){
+    public static void init(AtchApplication app, UserInfoSaveable infoGroup){
         User.app = app;
         User.infoGroup = infoGroup;
     }
@@ -100,8 +103,10 @@ public class User {
             relativeColor = color;
         else {
             relativeColor = GeneralUtils.generateNewColor();
-            UserInfoGroup.autoSave(app, User.getUserCache());
+            UserInfoSaveable.autoSave(app, User.getUserCache());
         }
+
+        lighterColor = GeneralUtils.getLighter(relativeColor);
 
         setChatIcon();
         setFacebookProfilePicture();
@@ -138,6 +143,11 @@ public class User {
                     .icon(BitmapDescriptorFactory.fromBitmap(markerIcon))
                     .anchor(.5f, .5f);
 
+        for(Group group : app.getFriendsList().getAllGroups()){
+            if(group.contains(this)){
+                group.resetImage();
+            }
+        }
         app.updateView();
     }
 
@@ -164,6 +174,7 @@ public class User {
     }
     private void setProfPics(){
         if(rawFbPic != null) {
+            circProfPic = getCircular(rawFbPic);
             profPic = getCircularWithColor(rawFbPic, relativeColor);
             setMarkerIconBitmap();
         }
@@ -172,7 +183,7 @@ public class User {
             app.updateView();
     }
     private void setMarkerIconBitmap(){
-        markerIcon = Bitmap.createScaledBitmap(profPic, 170, 170, false);
+        markerIcon = Bitmap.createScaledBitmap(profPic, 200, 200, false);
     }
     private void setChatIcon(){
         Bitmap leftBubble = BitmapFactory.decodeResource(app.getResources(), R.drawable.left_chat_bubble_white);
@@ -214,11 +225,12 @@ public class User {
         paint.setColor(color);
         canvas.drawCircle(radius / 2 + borderWidth, radius / 2 + borderWidth, radius / 2 + borderWidth, paint);
 
+        paint = new Paint();
+        paint.setAntiAlias(true);
         canvas.drawBitmap(getCircular(bm), borderWidth, borderWidth, null);
 
         return bmOut;
     }
-
 
     public static HashMap<String, User> getUserCache() {
         return userCache;
@@ -226,11 +238,15 @@ public class User {
     public int getRelativeColor() {
         return relativeColor;
     }
+    public int getLighterColor() {
+        return lighterColor;
+    }
     public void setNewColor() {
-        this.relativeColor = GeneralUtils.generateNewColor();
+        relativeColor = GeneralUtils.generateNewColor();
+        lighterColor = GeneralUtils.getLighter(relativeColor);
         setProfPics();
         setChatIcon();
-        UserInfoGroup.autoSave(app, User.getUserCache());
+        UserInfoSaveable.autoSave(app, User.getUserCache());
     }
 
 
@@ -240,15 +256,28 @@ public class User {
     public String getId(){
         return user.getObjectId();
     }
+
     public String getFullname(){
         return user.getString("fullname");
     }
     public String getUsername(){
         return user.getUsername();
     }
+    public String getFirstname() {
+        String firstname = user.getString("firstName");
+        if(firstname != null) return firstname;
+        return getUsername();
+    }
+
 
     public Bitmap getProfPic() {
         return profPic;
+    }
+    public Bitmap getCircProfPic() {
+        return circProfPic;
+    }
+    public Bitmap getMarkerIcon() {
+        return markerIcon;
     }
     public Bitmap getChatIcon() {
         return chatIcon;
@@ -261,12 +290,17 @@ public class User {
         if (loc == null) return null;
         return new LatLng(loc.getLatitude(), loc.getLongitude());
     }
+    public float getDistanceInMetersFrom(User otherUser){
+        LatLng myLoc = getLocation();
+        LatLng otherLoc = otherUser.getLocation();
+        float[] results = new float[5];
+        Location.distanceBetween(myLoc.latitude, myLoc.longitude, otherLoc.latitude, otherLoc.longitude, results);
+        return results[0];
+    }
 
     public UserType getUserType() {
         return userType;
     }
-
-
     public void setUserType(UserType userType) {
         this.userType = userType;
         app.updateView();

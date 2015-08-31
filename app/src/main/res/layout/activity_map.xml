@@ -93,7 +93,7 @@
             android:layout_below="@+id/top_shadow"
             android:alpha="1"
             android:background="@color/primary_material_dark"
-            android:elevation="5dp">
+            android:elevation="3dp">
 
             <TextView xmlns:android="http://schemas.android.com/apk/res/android"
                 android:id="@+id/fullname"
@@ -122,7 +122,7 @@
                 android:layout_margin="8dp"
                 android:layout_centerVertical="true"
                 android:layout_alignParentEnd="true"
-                android:background="@android:color/transparent" />
+                android:background="@drawable/button_selector_white" />
 
             <ImageButton
                 android:id="@+id/meet_here"
@@ -133,7 +133,7 @@
                 android:layout_margin="8dp"
                 android:layout_centerVertical="true"
                 android:layout_toStartOf="@+id/meet_there"
-                android:background="@android:color/transparent" />
+                android:background="@drawable/button_selector_white" />
 
         </RelativeLayout>
 
@@ -144,7 +144,8 @@
             android:layout_height="wrap_content"
             android:paddingLeft="0dp"
             android:paddingRight="0dp"
-            android:paddingBottom="0dp"
+            android:paddingBottom="3dp"
+            android:clipToPadding="false"
             android:layout_below="@+id/title_bar"
             android:background="@color/primary_material_light"
             android:descendantFocusability="afterDescendants">
@@ -157,9 +158,9 @@
                 android:transcriptMode="normal"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
-                android:paddingBottom="0dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="6dp"
+                android:clipToPadding="false"
                 android:layout_marginBottom="0dp"
                 android:smoothScrollbar="true"
                 android:layout_alignParentTop="true"
@@ -191,7 +192,7 @@
                 android:layout_toStartOf="@+id/send_button"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
-                android:layout_marginLeft="3dp" />
+                android:layout_marginLeft="6dp" />
 
             <ImageButton
                 android:id="@+id/send_button"

@@ -1,7 +1,6 @@
 package com.auriferous.atch.Users;
 
 import android.content.Context;
-import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,24 +11,24 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 
-public class UserInfoGroup implements Serializable{
+public class UserInfoSaveable implements Serializable{
     public static final String INFO_GROUP_SAVE_NAME = "userinfogroupsave";
 
     private HashMap<String, Integer> colorToUserMap = new HashMap<>();
 
-    private UserInfoGroup() {}
-    public UserInfoGroup(HashMap<String, User> userMap){
+    private UserInfoSaveable() {}
+    public UserInfoSaveable(HashMap<String, User> userMap){
         for(String key : userMap.keySet()){
             User user = userMap.get(key);
             colorToUserMap.put(user.getId(), user.getRelativeColor());
         }
     }
-    public UserInfoGroup(File file){
-        UserInfoGroup info;
+    public UserInfoSaveable(File file){
+        UserInfoSaveable info;
         try{
             FileInputStream fIn = new FileInputStream(file);
             ObjectInputStream oIS = new ObjectInputStream(fIn);
-            info = (UserInfoGroup) oIS.readObject();
+            info = (UserInfoSaveable) oIS.readObject();
             oIS.close();
             fIn.close();
             colorToUserMap = info.colorToUserMap;
@@ -60,15 +59,15 @@ public class UserInfoGroup implements Serializable{
     }
 
     public static void autoSave(Context context, HashMap<String, User> userMap){
-        UserInfoGroup infoGroup = new UserInfoGroup(userMap);
+        UserInfoSaveable infoGroup = new UserInfoSaveable(userMap);
         File file = new File(context.getFilesDir(), INFO_GROUP_SAVE_NAME);
         infoGroup.writeUserInfoGroup(file);
     }
-    public static UserInfoGroup autoLoad(Context context){
+    public static UserInfoSaveable autoLoad(Context context){
         File storedInfo = new File(context.getFilesDir(), INFO_GROUP_SAVE_NAME);
         if(storedInfo.exists()){
-            return new UserInfoGroup(storedInfo);
+            return new UserInfoSaveable(storedInfo);
         }
-        return new UserInfoGroup();
+        return new UserInfoSaveable();
     }
 }

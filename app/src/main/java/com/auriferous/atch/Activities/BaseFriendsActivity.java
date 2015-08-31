@@ -1,6 +1,7 @@
 package com.auriferous.atch.Activities;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -20,14 +21,6 @@ import com.auriferous.atch.Callbacks.SimpleCallback;
 import com.auriferous.atch.Callbacks.ViewUpdateCallback;
 import com.auriferous.atch.InAppNotificationView;
 import com.auriferous.atch.R;
-import com.auriferous.atch.Users.User;
-import com.auriferous.atch.Users.UserInfoGroup;
-
-import org.w3c.dom.Text;
-import org.xmlpull.v1.XmlPullParser;
-
-import java.io.File;
-import java.util.HashMap;
 
 public abstract class BaseFriendsActivity extends AppCompatActivity{
     protected AtchApplication app;
@@ -74,7 +67,7 @@ public abstract class BaseFriendsActivity extends AppCompatActivity{
     }
 
 
-    public void createNotification(String message, int color, SimpleCallback onClickCallback){
+    public void createNotification(String message, int color, final Class activityToStart, final Intent startInfo){
         final ViewGroup baseLayout = ((ViewGroup)getWindow().getDecorView().getRootView());
         final View notifLayout = View.inflate(this, R.layout.in_app_notif, baseLayout);
 
@@ -87,11 +80,24 @@ public abstract class BaseFriendsActivity extends AppCompatActivity{
         if(color != -1)
             notif.setBackgroundColor(color);
         notif.setUpperMargin(statusBarHeight);
-        notif.setCallbacks(onClickCallback, new SimpleCallback() {
+
+        final Activity thisAct = this;
+        notif.setCallbacks(new SimpleCallback() {
+            @Override
+            public void done() {
+                if (activityToStart.isInstance(thisAct)) {
+                    startInfo.putExtra("direct", true);
+                    onNewIntent(startInfo);
+                    onResume();
+                }
+                else
+                    startActivity(startInfo);
+            }
+        }, new SimpleCallback() {
             @Override
             public void done() {
                 View v = baseLayout.findViewById(R.id.notif_root);
-                while(v != null){
+                while (v != null) {
                     baseLayout.removeView(v);
                     v = baseLayout.findViewById(R.id.notif_root);
                 }

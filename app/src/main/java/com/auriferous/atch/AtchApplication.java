@@ -15,7 +15,7 @@ import com.auriferous.atch.Callbacks.SimpleCallback;
 import com.auriferous.atch.Callbacks.VariableCallback;
 import com.auriferous.atch.Callbacks.ViewUpdateCallback;
 import com.auriferous.atch.Users.User;
-import com.auriferous.atch.Users.UserInfoGroup;
+import com.auriferous.atch.Users.UserInfoSaveable;
 import com.auriferous.atch.Users.UserList;
 import com.auriferous.atch.Users.UserListAdapter;
 import com.facebook.FacebookSdk;
@@ -133,7 +133,7 @@ public class AtchApplication extends Application {
         AtchParsePushReceiver.init(this);
         AtchParsePushReceiver.cancelAllNotifications(this);
 
-        UserInfoGroup infoGroup = UserInfoGroup.autoLoad(this);
+        UserInfoSaveable infoGroup = UserInfoSaveable.autoLoad(this);
         User.init(this, infoGroup);
         UserListAdapter.init(this);
 
@@ -175,12 +175,7 @@ public class AtchApplication extends Application {
                     isFriendListLoaded = true;
                 }
 
-                ParseAndFacebookUtils.updateFriendDataWithMostRecentLocations(friendsList, new SimpleCallback() {
-                    @Override
-                    public void done() {
-                        updateView();
-                    }
-                });
+                ParseAndFacebookUtils.updateFriendDataWithMostRecentLocations(friendsList, null);
 
                 updateView();
             }

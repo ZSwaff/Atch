@@ -6,9 +6,11 @@ import com.parse.ParseUser;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UserList {
+public class UserList{
     private ArrayList<User> users = new ArrayList<>();
     private User.UserType userType = User.UserType.RANDOM;
+
+    private ArrayList<Group> friendGroups = new ArrayList<>();
 
 
     public UserList(User.UserType userType) {
@@ -23,6 +25,16 @@ public class UserList {
 
     public ArrayList<User> getAllUsers() {
         return users;
+    }
+    public ArrayList<Group> getAllGroups() {
+        return friendGroups;
+    }
+    public ArrayList<Group> getAllGroupsWithMoreThanOnePerson() {
+        ArrayList<Group> ret = new ArrayList<>();
+        for(Group group : friendGroups)
+            if(group.size() > 1)
+                ret.add(group);
+        return ret;
     }
 
     public void addUser(User user) {
@@ -44,6 +56,9 @@ public class UserList {
     }
 
 
+    public void updateFriendGroups(){
+        friendGroups = Group.getGroups(this);
+    }
     public void sortByPriorityForSearch() {
         ArrayList<User> friends = new ArrayList<>();
         ArrayList<User> pendingYou = new ArrayList<>();

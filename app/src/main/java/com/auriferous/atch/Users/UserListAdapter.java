@@ -7,6 +7,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -66,7 +67,7 @@ public class UserListAdapter extends BaseAdapter {
     public int getCount() {
         int count = 0;
         for(UserListAdapterSection section : sections) {
-            int size = section.getUsers().getAllUsers().size();
+            int size = section.size();
             if(size != 0 && section.getLabel() != null) count++;
             count += size;
         }
@@ -74,19 +75,21 @@ public class UserListAdapter extends BaseAdapter {
         return count;
     }
     @Override
-    public User getItem(int position) {
+    public Object getItem(int position) {
         for(UserListAdapterSection section : sections){
-            ArrayList<User> users = section.getUsers().getAllUsers();
+            ArrayList parts = section.getGroups();
+            if(section.isUsers())
+                parts = section.getUsers().getAllUsers();
 
-            if (users.size() == 0) continue;
-            if(section.getLabel() != null) {
+            if (parts.size() == 0) continue;
+            if (section.getLabel() != null) {
                 if (position == 0) return null;
                 position--;
             }
 
-            if(position < users.size())
-                return users.get(position);
-            position -= users.size();
+            if (position < parts.size())
+                return parts.get(position);
+            position -= parts.size();
         }
         return null;
     }
@@ -97,27 +100,34 @@ public class UserListAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         for(UserListAdapterSection section : sections){
-            ArrayList<User> users = section.getUsers().getAllUsers();
+            ArrayList parts = section.getGroups();
+            if(section.isUsers())
+                parts = section.getUsers().getAllUsers();
 
-            if (users.size() == 0) continue;
+            if (parts.size() == 0) continue;
             if(section.getLabel() != null) {
                 if (position == 0)
                     return createLabelView(section.getLabel(), parent);
                 position--;
             }
 
-            if(position < users.size()) {
-                String uid = users.get(position).getId();
-                if(!viewsAccessed.contains(uid)){
-                    viewsAccessed.add(uid);
-                    if(allViews.containsKey(uid))
-                        return allViews.get(uid);
+            if(position < parts.size()) {
+                if(section.isUsers()) {
+                    User user = (User)parts.get(position);
+                    String uid = user.getId();
+                    if (!viewsAccessed.contains(uid)) {
+                        viewsAccessed.add(uid);
+                        if (allViews.containsKey(uid))
+                            return allViews.get(uid);
+                    }
+                    View v = createUserView(user, parent);
+                    allViews.put(uid, v);
+                    return v;
                 }
-                View v = createUserView(users.get(position), parent);
-                allViews.put(uid, v);
-                return v;
+                else
+                    return createGroupView((Group)parts.get(position), parent);
             }
-            position -= users.size();
+            position -= parts.size();
         }
         if (position == 0)
             return createFullscreenLabelView(parent);
@@ -183,9 +193,12 @@ public class UserListAdapter extends BaseAdapter {
             });
         }
 
+        ImageButton actionButton = null;
+
         final String uid = user.getId();
         ImageButton chatButton = (ImageButton) rowView.findViewById(R.id.chat_button);
         if(chatButton != null) {
+            actionButton = chatButton;
             chatButton.setImageBitmap(user.getChatIcon());
             chatButton.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
@@ -200,7 +213,8 @@ public class UserListAdapter extends BaseAdapter {
             });
         }
         ImageButton friendButton = (ImageButton) rowView.findViewById(R.id.friend_button);
-        if(friendButton != null)
+        if(friendButton != null) {
+            actionButton = friendButton;
             friendButton.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     ParseAndFacebookUtils.sendFriendRequest(uid);
@@ -208,8 +222,10 @@ public class UserListAdapter extends BaseAdapter {
                     app.updateView();
                 }
             });
+        }
         ImageButton acceptButton = (ImageButton) rowView.findViewById(R.id.accept_button);
-        if(acceptButton != null)
+        if(acceptButton != null) {
+            actionButton = acceptButton;
             acceptButton.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     ParseAndFacebookUtils.acceptFriendRequest(uid);
@@ -218,6 +234,7 @@ public class UserListAdapter extends BaseAdapter {
                     app.updateView();
                 }
             });
+        }
         ImageButton fakeButton = (ImageButton) rowView.findViewById(R.id.fake_button);
         if(fakeButton != null){
             fakeButton.setEnabled(false);
@@ -226,7 +243,8 @@ public class UserListAdapter extends BaseAdapter {
 
 
         Button unfriendButton = (Button) rowView.findViewById(R.id.unfriend_button);
-        if(unfriendButton != null)
+        if(unfriendButton != null) {
+            GeneralUtils.addButtonEffect(unfriendButton);
             unfriendButton.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     ParseAndFacebookUtils.unfriendFriend(uid);
@@ -235,8 +253,10 @@ public class UserListAdapter extends BaseAdapter {
                     app.updateView();
                 }
             });
+        }
         Button rejectButton = (Button) rowView.findViewById(R.id.reject_button);
-        if(rejectButton != null)
+        if(rejectButton != null) {
+            GeneralUtils.addButtonEffect(rejectButton);
             rejectButton.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     ParseAndFacebookUtils.rejectFriendRequest(uid);
@@ -244,8 +264,10 @@ public class UserListAdapter extends BaseAdapter {
                     app.updateView();
                 }
             });
+        }
         Button cancelButton = (Button) rowView.findViewById(R.id.cancel_button);
-        if(cancelButton != null)
+        if(cancelButton != null) {
+            GeneralUtils.addButtonEffect(cancelButton);
             cancelButton.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     ParseAndFacebookUtils.cancelFriendRequest(uid);
@@ -253,11 +275,12 @@ public class UserListAdapter extends BaseAdapter {
                     app.updateView();
                 }
             });
+        }
 
-        initListener(user, rowView);
+        initListener(user, actionButton, rowView);
         return rowView;
     }
-    private void initListener(final User user, final View rowView) {
+    private void initListener(final User user, final ImageButton actionButton, final View rowView) {
         final Context context = this.context;
         rowView.setOnTouchListener(new View.OnTouchListener(){
             float slop = ViewConfiguration.get(context).getScaledTouchSlop();
@@ -299,6 +322,8 @@ public class UserListAdapter extends BaseAdapter {
                                 allTheWayLeft = true;
 
                             swipeButton.setEnabled(allTheWayLeft);
+                            if(actionButton != null)
+                                actionButton.setEnabled(!allTheWayLeft);
                         }
 
                         if (Math.abs(offset) > slop)
@@ -311,6 +336,7 @@ public class UserListAdapter extends BaseAdapter {
                         if (allTheWayLeft && offset > -slop) {
                             allTheWayLeft = false;
                             swipeButton.setEnabled(allTheWayLeft);
+                            actionButton.setEnabled(!allTheWayLeft);
                         }
                         else if (Math.abs(offset) < slop) {
                             if (user.getUserType() == User.UserType.FRIEND) {
@@ -344,5 +370,36 @@ public class UserListAdapter extends BaseAdapter {
                 return true;
             }
         });
+    }
+
+    private View createGroupView(final Group group, ViewGroup parent){
+        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+        View rowView = inflater.inflate(R.layout.group_list_item, parent, false);
+
+        TextView names = (TextView) rowView.findViewById(R.id.names);
+        names.setText(group.getNames());
+
+        Bitmap groupImage = group.getGroupImage();
+        if(groupImage != null) {
+            ImageView imageView = (ImageView) rowView.findViewById(R.id.group_pic);
+            imageView.setImageBitmap(groupImage);
+        }
+
+        rowView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                Intent intent = new Intent(context, MapActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                intent.putExtra("type", "group");
+                intent.putExtra("groupId", group.getId());
+                intent.putExtra("back", true);
+                app.getCurrentActivity().startActivity(intent);
+                app.getCurrentActivity().overridePendingTransition(R.anim.slide_right_in, R.anim.slide_right_out);
+                return true;
+            }
+        });
+
+        return rowView;
     }
 }

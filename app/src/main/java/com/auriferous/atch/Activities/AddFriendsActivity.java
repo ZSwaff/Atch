@@ -152,7 +152,7 @@ public class AddFriendsActivity extends BaseFriendsActivity {
     }
     private void fillListViewSearch() {
         ListView listView = (ListView) findViewById(R.id.listview);
-        UserListAdapter arrayAdapter = new UserListAdapter(this, new UserListAdapterSection("Search results", searchResults), "No search results", (UserListAdapter)listView.getAdapter());
+        UserListAdapter arrayAdapter = new UserListAdapter(this, new UserListAdapterSection("Search results", searchResults), "No results", (UserListAdapter)listView.getAdapter());
         listView.setAdapter(arrayAdapter);
     }
 }

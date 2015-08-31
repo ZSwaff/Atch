@@ -15,7 +15,12 @@ public class Message {
 
 
     public String getMessageText() {
-        return parseMessage.getString("messageText");
+        return parseMessage.getString("messageText").trim();
+    }
+    public char getDecorationFlag() {
+        String flag = parseMessage.getString("decorationFlag");
+        if(flag == null) return 'n';
+        return flag.charAt(0);
     }
     public ParseUser getSender() {
         return parseMessage.getParseUser("fromUser");

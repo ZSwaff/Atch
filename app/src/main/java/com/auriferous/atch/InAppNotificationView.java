@@ -63,11 +63,11 @@ public class InAppNotificationView extends RelativeLayout {
     }
 
     public void deployDown(){
-        animate(barHeight - upperMargin, -upperMargin, true);
+        animate(barHeight, -upperMargin, true);
         rescindViewHandler.postDelayed(rescindView, 3500);
     }
     public void returnUp(){
-        animate(layoutParams.bottomMargin, barHeight - upperMargin, false);
+        animate(layoutParams.bottomMargin, barHeight, false);
     }
 
     private void animate(int start, int finish, boolean deploying) {
@@ -102,7 +102,7 @@ public class InAppNotificationView extends RelativeLayout {
             public void onAnimationRepeat(Animator animation) {
             }
         });
-        animator.setDuration(500);
+        animator.setDuration(Math.abs((500*Math.abs(finish-start))/(barHeight+upperMargin)));
         animator.start();
 
         if(!deploying){

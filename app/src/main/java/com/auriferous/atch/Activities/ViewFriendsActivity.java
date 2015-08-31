@@ -15,6 +15,8 @@ import com.auriferous.atch.R;
 import com.auriferous.atch.Users.UserListAdapterSection;
 import com.auriferous.atch.Users.UserList;
 
+import java.util.ArrayList;
+
 public class ViewFriendsActivity extends BaseFriendsActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,8 +82,11 @@ public class ViewFriendsActivity extends BaseFriendsActivity {
     private void fillListView() {
         UserList friends = ((AtchApplication) getApplication()).getFriendsList();
 
+        ArrayList<UserListAdapterSection> sections = new ArrayList<>();
+        sections.add(new UserListAdapterSection("Currently hanging", friends.getAllGroupsWithMoreThanOnePerson()));
+        sections.add(new UserListAdapterSection("All friends", friends));
         ListView listView = (ListView) findViewById(R.id.listview);
-        UserListAdapter arrayAdapter = new UserListAdapter(this, new UserListAdapterSection(null, friends), "No friends yet", (UserListAdapter)listView.getAdapter());
+        UserListAdapter arrayAdapter = new UserListAdapter(this, sections, "No friends yet", (UserListAdapter)listView.getAdapter());
         listView.setAdapter(arrayAdapter);
     }
 }

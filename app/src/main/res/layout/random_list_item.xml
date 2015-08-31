@@ -69,10 +69,9 @@
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:layout_margin="21dp"
             android:layout_marginLeft="6dp"
             android:layout_marginRight="24dp"
-            android:background="@android:color/transparent" />
+            android:background="@drawable/button_selector" />
 
     </RelativeLayout>
 

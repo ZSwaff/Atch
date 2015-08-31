@@ -278,6 +278,7 @@ public class ParseAndFacebookUtils {
                 }
                 if (callback != null)
                     callback.done();
+                friends.updateFriendGroups();
             }
         });
     }
@@ -303,9 +304,10 @@ public class ParseAndFacebookUtils {
     }
 
 
-    public static void sendMessage(final ParseObject messageHistory, final String messageText, final SimpleCallback callback){
+    public static void sendMessage(final ParseObject messageHistory, final String messageText, final char decorationFlag, final SimpleCallback callback){
         HashMap<String, Object> params = new HashMap<>();
         params.put("messageText", messageText);
+        params.put("decorationFlag", decorationFlag+"");
         params.put("messageHistoryId", messageHistory.getObjectId());
         ParseCloud.callFunctionInBackground("sendMessage", params, new FunctionCallback<Object>() {
             @Override
@@ -379,6 +381,7 @@ public class ParseAndFacebookUtils {
                             ParseUser currUser = ParseUser.getCurrentUser();
                             currUser.setUsername(username);
                             currUser.put("queryUsername", username.toLowerCase());
+                            currUser.put("firstName", object.getString("first_name"));
                             currUser.put("fbid", object.getString("id"));
                             currUser.put("fullname", object.getString("name"));
                             currUser.put("queryFullname", object.getString("name").toLowerCase());

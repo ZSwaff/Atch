@@ -7,6 +7,7 @@ import android.content.res.Resources;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -14,6 +15,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 
 import com.auriferous.atch.Activities.MapActivity;
@@ -23,6 +25,7 @@ public class BannerTouchView extends RelativeLayout {
     private InputMethodManager imm;
     private Window window;
     private int color;
+    private ImageButton myLocButton = null;
 
     public int titleBarHeight = 75;
     public int shadowHeight = 5;
@@ -59,8 +62,14 @@ public class BannerTouchView extends RelativeLayout {
         windowHeight = height;
         isHeightInitialized = true;
     }
+    public void setMyLocButton(ImageButton myLocButton){
+        this.myLocButton = myLocButton;
+    }
 
     public void setupBanner(VariableCallback<Integer> callback, Activity activity, int color){
+        setupBanner(300, callback, activity, color);
+    }
+    public void setupBanner(int speed, VariableCallback<Integer> callback, Activity activity, int color){
         if(partiallyUp) return;
         partiallyUp = true;
         setVisibility(View.VISIBLE);
@@ -70,10 +79,13 @@ public class BannerTouchView extends RelativeLayout {
 
         layoutParams = (ViewGroup.MarginLayoutParams)getLayoutParams();
         layoutParams.setMargins(0, getBottomHeight() + titleBarHeight, 0, 0);
-        animate(layoutParams.topMargin, getBottomHeight(), 300, callback);
+        animate(layoutParams.topMargin, getBottomHeight(), speed, callback);
     }
     public void putAllTheWayUp(){
-        animate(layoutParams.topMargin, -shadowHeight, 300, null);
+        putAllTheWayUp(300);
+    }
+    public void putAllTheWayUp(int speed){
+        animate(layoutParams.topMargin, -shadowHeight, speed, null);
     }
     public void takeAllTheWayDown(){
         animate(layoutParams.topMargin, getBottomHeight(), 300, null);
@@ -103,13 +115,19 @@ public class BannerTouchView extends RelativeLayout {
                 setLayoutParams(layoutParams);
                 invalidate();
 
+                if (myLocButton != null && layoutParams.topMargin < getBottomHeight())
+                    myLocButton.setAlpha(1f - ((float) (getBottomHeight() - layoutParams.topMargin)) / ((float) getBottomHeight()));
+
                 updateWindow(layoutParams.topMargin);
 
                 if (callback != null)
                     callback.done(windowHeight - paddingAmount);
             }
         });
-        animator.setDuration(Math.abs((speed*Math.abs(finish-start))/getBottomHeight()));
+        if(speed < 0)
+            animator.setDuration(-speed);
+        else
+            animator.setDuration(Math.abs((speed*Math.abs(finish-start))/getBottomHeight()));
         animator.start();
     }
 
@@ -146,6 +164,9 @@ public class BannerTouchView extends RelativeLayout {
 
                 setLayoutParams(layoutParams);
                 invalidate();
+
+                if(myLocButton != null && layoutParams.topMargin < getBottomHeight())
+                    myLocButton.setAlpha(1f - ((float)(getBottomHeight()-layoutParams.topMargin))/((float)getBottomHeight()));
 
                 updateWindow(layoutParams.topMargin);
 

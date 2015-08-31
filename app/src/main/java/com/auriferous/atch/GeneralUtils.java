@@ -9,8 +9,12 @@ import android.graphics.ColorFilter;
 import android.graphics.LightingColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.Rect;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
 
 import java.util.Random;
 
@@ -33,6 +37,12 @@ public class GeneralUtils {
             if (r + g  > 430 && b < 120) continue;
             return Color.argb(255, r, g, b);
         }
+    }
+    public static int getLighter(int oldColor) {
+        float[] hsv = new float[3];
+        Color.colorToHSV(oldColor, hsv);
+        hsv[2] = 1f - ((1f - hsv[2])/4f);
+        return Color.HSVToColor(hsv);
     }
 
     public static Bitmap reColorImage(Bitmap image, int newColor) {
@@ -65,5 +75,41 @@ public class GeneralUtils {
         canvas.drawBitmap(foreground, 0, 0, paint);
 
         return newImage;
+    }
+
+    public static void addButtonEffect(View button){
+        button.setOnTouchListener(new View.OnTouchListener() {
+            boolean isOver = false;
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN: {
+                        isOver = true;
+                        v.getBackground().setColorFilter(0x33333333, PorterDuff.Mode.SRC_ATOP);
+                        v.invalidate();
+                        break;
+                    }
+                    case MotionEvent.ACTION_MOVE: {
+                        int x = (int)event.getX();
+                        int y = (int)event.getY();
+                        if(isOver && (x < 0 || y < 0 || x > v.getWidth() || y > v.getHeight())){
+                            isOver = false;
+                            v.getBackground().clearColorFilter();
+                            v.invalidate();
+                        }
+                        break;
+                    }
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_CANCEL: {
+                        isOver = false;
+                        v.getBackground().clearColorFilter();
+                        v.invalidate();
+                        break;
+                    }
+                }
+                return false;
+            }
+        });
     }
 }

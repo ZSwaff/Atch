@@ -13,6 +13,7 @@ import android.util.Log;
 import com.auriferous.atch.Activities.AddFriendsActivity;
 import com.auriferous.atch.Activities.AtchAgreementActivity;
 import com.auriferous.atch.Activities.BaseFriendsActivity;
+import com.auriferous.atch.Activities.LoginActivity;
 import com.auriferous.atch.Activities.MapActivity;
 import com.auriferous.atch.Activities.ViewFriendsActivity;
 import com.auriferous.atch.Callbacks.SimpleCallback;
@@ -80,12 +81,8 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
                     user = User.getUserFromMap(friendRecipientObjectId);
                     message = user.getUsername() + "accepted your friend request";
                 }
-                ((BaseFriendsActivity)currActivity).createNotification(message, (user != null)?user.getRelativeColor():-1, new SimpleCallback() {
-                    @Override
-                    public void done() {
-                        onPushOpen(context, intent);
-                    }
-                });
+                ((BaseFriendsActivity)currActivity).createNotification(message, (user != null)?user.getRelativeColor():-1, getClassToOpen(type),
+                        createIntent(context, getClassToOpen(type), intent, type, chatRecipientObjectId, friendRecipientObjectId));
             }
             else {
                 setupAndDeliverNotification(context, intent);
@@ -132,11 +129,12 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
         ParseAnalytics.trackAppOpenedInBackground(intent);
 
         if(!app.isFriendListLoaded()){
-            Intent activityIntent = new Intent(context, AtchAgreementActivity.class);
+            Intent activityIntent = new Intent(context, LoginActivity.class);
             activityIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             activityIntent.addFlags(268435456);
             activityIntent.addFlags(67108864);
             context.startActivity(activityIntent);
+            return;
         }
 
         String type = null;
@@ -151,24 +149,23 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
         }
         catch (JSONException var6) {}
 
-        if(type.equals("message")) {
-            if (chatRecipientObjectId != null) {
-                createIntentAndStart(context, MapActivity.class, intent, "message", chatRecipientObjectId, null);
-            }
-        }
-        else if(type.equals("friendRequest")) {
-            if (friendRecipientObjectId != null) {
-                createIntentAndStart(context, AddFriendsActivity.class, intent, "friendRequest", null, friendRecipientObjectId);
-            }
-        }
-        else if(type.equals("friendAccept")) {
-            if (friendRecipientObjectId != null) {
-                createIntentAndStart(context, ViewFriendsActivity.class, intent, "friendAccept", null, friendRecipientObjectId);
-            }
-        }
+        Intent activityIntent = createIntent(context, getClassToOpen(type), intent, type, chatRecipientObjectId, friendRecipientObjectId);
+        context.startActivity(activityIntent);
     }
 
-    private void createIntentAndStart(Context context, Class resultClass, Intent oldIntent, String type, String chatterParseId, String frienderParseId) {
+    private Class getClassToOpen(String type){
+        if(type.equals("message"))
+            return MapActivity.class;
+        else if(type.equals("friendRequest"))
+            return AddFriendsActivity.class;
+        else if(type.equals("friendAccept"))
+            return ViewFriendsActivity.class;
+        return null;
+    }
+
+
+
+    private Intent createIntent(Context context, Class resultClass, Intent oldIntent, String type, String chatterParseId, String frienderParseId) {
         Intent activityIntent = new Intent(context, resultClass);
         activityIntent.putExtras(oldIntent.getExtras());
         activityIntent.putExtra("type", type);
@@ -178,10 +175,6 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
         activityIntent.addFlags(268435456);
         activityIntent.addFlags(67108864);
 
-//        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
-//        stackBuilder.addParentStack(resultClass);
-//        stackBuilder.addNextIntent(activityIntent);
-//        context.startActivities(stackBuilder.getIntents());
-        context.startActivity(activityIntent);
+        return activityIntent;
     }
 }
