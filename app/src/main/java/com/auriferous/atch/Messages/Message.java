@@ -25,6 +25,9 @@ public class Message {
     public ParseUser getSender() {
         return parseMessage.getParseUser("fromUser");
     }
+    public String getSenderId() {
+        return parseMessage.getParseUser("fromUser").getObjectId();
+    }
     public Date getSendDate() {
         return parseMessage.getCreatedAt();
     }

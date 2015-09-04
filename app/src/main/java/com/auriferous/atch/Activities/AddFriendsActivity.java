@@ -2,26 +2,24 @@ package com.auriferous.atch.Activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.NavUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.SearchView;
 
-import com.auriferous.atch.Callbacks.ViewUpdateCallback;
-import com.auriferous.atch.Users.UserListAdapter;
+import com.auriferous.atch.AtchApplication;
 import com.auriferous.atch.Callbacks.VariableCallback;
+import com.auriferous.atch.Callbacks.ViewUpdateCallback;
 import com.auriferous.atch.ParseAndFacebookUtils;
 import com.auriferous.atch.R;
-import com.auriferous.atch.Users.UserListAdapterSection;
 import com.auriferous.atch.Users.User;
 import com.auriferous.atch.Users.UserList;
+import com.auriferous.atch.Users.UserListAdapter;
+import com.auriferous.atch.Users.UserListAdapterSection;
 
 import java.util.ArrayList;
 
 public class AddFriendsActivity extends BaseFriendsActivity {
-    private volatile UserList usersWhoSentFriendRequests = new UserList(User.UserType.PENDING_YOU);
-    private volatile UserList facebookFriends = new UserList(User.UserType.FACEBOOK_FRIEND);
     private volatile UserList searchResults = new UserList(User.UserType.RANDOM);
 
     private boolean searchMode = false;
@@ -33,25 +31,11 @@ public class AddFriendsActivity extends BaseFriendsActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_friends);
         if(getActionBar() != null) getActionBar().setDisplayHomeAsUpEnabled(true);
-
-        populateFacebookFriendList();
-        ParseAndFacebookUtils.getUsersWhoHaveRequestedToFriendCurrentUser(new VariableCallback<UserList>() {
-            @Override
-            public void done(UserList list) {
-                usersWhoSentFriendRequests = list;
-                updateCurrentView();
-            }
-        });
-        ParseAndFacebookUtils.getUsersWhoCurrentUserHasRequestedToFriend(new VariableCallback<UserList>() {
-            @Override
-            public void done(UserList userList) {
-                //done only to populate the user hashmap
-            }
-        });
     }
     @Override
     protected void onResume() {
         super.onResume();
+
         setViewUpdateCallback(new ViewUpdateCallback() {
             @Override
             public void updateView() {
@@ -59,6 +43,10 @@ public class AddFriendsActivity extends BaseFriendsActivity {
             }
         });
         fillListView();
+
+        AtchApplication app = (AtchApplication) getApplication();
+        app.populateFacebookFriendList();
+        app.populatePendingLists();
     }
 
     @Override
@@ -73,7 +61,7 @@ public class AddFriendsActivity extends BaseFriendsActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         intent.putExtra("back", true);
         startActivity(intent);
-        overridePendingTransition(0,0);
+        overridePendingTransition(0, 0);
     }
 
     @Override
@@ -82,7 +70,6 @@ public class AddFriendsActivity extends BaseFriendsActivity {
 
         SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
         searchView.setIconifiedByDefault(false);
-        searchView.setIconified(false);
         searchView.setQueryHint("Search by name or username");
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -94,11 +81,12 @@ public class AddFriendsActivity extends BaseFriendsActivity {
             public boolean onQueryTextChange(String newText) {
                 searchTerm = newText;
                 searchMode = !searchTerm.equals("");
-                if(searchMode) populateSearchResults();
+                if (searchMode) populateSearchResults();
                 fillListView();
                 return true;
             }
         });
+
         return true;
     }
     @Override
@@ -114,17 +102,6 @@ public class AddFriendsActivity extends BaseFriendsActivity {
     }
 
 
-    //populates once results come in from Facebook, then Parse
-    private void populateFacebookFriendList(){
-        ParseAndFacebookUtils.getAllFacebookFriends(new VariableCallback<UserList>(){
-            @Override
-            public void done(UserList list) {
-                facebookFriends = list;
-                fillListView();
-            }
-
-        });
-    }
     //populates once results come in from Parse
     private void populateSearchResults(){
         ParseAndFacebookUtils.getUsersWithMatchingUsernameOrFullname(searchTerm, new VariableCallback<UserList>() {
@@ -142,9 +119,11 @@ public class AddFriendsActivity extends BaseFriendsActivity {
         else fillListViewNormal();
     }
     private void fillListViewNormal() {
+        AtchApplication app = (AtchApplication) getApplication();
+
         ArrayList<UserListAdapterSection> sections = new ArrayList<>();
-        sections.add(new UserListAdapterSection("Pending requests", usersWhoSentFriendRequests));
-        sections.add(new UserListAdapterSection("Facebook friends", facebookFriends));
+        sections.add(new UserListAdapterSection("Pending requests", app.getUsersWhoSentFriendRequests()));
+        sections.add(new UserListAdapterSection("Facebook friends", app.getFacebookFriends()));
 
         ListView listView = (ListView) findViewById(R.id.listview);
         UserListAdapter arrayAdapter = new UserListAdapter(this, sections, "No suggestions", (UserListAdapter)listView.getAdapter());

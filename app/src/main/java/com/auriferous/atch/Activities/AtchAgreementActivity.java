@@ -15,8 +15,6 @@ import com.parse.ParseException;
 import com.parse.ParseInstallation;
 import com.parse.ParseUser;
 
-import java.util.Map;
-
 public class AtchAgreementActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,9 +22,12 @@ public class AtchAgreementActivity extends Activity {
         setContentView(R.layout.activity_atch_agreement);
 
         ParseAndFacebookUtils.setupParseInstallation();
-        ((AtchApplication)getApplication()).populateFriendList();
         AtchParsePushReceiver.cancelAllNotifications(this);
 
+        AtchApplication app = (AtchApplication) getApplication();
+        app.populateFriendList();
+        app.populateFacebookFriendList();
+        app.populatePendingLists();
 
         findViewById(R.id.engage_button).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -47,6 +48,7 @@ public class AtchAgreementActivity extends Activity {
 
         ((AtchApplication)getApplication()).stopLocationUpdates();
         ((AtchApplication)getApplication()).setIsOnline(false);
+        ParseAndFacebookUtils.updateMyLocation(null);
     }
 
     @Override
@@ -66,7 +68,7 @@ public class AtchAgreementActivity extends Activity {
         LoginManager.getInstance().logOut();
 
         ParseUser user = ParseUser.getCurrentUser();
-        user.logOutInBackground(new LogOutCallback() {
+        ParseUser.logOutInBackground(new LogOutCallback() {
             @Override
             public void done(ParseException e) {
                 Intent intent = new Intent(getApplication(), LoginActivity.class);

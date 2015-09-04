@@ -8,11 +8,10 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.auriferous.atch.R;
-import com.auriferous.atch.Users.User;
+import com.auriferous.atch.Users.Group;
 import com.parse.ParseUser;
 
 import java.text.SimpleDateFormat;
@@ -23,16 +22,16 @@ public class MessageListAdapter extends BaseAdapter {
 
     private MessageList messageList;
     private ParseUser primaryUser;
-    private User recipientUser;
+    private Group recipientUsers;
     private String emptyMessage;
 
 
-    public MessageListAdapter(Context context, ListView listView, MessageList messageList, ParseUser primaryUser, User recipientUser, String emptyMessage, MessageListAdapter oldAdapter) {
+    public MessageListAdapter(Context context, ListView listView, MessageList messageList, ParseUser primaryUser, Group recipientUsers, String emptyMessage, MessageListAdapter oldAdapter) {
         this.context = context;
         this.listView = listView;
         this.messageList = messageList;
         this.primaryUser = primaryUser;
-        this.recipientUser = recipientUser;
+        this.recipientUsers = recipientUsers;
         this.emptyMessage = emptyMessage;
     }
 
@@ -67,7 +66,7 @@ public class MessageListAdapter extends BaseAdapter {
                     View background = chatView.findViewById(R.id.background);
                     background.setBackgroundResource(R.drawable.chat_left_background);
                     GradientDrawable bg = (GradientDrawable)background.getBackground();
-                    bg.setColor(recipientUser.getLighterColor());
+                    bg.setColor(recipientUsers.getLighterColor(thisMessage.getSenderId()));
                 }
 
                 final View finalChatView = chatView;
@@ -97,12 +96,12 @@ public class MessageListAdapter extends BaseAdapter {
             }
             case 'h': {
                 chatView = createMeetHereChat(thisMessage, parent);
-                chatView.setBackgroundColor(recipientUser.getLighterColor());
+                chatView.setBackgroundColor(recipientUsers.getLighterColor(thisMessage.getSenderId()));
                 break;
             }
             case 't': {
                 chatView = createMeetThereChat(thisMessage, parent);
-                chatView.setBackgroundColor(recipientUser.getLighterColor());
+                chatView.setBackgroundColor(recipientUsers.getLighterColor(thisMessage.getSenderId()));
                 break;
             }
         }

@@ -7,7 +7,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.location.Location;
-import android.os.Handler;
 import android.util.Base64;
 import android.util.Log;
 
@@ -33,14 +32,18 @@ public class AtchApplication extends Application {
     private volatile Activity currentActivity = null;
     private volatile ViewUpdateCallback viewUpdateCallback = null;
 
-    private volatile boolean isFriendListLoaded = false;
-    private volatile SimpleCallback friendListLoadedCallback = null;
+    private volatile boolean isSetupComplete = false;
+    //0 is friendList, 1 is facebook friends, 2 is pending you, 3 is pending them, 4 is locations, 5 is prof pics
+    private volatile int[] loadingPhasesComplete = {1, 1, 1, 1, 1, -1};
+    private volatile SimpleCallback setupCompleteCallback = null;
 
     private volatile Intent locationUpdateServiceIntent = null;
     private volatile Location currentLocation = null;
     private volatile Date lastUpdateTime = null;
 
     private volatile UserList friendsList = new UserList(User.UserType.FRIEND);
+    private volatile UserList usersWhoSentFriendRequests = new UserList(User.UserType.PENDING_YOU);
+    private volatile UserList facebookFriends = new UserList(User.UserType.FACEBOOK_FRIEND);
 
     private volatile boolean isLoggedIn = false;
     private volatile boolean isOnline = false;
@@ -52,13 +55,6 @@ public class AtchApplication extends Application {
     }
     public void setCurrentActivity(Activity currentActivity) {
         this.currentActivity = currentActivity;
-    }
-
-    public void setFriendListLoadedCallback(SimpleCallback friendListLoadedCallback) {
-        this.friendListLoadedCallback = friendListLoadedCallback;
-    }
-    public boolean isFriendListLoaded() {
-        return isFriendListLoaded;
     }
 
     public void setViewUpdateCallback(ViewUpdateCallback viewUpdateCallback) {
@@ -124,6 +120,13 @@ public class AtchApplication extends Application {
         friendsList.removeUser(newEnemy);
     }
 
+    public UserList getUsersWhoSentFriendRequests() {
+        return usersWhoSentFriendRequests;
+    }
+    public UserList getFacebookFriends() {
+        return facebookFriends;
+    }
+
 
     @Override
     public void onCreate() {
@@ -162,22 +165,91 @@ public class AtchApplication extends Application {
         }
     }
 
+
+
+    public boolean isSetupComplete() {
+        return isSetupComplete;
+    }
+    public void setSetupCompleteCallback(SimpleCallback setupCompleteCallback) {
+        if(isSetupComplete) {
+            if(setupCompleteCallback != null)
+                setupCompleteCallback.done();
+            this.setupCompleteCallback = null;
+            return;
+        }
+
+        this.setupCompleteCallback = setupCompleteCallback;
+    }
+    public synchronized void callbackIfReady(int switchIndex) {
+        if (!isSetupComplete) {
+            if(loadingPhasesComplete[switchIndex] > 0)
+                loadingPhasesComplete[switchIndex]--;
+
+            for (int i = 0; i < loadingPhasesComplete.length; i++)
+                if (loadingPhasesComplete[i] != 0) return;
+
+            if (setupCompleteCallback != null)
+                setupCompleteCallback.done();
+            setupCompleteCallback = null;
+            isSetupComplete = true;
+        }
+    }
+
     //populates once results come in from Parse
     public void populateFriendList() {
         ParseAndFacebookUtils.getAllFriends(new VariableCallback<UserList>() {
             @Override
             public void done(UserList userList) {
                 friendsList = userList;
-                if (!isFriendListLoaded) {
-                    if (friendListLoadedCallback != null)
-                        friendListLoadedCallback.done();
-                    friendListLoadedCallback = null;
-                    isFriendListLoaded = true;
+                if (!isSetupComplete) {
+                    loadingPhasesComplete[5] = friendsList.getAllUsers().size();
+                    callbackIfReady(0);
                 }
 
-                ParseAndFacebookUtils.updateFriendDataWithMostRecentLocations(friendsList, null);
+                ParseAndFacebookUtils.updateFriendDataWithMostRecentLocations(friendsList, new SimpleCallback() {
+                    @Override
+                    public void done() {
+                        if (!isSetupComplete)
+                            callbackIfReady(4);
+                    }
+                });
 
                 updateView();
+            }
+        });
+    }
+    //populates once results come in from Facebook, then Parse
+    public void populateFacebookFriendList(){
+        ParseAndFacebookUtils.getAllFacebookFriends(new VariableCallback<UserList>() {
+            @Override
+            public void done(UserList list) {
+                facebookFriends = list;
+                if (!isSetupComplete)
+                    callbackIfReady(1);
+
+                updateView();
+            }
+
+        });
+    }
+    //populates once results come in from Parse
+    public void populatePendingLists(){
+        ParseAndFacebookUtils.getUsersWhoHaveRequestedToFriendCurrentUser(new VariableCallback<UserList>() {
+            @Override
+            public void done(UserList list) {
+                usersWhoSentFriendRequests = list;
+
+                if (!isSetupComplete)
+                    callbackIfReady(2);
+
+                updateView();
+            }
+        });
+        ParseAndFacebookUtils.getUsersWhoCurrentUserHasRequestedToFriend(new VariableCallback<UserList>() {
+            @Override
+            public void done(UserList userList) {
+                if (!isSetupComplete)
+                    callbackIfReady(3);
             }
         });
     }

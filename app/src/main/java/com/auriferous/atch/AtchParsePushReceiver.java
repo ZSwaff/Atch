@@ -3,20 +3,15 @@ package com.auriferous.atch;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.auriferous.atch.Activities.AddFriendsActivity;
-import com.auriferous.atch.Activities.AtchAgreementActivity;
 import com.auriferous.atch.Activities.BaseFriendsActivity;
 import com.auriferous.atch.Activities.LoginActivity;
 import com.auriferous.atch.Activities.MapActivity;
 import com.auriferous.atch.Activities.ViewFriendsActivity;
-import com.auriferous.atch.Callbacks.SimpleCallback;
 import com.auriferous.atch.Users.User;
 import com.parse.ParseAnalytics;
 import com.parse.ParsePushBroadcastReceiver;
@@ -128,7 +123,7 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
     protected void onPushOpen(Context context, Intent intent) {
         ParseAnalytics.trackAppOpenedInBackground(intent);
 
-        if(!app.isFriendListLoaded()){
+        if(!app.isSetupComplete()){
             Intent activityIntent = new Intent(context, LoginActivity.class);
             activityIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             activityIntent.addFlags(268435456);

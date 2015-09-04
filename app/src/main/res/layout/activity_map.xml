@@ -10,14 +10,11 @@
     tools:context="com.auriferous.atch.Activities.LoginActivity">
 
     <RelativeLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/map_view"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent" >
 
         <fragment
-            xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:tools="http://schemas.android.com/tools"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/map"
@@ -110,35 +107,73 @@
                 android:paddingBottom="5dp"
                 android:layout_centerVertical="true"
                 android:layout_alignParentStart="true"
-                android:layout_toStartOf="@+id/meet_here"
+                android:layout_toStartOf="@+id/meet_here_area"
                 android:textColor="@android:color/primary_text_dark" />
 
-            <ImageButton
-                android:id="@+id/meet_there"
-                android:src="@drawable/there_white"
-                android:scaleType="fitCenter"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+            <RelativeLayout
+                android:id="@+id/meet_there_area"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:layout_centerVertical="true"
                 android:layout_alignParentEnd="true"
-                android:background="@drawable/button_selector_white" />
+                android:descendantFocusability="afterDescendants">
 
-            <ImageButton
-                android:id="@+id/meet_here"
-                android:src="@drawable/here_white"
-                android:scaleType="fitCenter"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                <ImageButton
+                    android:id="@+id/meet_there"
+                    android:src="@drawable/there_white"
+                    android:scaleType="fitCenter"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginBottom="3dp"
+                    android:background="@drawable/button_selector_white" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:text="There"
+                    android:textColor="#55ffffff"
+                    android:layout_alignParentBottom="true"
+                    android:layout_centerHorizontal="true"
+                    android:textSize="12sp" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/meet_here_area"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:layout_centerVertical="true"
-                android:layout_toStartOf="@+id/meet_there"
-                android:background="@drawable/button_selector_white" />
+                android:layout_toStartOf="@+id/meet_there_area"
+                android:layout_toLeftOf="@+id/meet_there_area"
+                android:descendantFocusability="afterDescendants">
+
+                <ImageButton
+                    android:id="@+id/meet_here"
+                    android:src="@drawable/here_white"
+                    android:scaleType="fitCenter"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginBottom="3dp"
+                    android:background="@drawable/button_selector_white" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:text="Here"
+                    android:textColor="#55ffffff"
+                    android:layout_alignParentBottom="true"
+                    android:layout_centerHorizontal="true"
+                    android:textSize="12sp" />
+
+            </RelativeLayout>
 
         </RelativeLayout>
 
         <RelativeLayout
-            xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/body"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
@@ -213,5 +248,12 @@
         </RelativeLayout>
 
     </com.auriferous.atch.BannerTouchView>
+
+    <RelativeLayout
+        android:id="@+id/splash_screen"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:background="@color/primary_material_light">
+    </RelativeLayout>
 
 </RelativeLayout>

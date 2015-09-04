@@ -7,12 +7,9 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.LightingColorFilter;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
-import android.graphics.Rect;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -41,6 +38,7 @@ public class GeneralUtils {
     public static int getLighter(int oldColor) {
         float[] hsv = new float[3];
         Color.colorToHSV(oldColor, hsv);
+        hsv[1] = hsv[1]/2f;
         hsv[2] = 1f - ((1f - hsv[2])/4f);
         return Color.HSVToColor(hsv);
     }

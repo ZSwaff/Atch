@@ -252,8 +252,7 @@ public class ParseAndFacebookUtils {
 
     public static void updateMyLocation(Location location){
         ParseUser currentUser = ParseUser.getCurrentUser();
-
-        final ParseGeoPoint loc = new ParseGeoPoint(location.getLatitude(),location.getLongitude());
+        final ParseGeoPoint loc = (location != null) ? new ParseGeoPoint(location.getLatitude(),location.getLongitude()) : null;
 
         ParseQuery<ParseObject> query = ParseQuery.getQuery("FriendData");
         query.whereEqualTo("user", currentUser);
@@ -261,7 +260,10 @@ public class ParseAndFacebookUtils {
             @Override
             public void done(ParseObject parseObject, ParseException e) {
                 if (parseObject == null) return;
-                parseObject.put("location", loc);
+                if (loc == null)
+                    parseObject.remove("location");
+                else
+                    parseObject.put("location", loc);
                 parseObject.saveInBackground();
             }
         });

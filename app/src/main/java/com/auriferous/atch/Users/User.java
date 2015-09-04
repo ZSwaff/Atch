@@ -1,6 +1,5 @@
 package com.auriferous.atch.Users;
 
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -119,9 +118,15 @@ public class User {
         createMarker();
     }
     private void updateOnlineStatus() {
-        if (privateData == null) return;
+        if (privateData == null) {
+            loggedIn = false;
+            return;
+        }
         Date udAt = privateData.getUpdatedAt();
-        if(udAt == null) return;
+        if(udAt == null || getLocation() == null) {
+            loggedIn = false;
+            return;
+        }
         Date udAtPlus5 = new Date(udAt.getTime() + (5 * 60 * 1000));
         loggedIn = udAtPlus5.after(new Date());
     }
@@ -131,7 +136,6 @@ public class User {
         LatLng loc = getLocation();
         if (loc == null) return;
 
-        Resources res = app.getResources();
         if(profPic == null)
             marker = new MarkerOptions().position(loc)
                     .snippet(user.getObjectId())
@@ -168,6 +172,7 @@ public class User {
             @Override
             protected void onPostExecute(Void voids) {
                 setProfPics();
+                app.callbackIfReady(5);
             }
         };
         task.execute();
@@ -308,6 +313,6 @@ public class User {
 
 
     public enum UserType {
-        FRIEND, PENDING_YOU, PENDING_THEM, FACEBOOK_FRIEND, RANDOM;
+        FRIEND, PENDING_YOU, PENDING_THEM, FACEBOOK_FRIEND, RANDOM
     }
 }
