@@ -47,7 +47,6 @@ public class User {
     private Bitmap chatIcon = null;
 
     private ParseObject privateData = null;
-    private MarkerOptions marker = null;
     private boolean loggedIn = false;
 
 
@@ -115,7 +114,6 @@ public class User {
     public void setPrivateData(ParseObject privateData){
         this.privateData = privateData;
         updateOnlineStatus();
-        createMarker();
     }
     private void updateOnlineStatus() {
         if (privateData == null) {
@@ -129,30 +127,6 @@ public class User {
         }
         Date udAtPlus5 = new Date(udAt.getTime() + (5 * 60 * 1000));
         loggedIn = udAtPlus5.after(new Date());
-    }
-    private void createMarker() {
-        marker = null;
-        if (privateData == null) return;
-        LatLng loc = getLocation();
-        if (loc == null) return;
-
-        if(profPic == null)
-            marker = new MarkerOptions().position(loc)
-                    .snippet(user.getObjectId())
-                    .icon(BitmapDescriptorFactory.fromBitmap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(app.getResources(), R.drawable.missing_user_outline), 170, 170, false)))
-                    .anchor(.5f, .5f);
-        else
-            marker = new MarkerOptions().position(loc)
-                    .snippet(user.getObjectId())
-                    .icon(BitmapDescriptorFactory.fromBitmap(markerIcon))
-                    .anchor(.5f, .5f);
-
-        for(Group group : app.getFriendsList().getAllGroups()){
-            if(group.contains(this)){
-                group.resetImage();
-            }
-        }
-        app.updateView();
     }
 
     private void setFacebookProfilePicture(){
@@ -183,12 +157,15 @@ public class User {
             profPic = getCircularWithColor(rawFbPic, relativeColor);
             setMarkerIconBitmap();
         }
-        createMarker();
         if (app != null)
             app.updateView();
     }
     private void setMarkerIconBitmap(){
         markerIcon = Bitmap.createScaledBitmap(profPic, 200, 200, false);
+
+        for(Group group : app.getFriendsList().getAllGroups())
+            if(group.contains(this))
+                group.resetImage();
     }
     private void setChatIcon(){
         Bitmap leftBubble = BitmapFactory.decodeResource(app.getResources(), R.drawable.left_chat_bubble_white);
@@ -262,6 +239,7 @@ public class User {
         return user.getObjectId();
     }
 
+
     public String getFullname(){
         return user.getString("fullname");
     }
@@ -269,12 +247,22 @@ public class User {
         return user.getUsername();
     }
     public String getFirstname() {
-        String firstname = user.getString("firstName");
+        String firstname = user.getString("firstname");
         if(firstname != null) return firstname;
         return getUsername();
     }
+    public int getCheckinCount(){
+        return user.getInt("checkinCount");
+    }
+    public String getSHePronoun(){
+        //todo fix
+        return "he";
+    }
 
 
+    public boolean isLoggedIn() {
+        return loggedIn;
+    }
     public Bitmap getProfPic() {
         return profPic;
     }
@@ -286,9 +274,6 @@ public class User {
     }
     public Bitmap getChatIcon() {
         return chatIcon;
-    }
-    public MarkerOptions getMarker() {
-        return marker;
     }
     public LatLng getLocation() {
         ParseGeoPoint loc = privateData.getParseGeoPoint("location");

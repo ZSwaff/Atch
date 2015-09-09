@@ -61,8 +61,9 @@ public class ParseAndFacebookUtils {
                 friendQuery.findInBackground(new FindCallback<ParseUser>() {
                     @Override
                     public void done(List<ParseUser> list, ParseException e) {
-                        for (ParseUser user : list)
+                        for (ParseUser user : list) {
                             friendsList.addUser(User.getOrCreateUser(user, User.UserType.FRIEND));
+                        }
 
                         callback.done(friendsList);
                     }
@@ -254,6 +255,11 @@ public class ParseAndFacebookUtils {
         ParseUser currentUser = ParseUser.getCurrentUser();
         final ParseGeoPoint loc = (location != null) ? new ParseGeoPoint(location.getLatitude(),location.getLongitude()) : null;
 
+        if(loc != null) {
+            currentUser.increment("checkinCount");
+            currentUser.saveInBackground();
+        }
+
         ParseQuery<ParseObject> query = ParseQuery.getQuery("FriendData");
         query.whereEqualTo("user", currentUser);
         query.getFirstInBackground(new GetCallback<ParseObject>() {
@@ -275,12 +281,13 @@ public class ParseAndFacebookUtils {
             @Override
             public void done(List<ParseObject> parseObjects, ParseException e) {
                 if (parseObjects == null) return;
-                for (ParseObject privateDatum : parseObjects) {
+                for (ParseObject privateDatum : parseObjects)
                     friends.addDataToUnknownUser(privateDatum);
-                }
+
+                friends.updateFriendGroups();
+
                 if (callback != null)
                     callback.done();
-                friends.updateFriendGroups();
             }
         });
     }
@@ -308,7 +315,7 @@ public class ParseAndFacebookUtils {
 
     public static void sendMessage(final ParseObject messageHistory, final String messageText, final char decorationFlag, final SimpleCallback callback){
         HashMap<String, Object> params = new HashMap<>();
-        params.put("messageText", messageText);
+        params.put("messageText", messageText.trim());
         params.put("decorationFlag", decorationFlag+"");
         params.put("messageHistoryId", messageHistory.getObjectId());
         ParseCloud.callFunctionInBackground("sendMessage", params, new FunctionCallback<Object>() {
@@ -382,8 +389,9 @@ public class ParseAndFacebookUtils {
                         try {
                             ParseUser currUser = ParseUser.getCurrentUser();
                             currUser.setUsername(username);
+                            currUser.put("checkinCount", 0);
                             currUser.put("queryUsername", username.toLowerCase());
-                            currUser.put("firstName", object.getString("first_name"));
+                            currUser.put("firstname", object.getString("first_name"));
                             currUser.put("fbid", object.getString("id"));
                             currUser.put("fullname", object.getString("name"));
                             currUser.put("queryFullname", object.getString("name").toLowerCase());

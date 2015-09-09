@@ -21,7 +21,26 @@ public class UserList{
         for(ParseUser pUsr : users)
             this.users.add(User.getOrCreateUser(pUsr, userType));
     }
+    public UserList(User.UserType userType, ArrayList<User> users) {
+        this.userType = userType;
+        this.users = users;
+    }
 
+
+    public UserList getOnline(){
+        ArrayList<User> onlineUsers = new ArrayList<>();
+        for(User user : users)
+            if(user.isLoggedIn())
+                onlineUsers.add(user);
+        return new UserList(userType, onlineUsers);
+    }
+    public UserList getOffline(){
+        ArrayList<User> offlineUsers = new ArrayList<>();
+        for(User user : users)
+            if(!user.isLoggedIn())
+                offlineUsers.add(user);
+        return new UserList(userType, offlineUsers);
+    }
 
     public ArrayList<User> getAllUsers() {
         return users;

@@ -46,9 +46,7 @@ public class AtchAgreementActivity extends Activity {
     protected void onResume() {
         super.onResume();
 
-        ((AtchApplication)getApplication()).stopLocationUpdates();
-        ((AtchApplication)getApplication()).setIsOnline(false);
-        ParseAndFacebookUtils.updateMyLocation(null);
+        ((AtchApplication)getApplication()).logout();
     }
 
     @Override

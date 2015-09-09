@@ -134,6 +134,7 @@ public class BannerTouchView extends RelativeLayout {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        requestFocus();
         imm.hideSoftInputFromWindow(getWindowToken(), 0);
         layoutParams = (ViewGroup.MarginLayoutParams) getLayoutParams();
 

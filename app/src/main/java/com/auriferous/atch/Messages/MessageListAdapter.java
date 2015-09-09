@@ -7,11 +7,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.auriferous.atch.Callbacks.SimpleCallback;
+import com.auriferous.atch.ParseAndFacebookUtils;
 import com.auriferous.atch.R;
 import com.auriferous.atch.Users.Group;
+import com.parse.ParseObject;
 import com.parse.ParseUser;
 
 import java.text.SimpleDateFormat;
@@ -20,31 +25,37 @@ public class MessageListAdapter extends BaseAdapter {
     private final Context context;
     private ListView listView;
 
+    private ParseObject messageHistory;
     private MessageList messageList;
     private ParseUser primaryUser;
     private Group recipientUsers;
     private String emptyMessage;
+    private SimpleCallback viewRefreshCallback;
 
 
-    public MessageListAdapter(Context context, ListView listView, MessageList messageList, ParseUser primaryUser, Group recipientUsers, String emptyMessage, MessageListAdapter oldAdapter) {
+    public MessageListAdapter(Context context, ListView listView, ParseObject messageHistory, MessageList messageList, ParseUser primaryUser, Group recipientUsers, String emptyMessage, MessageListAdapter oldAdapter, SimpleCallback viewRefreshCallback) {
         this.context = context;
         this.listView = listView;
+        this.messageHistory = messageHistory;
         this.messageList = messageList;
         this.primaryUser = primaryUser;
         this.recipientUsers = recipientUsers;
         this.emptyMessage = emptyMessage;
+        this. viewRefreshCallback = viewRefreshCallback;
+
+        //todo use oldAdapter
     }
 
 
     @Override
     public int getCount() {
-        if(messageList == null || messageList.getAllMessages() == null || messageList.getAllMessages().size() == 0) return 1;
-        return messageList.getAllMessages().size();
+        if(messageList == null || messageList.getAllNonResponseMessages() == null || messageList.getAllNonResponseMessages().size() == 0) return 1;
+        return messageList.getAllNonResponseMessages().size();
     }
     @Override
     public Message getItem(int position) {
-        if(messageList == null || messageList.getAllMessages() == null || messageList.getAllMessages().size() == 0 || position >= messageList.getAllMessages().size()) return null;
-        return messageList.getAllMessages().get(position);
+        if(messageList == null || messageList.getAllNonResponseMessages() == null || messageList.getAllNonResponseMessages().size() == 0 || position >= messageList.getAllNonResponseMessages().size()) return null;
+        return messageList.getAllNonResponseMessages().get(position);
     }
     @Override
     public long getItemId(int position) {
@@ -52,11 +63,11 @@ public class MessageListAdapter extends BaseAdapter {
     }
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        if(messageList == null || messageList.getAllMessages() == null || messageList.getAllMessages().size() == 0)
+        if(messageList == null || messageList.getAllNonResponseMessages() == null || messageList.getAllNonResponseMessages().size() == 0)
             return createFullscreenLabelView(parent);
-        if (position >= messageList.getAllMessages().size()) return null;
+        if (position >= messageList.getAllNonResponseMessages().size()) return null;
 
-        Message thisMessage = messageList.getAllMessages().get(position);
+        Message thisMessage = messageList.getAllNonResponseMessages().get(position);
         View chatView = null;
         switch(thisMessage.getDecorationFlag()){
             case 'n': {
@@ -94,14 +105,13 @@ public class MessageListAdapter extends BaseAdapter {
                 });
                 break;
             }
-            case 'h': {
-                chatView = createMeetHereChat(thisMessage, parent);
-                chatView.setBackgroundColor(recipientUsers.getLighterColor(thisMessage.getSenderId()));
+            case 'h':
+            case 't': {
+                chatView = createMeetHereOrThereChat(thisMessage, parent);
                 break;
             }
-            case 't': {
-                chatView = createMeetThereChat(thisMessage, parent);
-                chatView.setBackgroundColor(recipientUsers.getLighterColor(thisMessage.getSenderId()));
+            case 'r':
+            default: {
                 break;
             }
         }
@@ -134,35 +144,62 @@ public class MessageListAdapter extends BaseAdapter {
 
         return rowView;
     }
-    private View createMeetHereChat(Message message, ViewGroup parent) {
+    private View createMeetHereOrThereChat(final Message message, ViewGroup parent) {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View rowView;
-        if(message.getSender().getObjectId().equals(primaryUser.getObjectId()))
-            rowView = inflater.inflate(R.layout.meet_here_sent, parent, false);
-        else
-            rowView = inflater.inflate(R.layout.meet_there_sent, parent, false);
+        boolean fromCurrUser = message.getSender().getObjectId().equals(primaryUser.getObjectId());
+
+        if(message.getDecorationFlag() == 'h') {
+            if (fromCurrUser)
+                rowView = inflater.inflate(R.layout.meet_here_sent, parent, false);
+            else
+                rowView = inflater.inflate(R.layout.meet_here_received, parent, false);
+        }
+        else {
+            if (fromCurrUser)
+                rowView = inflater.inflate(R.layout.meet_there_sent, parent, false);
+            else
+                rowView = inflater.inflate(R.layout.meet_there_received, parent, false);
+        }
+
+        if(!fromCurrUser)
+            rowView.findViewById(R.id.inner_view).setBackgroundColor(recipientUsers.getLighterColor(message.getSenderId()));
 
         TextView label = (TextView) rowView.findViewById(R.id.message);
-        label.setText(message.getMessageText());
+        label.setText(message.getDecoratedMessageText(recipientUsers, fromCurrUser));
         TextView date = (TextView) rowView.findViewById(R.id.date);
         SimpleDateFormat formatter = new SimpleDateFormat("h:mm a");
         date.setText(formatter.format(message.getSendDate()));
 
-        return rowView;
-    }
-    private View createMeetThereChat(Message message, ViewGroup parent) {
-        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View rowView;
-        if(message.getSender().getObjectId().equals(primaryUser.getObjectId()))
-            rowView = inflater.inflate(R.layout.meet_there_sent, parent, false);
-        else
-            rowView = inflater.inflate(R.layout.meet_there_received, parent, false);
+        Message response = messageList.getResponse(message.getObjectId());
+        if(response == null){
+            Button okButton = (Button) rowView.findViewById(R.id.ok_button);
+            if(okButton != null)
+                okButton.setOnClickListener(new View.OnClickListener() {
+                    public void onClick(View v) {
+                        ParseAndFacebookUtils.sendMessage(messageHistory, message.getObjectId() + "_atch", 'r', viewRefreshCallback);
+                    }
+                });
+            Button busyButton = (Button) rowView.findViewById(R.id.busy_button);
+            if(busyButton != null)
+                busyButton.setOnClickListener(new View.OnClickListener() {
+                    public void onClick(View v) {
+                        ParseAndFacebookUtils.sendMessage(messageHistory, message.getObjectId() + "_busy", 'r', viewRefreshCallback);
+                    }
+                });
+        }
+        else{
+            RelativeLayout buttonArea = (RelativeLayout)rowView.findViewById(R.id.response_options);
+            if(buttonArea != null)
+                buttonArea.setVisibility(View.GONE);
 
-        TextView label = (TextView) rowView.findViewById(R.id.message);
-        label.setText(message.getMessageText());
-        TextView date = (TextView) rowView.findViewById(R.id.date);
-        SimpleDateFormat formatter = new SimpleDateFormat("h:mm a");
-        date.setText(formatter.format(message.getSendDate()));
+            RelativeLayout responseArea = (RelativeLayout)rowView.findViewById(R.id.response);
+            responseArea.setVisibility(View.VISIBLE);
+            TextView responseLabel = (TextView) rowView.findViewById(R.id.response_message);
+            responseLabel.setText(response.getDecoratedMessageText(recipientUsers, !fromCurrUser));
+            TextView responseDate = (TextView) rowView.findViewById(R.id.response_date);
+            responseDate.setText(formatter.format(response.getSendDate()));
+        }
 
         return rowView;
     }

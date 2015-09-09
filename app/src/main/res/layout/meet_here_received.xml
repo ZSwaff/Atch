@@ -1,55 +1,112 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
     <RelativeLayout
+        android:id="@+id/inner_view"
         android:layout_width="match_parent"
-        android:layout_height="120dp"
+        android:layout_height="wrap_content"
         android:background="#b9b9b9"
-        android:layout_marginBottom="40dp">
+        android:layout_marginBottom="4dp">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="message"
-            android:id="@+id/message"
-            android:textColor="#010101"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="45dp" />
+            android:layout_alignParentStart="true"
+            android:id="@+id/your_message">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="date"
-            android:id="@+id/date"
-            android:textColor="#010101"
-            android:layout_marginRight="16dp"
-            android:layout_alignBaseline="@+id/message"
-            android:layout_alignBottom="@+id/message"
-            android:layout_alignParentEnd="true" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="Alex suggests that you come over"
+                android:id="@+id/message"
+                android:textColor="#010101"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="0dp" />
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Ok!"
-            android:id="@+id/ok_button"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="date"
+                android:id="@+id/date"
+                android:textColor="#010101"
+                android:layout_below="@+id/message"
+                android:layout_alignStart="@+id/message"
+                android:layout_marginTop="-3dp"
+                android:layout_marginBottom="8dp" />
 
-        <Button
-            android:layout_width="wrap_content"
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Busy"
-            android:id="@+id/busy_button"
-            android:layout_alignParentBottom="true"
-            android:layout_toStartOf="@+id/ok_button" />
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/your_message"
+            android:id="@+id/response_options"
+            android:layout_marginTop="-10dp">
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Atch!"
+                android:id="@+id/ok_button"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Busy"
+                android:id="@+id/busy_button"
+                android:layout_alignParentTop="true"
+                android:layout_toStartOf="@+id/ok_button" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/response_options"
+            android:id="@+id/response"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="You are atch!"
+                android:id="@+id/response_message"
+                android:textColor="#010101"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="-2dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="date"
+                android:id="@+id/response_date"
+                android:textColor="#010101"
+                android:layout_below="@+id/response_message"
+                android:layout_alignEnd="@+id/response_message"
+                android:layout_marginTop="-3dp"
+                android:layout_marginBottom="8dp" />
+
+        </RelativeLayout>
 
     </RelativeLayout>
 
-</RelativeLayout>
+</LinearLayout>

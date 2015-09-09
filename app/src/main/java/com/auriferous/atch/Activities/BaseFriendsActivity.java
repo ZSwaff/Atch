@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -34,8 +35,21 @@ public abstract class BaseFriendsActivity extends AppCompatActivity{
     @Override
     protected void onResume() {
         super.onResume();
+
+        //todo switch to agreement activity if !app.isOnline()
+        if(!app.isOnline()) {
+            Log.d("xxx", "resuming toward AAA");
+
+            Intent intent = new Intent(getApplication(), AtchAgreementActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            intent.putExtra("back", true);
+            startActivity(intent);
+            overridePendingTransition(R.anim.slide_up_in, R.anim.slide_up_out);
+        }
+
         app.setCurrentActivity(this);
         app.setIsOnlineAndAppOpen(true);
+        app.deactivateLogoutAlarm();
     }
 
     @Override
@@ -60,9 +74,10 @@ public abstract class BaseFriendsActivity extends AppCompatActivity{
         if (currActivity != null && currActivity.equals(this)) {
             app.setIsOnlineAndAppOpen(false);
             app.setCurrentActivity(null);
+            app.activateLogoutAlarm();
             setViewUpdateCallback(null);
         }
-        else if(!(currActivity instanceof BaseFriendsActivity))
+        if(currActivity == null || !(currActivity instanceof BaseFriendsActivity))
             app.setIsOnlineAndAppOpen(false);
     }
 
@@ -110,8 +125,5 @@ public abstract class BaseFriendsActivity extends AppCompatActivity{
 
     protected void setViewUpdateCallback(ViewUpdateCallback viewUpdateCallback) {
         app.setViewUpdateCallback(viewUpdateCallback);
-    }
-    protected void updateCurrentView() {
-        app.updateView();
     }
 }

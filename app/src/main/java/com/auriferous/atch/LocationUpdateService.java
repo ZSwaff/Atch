@@ -1,5 +1,6 @@
 package com.auriferous.atch;
 
+import com.auriferous.atch.Callbacks.SimpleCallback;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -69,13 +70,18 @@ public class LocationUpdateService extends Service implements
 
     @Override
     public void onLocationChanged(Location location) {
-        AtchApplication app = (AtchApplication)getApplication();
+        final AtchApplication app = (AtchApplication)getApplication();
         app.setCurrentLocation(location);
         app.setLastUpdateTime(new Date());
 
         ParseAndFacebookUtils.updateMyLocation(location);
 
-        ParseAndFacebookUtils.updateFriendDataWithMostRecentLocations(app.getFriendsList(), null);
+        ParseAndFacebookUtils.updateFriendDataWithMostRecentLocations(app.getFriendsList(), new SimpleCallback() {
+            @Override
+            public void done() {
+                app.updateView();
+            }
+        });
     }
 
 

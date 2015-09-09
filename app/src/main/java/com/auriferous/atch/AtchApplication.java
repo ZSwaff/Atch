@@ -7,6 +7,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.location.Location;
+import android.os.CountDownTimer;
 import android.util.Base64;
 import android.util.Log;
 
@@ -25,8 +26,8 @@ import com.parse.ParseFacebookUtils;
 import java.security.MessageDigest;
 import java.util.Date;
 
-//laptop release qgG7TnZ3y6x5EIBELHxeOp5l0+0=
-//study mac release 28JFZmC2Z4KeVOdRPzxtEuX8UJM=
+//old laptop qgG7TnZ3y6x5EIBELHxeOp5l0+0=
+//new laptop OYjIaRgMAlt7n5rwAlrxEN3XMf8=
 
 public class AtchApplication extends Application {
     private volatile Activity currentActivity = null;
@@ -45,6 +46,7 @@ public class AtchApplication extends Application {
     private volatile UserList usersWhoSentFriendRequests = new UserList(User.UserType.PENDING_YOU);
     private volatile UserList facebookFriends = new UserList(User.UserType.FACEBOOK_FRIEND);
 
+    private volatile CountDownTimer logoutAlarm = null;
     private volatile boolean isLoggedIn = false;
     private volatile boolean isOnline = false;
     private volatile boolean isOnlineAndAppOpen = false;
@@ -94,6 +96,28 @@ public class AtchApplication extends Application {
         if(locationUpdateServiceIntent == null) return;
         stopService(locationUpdateServiceIntent);
         locationUpdateServiceIntent = null;
+    }
+
+    public void logout() {
+        stopLocationUpdates();
+        setIsOnline(false);
+        ParseAndFacebookUtils.updateMyLocation(null);
+    }
+    public void activateLogoutAlarm() {
+        logoutAlarm = new CountDownTimer(30 * 60 * 1000, 30 * 60 * 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) { }
+            @Override
+            public void onFinish() {
+                logout();
+            }
+        };
+        logoutAlarm.start();
+    }
+    public void deactivateLogoutAlarm() {
+        if(logoutAlarm != null)
+            logoutAlarm.cancel();
+        logoutAlarm = null;
     }
 
     public Location getCurrentLocation() {
@@ -157,11 +181,11 @@ public class AtchApplication extends Application {
                 md = MessageDigest.getInstance("SHA");
                 md.update(signature.toByteArray());
                 String something = new String(Base64.encode(md.digest(), 0));
-                Log.e("hash key", something);
+                Log.e("xxx hash key", something);
             }
         }
         catch (Exception e) {
-            Log.e("hash key", "error");
+            Log.e("xxxerr hash key", "error");
         }
     }
 
@@ -211,6 +235,7 @@ public class AtchApplication extends Application {
                     public void done() {
                         if (!isSetupComplete)
                             callbackIfReady(4);
+                        updateView();
                     }
                 });
 

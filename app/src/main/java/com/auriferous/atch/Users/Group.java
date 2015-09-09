@@ -28,10 +28,10 @@ public class Group {
 
 
     public static ArrayList<Group> getGroups(UserList users) {
-        ArrayList<User> allUsers = users.getAllUsers();
-        for(int i = allUsers.size() - 1; i >= 0; i--)
-            if(allUsers.get(i).getLocation() == null)
-                allUsers.remove(i);
+        ArrayList<User> allUsers = new ArrayList<>();
+        for(User user : users.getAllUsers())
+            if(user.getLocation() != null)
+                allUsers.add(user);
 
         Group[] allGroups = new Group[allUsers.size()];
         for(int i = 0; i < allUsers.size(); i++)
@@ -51,8 +51,7 @@ public class Group {
         }
 
         HashSet<Group> set = new HashSet<>();
-        for(int i = 0; i < allUsers.size(); i++)
-            set.add(allGroups[i]);
+        Collections.addAll(set, allGroups);
 
         ArrayList<Group> ret = new ArrayList<>();
         int counter = 0;
@@ -65,6 +64,14 @@ public class Group {
             ret.add(group);
         }
         return ret;
+    }
+    public static Group getGroupFromNumber(String groupNumberString, ArrayList<Group> allFriendListGroups) {
+        int groupId = Integer.parseInt(groupNumberString.substring(6));
+
+        for(Group g : allFriendListGroups)
+            if(g.getId() == groupId) return g;
+
+        return null;
     }
     public static Group getOrCreateGroup(String chatterIds, ArrayList<Group> allFriendListGroups) {
         for(Group g : allFriendListGroups)
@@ -130,6 +137,31 @@ public class Group {
 
         return names.substring(2);
     }
+    public String getNamesAsNiceList(){
+        String names = "";
+
+        for(int i = 0; i < usersInGroup.size(); i++){
+            User user = usersInGroup.get(i);
+            String demar = ", ";
+            if(i == 0)
+                demar = "";
+            else if(i == usersInGroup.size() - 1){
+                if(usersInGroup.size() == 2)
+                    demar = " and ";
+                else
+                    demar = ", and ";
+            }
+            names += demar + user.getFirstname();
+
+        }
+
+        return names;
+    }
+    public String getSHeTheyPronoun(){
+        if(usersInGroup.size() == 1)
+            return usersInGroup.get(0).getSHePronoun();
+        return "they";
+    }
     public int getId(){
         return id;
     }
@@ -142,7 +174,7 @@ public class Group {
     public int getColor() {
         if (usersInGroup.size() == 1)
             return usersInGroup.get(0).getRelativeColor();
-        return 0x7f0c0039;
+        return 0xff333333;
     }
     public int getLighterColor(String userId){
         for(User user : usersInGroup)
@@ -166,6 +198,11 @@ public class Group {
 
         //todo might misbehave around the hemisphere boundaries
         int numUsers = usersInGroup.size();
+        if(numUsers == 1 && usersInGroup.get(0).getLocation() == null) {
+            location = null;
+            return;
+        }
+
         double centerLat = 0, centerLng = 0;
         for(User user : usersInGroup){
             LatLng userLoc = user.getLocation();
@@ -247,5 +284,7 @@ public class Group {
                     .snippet("group " + getId())
                     .icon(BitmapDescriptorFactory.fromBitmap(Bitmap.createScaledBitmap(groupImage, width, width, false)))
                     .anchor(.5f, .5f);
+        else
+            marker = null;
     }
 }

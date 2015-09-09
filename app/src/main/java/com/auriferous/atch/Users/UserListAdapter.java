@@ -177,9 +177,13 @@ public class UserListAdapter extends BaseAdapter {
 
         TextView fullname = (TextView) rowView.findViewById(R.id.fullname);
         TextView username = (TextView) rowView.findViewById(R.id.username);
+        TextView score = (TextView) rowView.findViewById(R.id.score);
 
         fullname.setText(user.getFullname());
         username.setText(user.getUsername());
+        if(score != null)
+            score.setText(""+user.getCheckinCount());
+
 
         Bitmap profPic = user.getProfPic();
         if(profPic != null) {
@@ -281,6 +285,8 @@ public class UserListAdapter extends BaseAdapter {
         return rowView;
     }
     private void initListener(final User user, final ImageButton actionButton, final View rowView) {
+        if(actionButton == null) return;
+
         final Context context = this.context;
         rowView.setOnTouchListener(new View.OnTouchListener(){
             float slop = ViewConfiguration.get(context).getScaledTouchSlop();
@@ -391,9 +397,11 @@ public class UserListAdapter extends BaseAdapter {
             public boolean onTouch(View v, MotionEvent event) {
                 Intent intent = new Intent(context, MapActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                intent.putExtra("type", "group");
-                intent.putExtra("groupId", group.getId());
+                intent.putExtra("type", "zoom");
+                intent.putExtra("chatterParseId", "group_" + group.getId());
                 intent.putExtra("back", true);
+                if(app == null || app.getCurrentActivity() == null)
+                    return true;
                 app.getCurrentActivity().startActivity(intent);
                 app.getCurrentActivity().overridePendingTransition(R.anim.slide_right_in, R.anim.slide_right_out);
                 return true;

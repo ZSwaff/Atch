@@ -83,8 +83,9 @@ public class ViewFriendsActivity extends BaseFriendsActivity {
         UserList friends = ((AtchApplication) getApplication()).getFriendsList();
 
         ArrayList<UserListAdapterSection> sections = new ArrayList<>();
-        sections.add(new UserListAdapterSection("Currently hanging", friends.getAllGroupsWithMoreThanOnePerson()));
-        sections.add(new UserListAdapterSection("All friends", friends));
+        sections.add(new UserListAdapterSection("Together", friends.getAllGroupsWithMoreThanOnePerson()));
+        sections.add(new UserListAdapterSection("Online", friends.getOnline()));
+        sections.add(new UserListAdapterSection("Offline", friends.getOffline()));
         ListView listView = (ListView) findViewById(R.id.listview);
         UserListAdapter arrayAdapter = new UserListAdapter(this, sections, "No friends yet", (UserListAdapter)listView.getAdapter());
         listView.setAdapter(arrayAdapter);
