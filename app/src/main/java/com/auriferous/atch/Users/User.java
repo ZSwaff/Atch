@@ -15,9 +15,7 @@ import android.os.AsyncTask;
 import com.auriferous.atch.AtchApplication;
 import com.auriferous.atch.GeneralUtils;
 import com.auriferous.atch.R;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
@@ -29,10 +27,9 @@ import java.util.Date;
 import java.util.HashMap;
 
 public class User {
+    private static AtchApplication app;
     private static HashMap<String, User> userCache = new HashMap<>();
     private static UserInfoSaveable infoGroup = null;
-
-    private static AtchApplication app;
 
 
     private ParseUser user = null;
@@ -50,17 +47,33 @@ public class User {
     private boolean loggedIn = false;
 
 
+    private User(ParseUser parseUser, UserType userType) {
+        user = parseUser;
+        this.userType = userType;
+
+        userCache.put(user.getObjectId(), this);
+
+        int color = infoGroup.getColor(user.getObjectId());
+        if (color != -1)
+            relativeColor = color;
+        else {
+            relativeColor = GeneralUtils.generateNewColor();
+            UserInfoSaveable.autoSave(app, User.getUserCache());
+        }
+
+        lighterColor = GeneralUtils.getLighter(relativeColor);
+
+        setChatIcon();
+        setFacebookProfilePicture();
+    }
     public static void init(AtchApplication app, UserInfoSaveable infoGroup){
         User.app = app;
         User.infoGroup = infoGroup;
     }
-
     public static User getUserFromMap(String parseId){
         if (!userCache.containsKey(parseId)) return null;
         return userCache.get(parseId);
     }
-
-
     public static User getOrCreateUser(ParseUser parseUser, UserType userType){
         User oldUser = getUserFromMap(parseUser.getObjectId());
 
@@ -90,45 +103,67 @@ public class User {
 
         return new User(parseUser, userType);
     }
-    private User(ParseUser parseUser, UserType userType){
-        user = parseUser;
-        this.userType = userType;
+    private static Bitmap getCircular(Bitmap bm) {
+        int radius = bm.getWidth();
 
-        userCache.put(user.getObjectId(), this);
+        Bitmap bmOut = Bitmap.createBitmap(radius, radius, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bmOut);
 
-        int color = infoGroup.getColor(user.getObjectId());
-        if(color != -1)
-            relativeColor = color;
-        else {
-            relativeColor = GeneralUtils.generateNewColor();
-            UserInfoSaveable.autoSave(app, User.getUserCache());
-        }
+        Paint paint = new Paint();
+        paint.setAntiAlias(true);
+        paint.setColor(0xff424242);
 
-        lighterColor = GeneralUtils.getLighter(relativeColor);
+        Rect rect = new Rect(0, 0, radius, radius);
+        RectF rectF = new RectF(rect);
 
-        setChatIcon();
-        setFacebookProfilePicture();
+        canvas.drawARGB(0, 0, 0, 0);
+        canvas.drawCircle(rectF.left + (rectF.width() / 2), rectF.top + (rectF.height() / 2), radius / 2, paint);
+
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(bm, rect, rect, paint);
+
+        return bmOut;
     }
+    private static Bitmap getCircularWithColor(Bitmap bm, int color) {
+        int borderWidth = 14;
+        float radius = bm.getWidth();
 
+        Bitmap bmOut = Bitmap.createBitmap((int) radius + 2 * borderWidth, (int) radius + 2 * borderWidth, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bmOut);
 
+        Paint paint = new Paint();
+        paint.setAntiAlias(true);
+        paint.setStyle(Paint.Style.FILL);
+        paint.setColor(color);
+        canvas.drawCircle(radius / 2 + borderWidth, radius / 2 + borderWidth, radius / 2 + borderWidth, paint);
+
+        paint = new Paint();
+        paint.setAntiAlias(true);
+        canvas.drawBitmap(getCircular(bm), borderWidth, borderWidth, null);
+
+        return bmOut;
+    }
+    public static HashMap<String, User> getUserCache() {
+        return userCache;
+    }
     public void setPrivateData(ParseObject privateData){
         this.privateData = privateData;
         updateOnlineStatus();
     }
     private void updateOnlineStatus() {
-        if (privateData == null) {
+        boolean initialStatus = loggedIn;
+        if (privateData == null || privateData.getUpdatedAt() == null || getLocation() == null)
             loggedIn = false;
-            return;
-        }
-        Date udAt = privateData.getUpdatedAt();
-        if(udAt == null || getLocation() == null) {
-            loggedIn = false;
-            return;
-        }
-        Date udAtPlus5 = new Date(udAt.getTime() + (5 * 60 * 1000));
+        Date udAtPlus5 = new Date(privateData.getUpdatedAt().getTime() + (5 * 60 * 1000));
         loggedIn = udAtPlus5.after(new Date());
-    }
 
+        //todo reexamine
+//        if(!initialStatus && loggedIn){
+//            Activity currActivity = app.getCurrentActivity();
+//            if (app.isOnlineAndAppOpen() && currActivity != null && currActivity instanceof BaseFriendsActivity)
+//                ((BaseFriendsActivity)currActivity).createNotification(getFirstname() + " is online", getRelativeColor(), null, null);
+//        }
+    }
     private void setFacebookProfilePicture(){
         final String fbid = user.getString("fbid");
 
@@ -167,55 +202,10 @@ public class User {
             if(group.contains(this))
                 group.resetImage();
     }
-    private void setChatIcon(){
+    private void setChatIcon() {
         Bitmap leftBubble = BitmapFactory.decodeResource(app.getResources(), R.drawable.left_chat_bubble_white);
         Bitmap rightBubble = BitmapFactory.decodeResource(app.getResources(), R.drawable.right_chat_bubble);
         chatIcon = GeneralUtils.layerImagesRecolorForeground(leftBubble, rightBubble, relativeColor);
-    }
-
-    private static Bitmap getCircular(Bitmap bm) {
-        int radius = bm.getWidth();
-
-        Bitmap bmOut = Bitmap.createBitmap(radius, radius, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bmOut);
-
-        Paint paint = new Paint();
-        paint.setAntiAlias(true);
-        paint.setColor(0xff424242);
-
-        Rect rect = new Rect(0, 0, radius, radius);
-        RectF rectF = new RectF(rect);
-
-        canvas.drawARGB(0, 0, 0, 0);
-        canvas.drawCircle(rectF.left + (rectF.width()/2), rectF.top + (rectF.height()/2), radius / 2, paint);
-
-        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
-        canvas.drawBitmap(bm, rect, rect, paint);
-
-        return bmOut;
-    }
-    private static Bitmap getCircularWithColor(Bitmap bm, int color) {
-        int borderWidth = 14;
-        float radius = bm.getWidth();
-
-        Bitmap bmOut = Bitmap.createBitmap((int) radius + 2 * borderWidth, (int) radius + 2 * borderWidth, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bmOut);
-
-        Paint paint = new Paint();
-        paint.setAntiAlias(true);
-        paint.setStyle(Paint.Style.FILL);
-        paint.setColor(color);
-        canvas.drawCircle(radius / 2 + borderWidth, radius / 2 + borderWidth, radius / 2 + borderWidth, paint);
-
-        paint = new Paint();
-        paint.setAntiAlias(true);
-        canvas.drawBitmap(getCircular(bm), borderWidth, borderWidth, null);
-
-        return bmOut;
-    }
-
-    public static HashMap<String, User> getUserCache() {
-        return userCache;
     }
     public int getRelativeColor() {
         return relativeColor;

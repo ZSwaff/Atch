@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
@@ -202,7 +201,7 @@ public class MapActivity  extends BaseFriendsActivity {
 
                     if(chatRecipients != null && chatRecipients.getId() >= 0)
                         panTo(chatRecipients.getLocation(), 700);
-            }
+                }
             }
             else if (type.equals("zoom")) {
                 final String chatterPID = getIntent().getStringExtra("chatterParseId");
@@ -402,6 +401,7 @@ public class MapActivity  extends BaseFriendsActivity {
                     chatRecipients = group;
                     break;
                 }
+
             }
         }
         else

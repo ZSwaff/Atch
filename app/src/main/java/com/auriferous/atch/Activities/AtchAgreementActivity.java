@@ -86,6 +86,8 @@ public class AtchAgreementActivity extends Activity {
         ((AtchApplication)getApplication()).setIsOnline(true);
         ((AtchApplication)getApplication()).startLocationUpdates();
 
+        ParseAndFacebookUtils.sendLoginNotifications();
+
         Intent intent = new Intent(getApplication(), MapActivity.class);
         startActivity(intent);
         overridePendingTransition(R.anim.slide_down_in, R.anim.slide_down_out);

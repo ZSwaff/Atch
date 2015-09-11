@@ -251,6 +251,13 @@ public class ParseAndFacebookUtils {
     }
 
 
+    public static void sendLoginNotifications() {
+        ParseCloud.callFunctionInBackground("sendLoginNotifications", new HashMap<String, Object>(), new FunctionCallback<ParseObject>() {
+            @Override
+            public void done(ParseObject result, ParseException e) {
+            }
+        });
+    }
     public static void updateMyLocation(Location location){
         ParseUser currentUser = ParseUser.getCurrentUser();
         final ParseGeoPoint loc = (location != null) ? new ParseGeoPoint(location.getLatitude(),location.getLongitude()) : null;

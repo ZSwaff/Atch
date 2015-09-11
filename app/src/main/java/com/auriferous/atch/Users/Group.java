@@ -27,6 +27,13 @@ public class Group {
     private MarkerOptions marker = null;
 
 
+    private Group() {
+        usersInGroup = new ArrayList<>();
+    }
+    private Group(User user) {
+        usersInGroup = new ArrayList<>();
+        usersInGroup.add(user);
+    }
     public static ArrayList<Group> getGroups(UserList users) {
         ArrayList<User> allUsers = new ArrayList<>();
         for(User user : users.getAllUsers())
@@ -89,16 +96,6 @@ public class Group {
         newGroup.setupMarker();
         return newGroup;
     }
-
-    private Group(){
-        usersInGroup = new ArrayList<>();
-    }
-    private Group(User user){
-        usersInGroup = new ArrayList<>();
-        usersInGroup.add(user);
-    }
-
-
     private void addUsersFrom(Group otherGroup) {
         usersInGroup.addAll(otherGroup.usersInGroup);
     }
@@ -152,7 +149,6 @@ public class Group {
                     demar = ", and ";
             }
             names += demar + user.getFirstname();
-
         }
 
         return names;

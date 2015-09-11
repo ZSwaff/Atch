@@ -2,18 +2,10 @@ package com.auriferous.atch.Activities;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
-import android.util.AttributeSet;
-import android.util.Log;
-import android.util.Xml;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.auriferous.atch.AtchApplication;
@@ -38,8 +30,6 @@ public abstract class BaseFriendsActivity extends AppCompatActivity{
 
         //todo switch to agreement activity if !app.isOnline()
         if(!app.isOnline()) {
-            Log.d("xxx", "resuming toward AAA");
-
             Intent intent = new Intent(getApplication(), AtchAgreementActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             intent.putExtra("back", true);
