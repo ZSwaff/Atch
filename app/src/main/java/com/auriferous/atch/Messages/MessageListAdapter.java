@@ -33,7 +33,7 @@ public class MessageListAdapter extends BaseAdapter {
     private SimpleCallback viewRefreshCallback;
 
 
-    public MessageListAdapter(Context context, ListView listView, ParseObject messageHistory, MessageList messageList, ParseUser primaryUser, Group recipientUsers, String emptyMessage, MessageListAdapter oldAdapter, SimpleCallback viewRefreshCallback) {
+    public MessageListAdapter(Context context, ListView listView, ParseObject messageHistory, MessageList messageList, ParseUser primaryUser, Group recipientUsers, String emptyMessage, SimpleCallback viewRefreshCallback) {
         this.context = context;
         this.listView = listView;
         this.messageHistory = messageHistory;
@@ -41,9 +41,7 @@ public class MessageListAdapter extends BaseAdapter {
         this.primaryUser = primaryUser;
         this.recipientUsers = recipientUsers;
         this.emptyMessage = emptyMessage;
-        this. viewRefreshCallback = viewRefreshCallback;
-
-        //todo use oldAdapter
+        this.viewRefreshCallback = viewRefreshCallback;
     }
 
 
@@ -96,7 +94,9 @@ public class MessageListAdapter extends BaseAdapter {
                         vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                             @Override
                             public void onGlobalLayout() {
-                                listView.scrollBy(0, v.getMeasuredHeight() - initalHeight);
+                                if (!(listView.getLastVisiblePosition() == listView.getAdapter().getCount() - 1 && listView.getChildAt(listView.getChildCount() - 1).getBottom() <= listView.getHeight())) {
+                                    listView.scrollListBy(v.getMeasuredHeight() - initalHeight);
+                                }
                                 ViewTreeObserver obs = v.getViewTreeObserver();
                                 obs.removeOnGlobalLayoutListener(this);
                             }

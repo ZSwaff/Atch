@@ -28,6 +28,7 @@ public class AtchAgreementActivity extends Activity {
         app.populateFriendList();
         app.populateFacebookFriendList();
         app.populatePendingLists();
+        app.populateMessageLists();
 
         findViewById(R.id.engage_button).setOnClickListener(new View.OnClickListener() {
             @Override

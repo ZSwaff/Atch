@@ -28,7 +28,6 @@ public abstract class BaseFriendsActivity extends AppCompatActivity{
     protected void onResume() {
         super.onResume();
 
-        //todo switch to agreement activity if !app.isOnline()
         if(!app.isOnline()) {
             Intent intent = new Intent(getApplication(), AtchAgreementActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);

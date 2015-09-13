@@ -82,7 +82,7 @@ public class Group {
     }
     public static Group getOrCreateGroup(String chatterIds, ArrayList<Group> allFriendListGroups) {
         for(Group g : allFriendListGroups)
-            if(g.containsAll(chatterIds.trim().split("_"))) return g;
+            if (g.matchesAll(chatterIds.trim().split("_"))) return g;
 
         Group newGroup = new Group();
         for(String chatterId : chatterIds.trim().split("_")){
@@ -112,10 +112,14 @@ public class Group {
             if(user.getId().equals(userId)) return true;
         return false;
     }
-    public boolean containsAll(String[] userIds){
-        for(String chatterId : userIds)
-            if(!contains(chatterId)) return false;
-        return true;
+    public boolean matchesAll(String[] userIds) {
+        for (int i = 0; i < userIds.length; i++) {
+            String chatterId = userIds[i];
+            for (int j = 0; j < i; j++)
+                if (userIds[j].equals(chatterId)) return false;
+            if (!contains(chatterId)) return false;
+        }
+        return (userIds.length == usersInGroup.size());
     }
     public Bitmap getGroupImage() {
         return groupImage;
@@ -133,6 +137,18 @@ public class Group {
             names += ", " + user.getFirstname();
 
         return names.substring(2);
+    }
+    public String getIdsInString(String extraId) {
+        ArrayList<String> ids = new ArrayList<>();
+        if (extraId != null)
+            ids.add(extraId);
+        for (User user : usersInGroup)
+            ids.add(user.getId());
+        Collections.sort(ids);
+        String ret = "";
+        for (String id : ids)
+            ret += "_" + id;
+        return ret.substring(1);
     }
     public String getNamesAsNiceList(){
         String names = "";

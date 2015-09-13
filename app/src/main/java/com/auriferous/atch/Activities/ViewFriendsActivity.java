@@ -2,18 +2,19 @@ package com.auriferous.atch.Activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.NavUtils;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ListView;
 
-import com.auriferous.atch.Users.UserListAdapter;
 import com.auriferous.atch.AtchApplication;
 import com.auriferous.atch.Callbacks.ViewUpdateCallback;
 import com.auriferous.atch.R;
-import com.auriferous.atch.Users.UserListAdapterSection;
+import com.auriferous.atch.Users.Group;
+import com.auriferous.atch.Users.User;
 import com.auriferous.atch.Users.UserList;
+import com.auriferous.atch.Users.UserListAdapter;
+import com.auriferous.atch.Users.UserListAdapterSection;
 
 import java.util.ArrayList;
 
@@ -86,8 +87,41 @@ public class ViewFriendsActivity extends BaseFriendsActivity {
         sections.add(new UserListAdapterSection("Together", friends.getAllGroupsWithMoreThanOnePerson()));
         sections.add(new UserListAdapterSection("Online", friends.getOnline()));
         sections.add(new UserListAdapterSection("Offline", friends.getOffline()));
+
         ListView listView = (ListView) findViewById(R.id.listview);
+        String firstItemId = null;
+        int scrollFromTop = 0;
+        if (listView.getAdapter() != null && listView.getCount() > 0) {
+            Object firstObject = listView.getItemAtPosition(listView.getFirstVisiblePosition());
+            if (firstObject != null) {
+                View v = listView.getChildAt(0);
+                scrollFromTop = (v == null) ? 0 : (v.getTop() - listView.getPaddingTop());
+                if (firstObject instanceof User)
+                    firstItemId = ((User) firstObject).getId();
+                if (firstObject instanceof Group)
+                    firstItemId = ((Group) firstObject).getIdsInString(null);
+            }
+        }
+
         UserListAdapter arrayAdapter = new UserListAdapter(this, sections, "No friends yet", (UserListAdapter)listView.getAdapter());
         listView.setAdapter(arrayAdapter);
+
+        if (firstItemId != null) {
+            for (int i = listView.getCount() - 1; i >= 0; i--) {
+                Object currObject = listView.getItemAtPosition(i);
+                boolean isCorrect = false;
+                if (currObject instanceof User)
+                    if (((User) currObject).getId().equals(firstItemId))
+                        isCorrect = true;
+                if (currObject instanceof Group)
+                    if (((Group) currObject).getIdsInString(null).equals(firstItemId))
+                        isCorrect = true;
+
+                if (isCorrect) {
+                    listView.setSelectionFromTop(i, scrollFromTop);
+                    break;
+                }
+            }
+        }
     }
 }

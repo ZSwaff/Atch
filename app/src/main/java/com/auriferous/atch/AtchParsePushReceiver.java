@@ -19,6 +19,7 @@ import com.parse.ParsePushBroadcastReceiver;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+
 public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
     private static final int NOTIFICATION_ID = 492304;
 
@@ -44,6 +45,7 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
             String chatRecipientObjectId = null;
             String friendRecipientObjectId = null;
             String atchage = null;
+            String pid = null;
 
             try {
                 JSONObject cls = new JSONObject(intent.getStringExtra("com.parse.Data"));
@@ -51,6 +53,7 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
                 chatRecipientObjectId = cls.optString("chatterParseId", null);
                 friendRecipientObjectId = cls.optString("frienderParseId", null);
                 atchage = cls.optString("alert", null);
+                pid = cls.optString("pid", null);
             } catch (JSONException var6) {
             }
 
@@ -74,10 +77,13 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
                 }
                 else if(type.equals("friendAccept")) {
                     user = User.getUserFromMap(friendRecipientObjectId);
-                    message = user.getUsername() + "accepted your friend request";
+                    message = user.getUsername() + " accepted your friend request";
+                } else if (type.equals("login")) {
+                    user = User.getUserFromMap(pid);
+                    message = user.getUsername() + " logged in";
                 }
                 ((BaseFriendsActivity)currActivity).createNotification(message, (user != null)?user.getRelativeColor():-1, getClassToOpen(type),
-                        createIntent(context, getClassToOpen(type), intent, type, chatRecipientObjectId, friendRecipientObjectId));
+                        createIntent(context, getClassToOpen(type), intent, type, chatRecipientObjectId, friendRecipientObjectId, pid));
             }
             else {
                 setupAndDeliverNotification(context, intent);
@@ -106,6 +112,11 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
             context.sendBroadcast(broadcastIntent);
         }
 
+//        //reset certain parts of the message
+//        if (pushData != null) {
+//            action = pushData.optString("action", null);
+//        }
+
         Notification notification = getNotification(context, intent);
         if(context != null && notification != null) {
             NotificationManager nm = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -118,6 +129,44 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
             }
         }
     }
+//    protected Notification getNotification(Context context, Intent intent) {
+//        JSONObject pushData = this.getPushData(intent);
+//        if(pushData != null && (pushData.has("alert") || pushData.has("title"))) {
+//            String title = pushData.optString("title", "Notification received.");
+//            String alert = pushData.optString("alert", "Notification received.");
+//            String tickerText = String.format(Locale.getDefault(), "%s: %s", new Object[]{title, alert});
+//            Bundle extras = intent.getExtras();
+//            Random random = new Random();
+//            int contentIntentRequestCode = random.nextInt();
+//            int deleteIntentRequestCode = random.nextInt();
+//            String packageName = context.getPackageName();
+//            Intent contentIntent = new Intent("com.parse.push.intent.OPEN");
+//            contentIntent.putExtras(extras);
+//            contentIntent.setPackage(packageName);
+//            Intent deleteIntent = new Intent("com.parse.push.intent.DELETE");
+//            deleteIntent.putExtras(extras);
+//            deleteIntent.setPackage(packageName);
+//            PendingIntent pContentIntent = PendingIntent.getBroadcast(context, contentIntentRequestCode, contentIntent, 134217728);
+//            PendingIntent pDeleteIntent = PendingIntent.getBroadcast(context, deleteIntentRequestCode, deleteIntent, 134217728);
+//            NotificationCompat.Builder parseBuilder = new NotificationCompat.Builder(context);
+//            parseBuilder.setContentTitle(title).setContentText(alert).setTicker(tickerText).setSmallIcon(this.getSmallIconId(context, intent)).setLargeIcon(this.getLargeIcon(context, intent)).setContentIntent(pContentIntent).setDeleteIntent(pDeleteIntent).setAutoCancel(true).setDefaults(-1);
+//            if(alert != null && alert.length() > 38) {
+//                parseBuilder.setStyle((new NotificationCompat.Builder.BigTextStyle()).bigText(alert));
+//            }
+//
+//            return parseBuilder.build();
+//        } else {
+//            return null;
+//        }
+//    }
+//    private JSONObject getPushData(Intent intent) {
+//        try {
+//            return new JSONObject(intent.getStringExtra("com.parse.Data"));
+//        } catch (JSONException var3) {
+//            Log.e("xxxerr", "Unexpected JSONException when receiving push data: ", var3);
+//            return null;
+//        }
+//    }
 
     @Override
     protected void onPushOpen(Context context, Intent intent) {
@@ -135,16 +184,18 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
         String type = null;
         String chatRecipientObjectId = null;
         String friendRecipientObjectId = null;
+        String pid = null;
 
         try {
             JSONObject cls = new JSONObject(intent.getStringExtra("com.parse.Data"));
             type = cls.optString("type", null);
             chatRecipientObjectId = cls.optString("chatterParseId", null);
             friendRecipientObjectId = cls.optString("frienderParseId", null);
+            pid = cls.optString("pid", null);
         }
         catch (JSONException var6) {}
 
-        Intent activityIntent = createIntent(context, getClassToOpen(type), intent, type, chatRecipientObjectId, friendRecipientObjectId);
+        Intent activityIntent = createIntent(context, getClassToOpen(type), intent, type, chatRecipientObjectId, friendRecipientObjectId, pid);
         context.startActivity(activityIntent);
     }
 
@@ -155,16 +206,17 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
             return AddFriendsActivity.class;
         else if(type.equals("friendAccept"))
             return ViewFriendsActivity.class;
+        else if (type.equals("login"))
+            return MapActivity.class;
         return null;
     }
 
 
-
-    private Intent createIntent(Context context, Class resultClass, Intent oldIntent, String type, String chatterParseId, String frienderParseId) {
+    private Intent createIntent(Context context, Class resultClass, Intent oldIntent, String type, String chatterParseId, String frienderParseId, String pid) {
         Intent activityIntent = new Intent(context, resultClass);
         activityIntent.putExtras(oldIntent.getExtras());
         activityIntent.putExtra("type", type);
-        activityIntent.putExtra("chatterParseId", chatterParseId);
+        activityIntent.putExtra("chatterParseId", (chatterParseId == null) ? pid : chatterParseId);
         activityIntent.putExtra("frienderParseId", frienderParseId);
         activityIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         activityIntent.addFlags(268435456);

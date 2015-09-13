@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ListView;
 import android.widget.SearchView;
 
@@ -12,6 +13,7 @@ import com.auriferous.atch.Callbacks.VariableCallback;
 import com.auriferous.atch.Callbacks.ViewUpdateCallback;
 import com.auriferous.atch.ParseAndFacebookUtils;
 import com.auriferous.atch.R;
+import com.auriferous.atch.Users.Group;
 import com.auriferous.atch.Users.User;
 import com.auriferous.atch.Users.UserList;
 import com.auriferous.atch.Users.UserListAdapter;
@@ -126,12 +128,47 @@ public class AddFriendsActivity extends BaseFriendsActivity {
         sections.add(new UserListAdapterSection("Facebook friends", app.getFacebookFriends()));
 
         ListView listView = (ListView) findViewById(R.id.listview);
-        UserListAdapter arrayAdapter = new UserListAdapter(this, sections, "No suggestions", (UserListAdapter)listView.getAdapter());
-        listView.setAdapter(arrayAdapter);
+        fillListViewGivenAdapter(new UserListAdapter(this, sections, "No suggestions", (UserListAdapter) listView.getAdapter()));
     }
     private void fillListViewSearch() {
         ListView listView = (ListView) findViewById(R.id.listview);
-        UserListAdapter arrayAdapter = new UserListAdapter(this, new UserListAdapterSection("Search results", searchResults), "No results", (UserListAdapter)listView.getAdapter());
+        fillListViewGivenAdapter(new UserListAdapter(this, new UserListAdapterSection("Search results", searchResults), "No results", (UserListAdapter) listView.getAdapter()));
+    }
+
+    private void fillListViewGivenAdapter(UserListAdapter arrayAdapter) {
+        ListView listView = (ListView) findViewById(R.id.listview);
+        String firstItemId = null;
+        int scrollFromTop = 0;
+        if (listView.getAdapter() != null && listView.getCount() > 0) {
+            Object firstObject = listView.getItemAtPosition(listView.getFirstVisiblePosition());
+            if (firstObject != null) {
+                View v = listView.getChildAt(0);
+                scrollFromTop = (v == null) ? 0 : (v.getTop() - listView.getPaddingTop());
+                if (firstObject instanceof User)
+                    firstItemId = ((User) firstObject).getId();
+                if (firstObject instanceof Group)
+                    firstItemId = ((Group) firstObject).getIdsInString(null);
+            }
+        }
+
         listView.setAdapter(arrayAdapter);
+
+        if (firstItemId != null) {
+            for (int i = listView.getCount() - 1; i >= 0; i--) {
+                Object currObject = listView.getItemAtPosition(i);
+                boolean isCorrect = false;
+                if (currObject instanceof User)
+                    if (((User) currObject).getId().equals(firstItemId))
+                        isCorrect = true;
+                if (currObject instanceof Group)
+                    if (((Group) currObject).getIdsInString(null).equals(firstItemId))
+                        isCorrect = true;
+
+                if (isCorrect) {
+                    listView.setSelectionFromTop(i, scrollFromTop);
+                    break;
+                }
+            }
+        }
     }
 }

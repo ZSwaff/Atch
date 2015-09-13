@@ -8,46 +8,45 @@
     tools:context="com.auriferous.atch.Activities.LoginActivity">
 
     <fragment
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
-        android:id="@+id/map"
-        tools:context=".MapActivity"
-        android:name="com.google.android.gms.maps.SupportMapFragment" />
+        tools:context=".MapActivity"/>
 
     <RelativeLayout
         android:id="@+id/buttons_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:weightSum="1">
+        android:orientation="vertical">
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="fill_parent"
             android:layout_above="@+id/log_in_button"
-            android:orientation="vertical"
+            android:alpha=".5"
             android:background="#575757"
-            android:alpha=".5"></RelativeLayout>
+            android:orientation="vertical"></RelativeLayout>
 
         <Button
             android:id="@+id/log_in_button"
             style="?android:textAppearanceLarge"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="LOG IN"
-            android:textStyle="bold"
-            android:padding="0dp"
-            android:layout_margin="0dp"
-            android:layout_marginLeft="0dp"
-            android:layout_marginTop="0dp"
-            android:layout_marginRight="0dp"
-            android:layout_marginBottom="0dp"
-            android:background="#c5c5c5"
             android:layout_above="@+id/sign_up_switch_button"
             android:layout_alignParentStart="true"
-            android:alpha="1" />
+            android:layout_margin="0dp"
+            android:layout_marginBottom="0dp"
+            android:layout_marginLeft="0dp"
+            android:layout_marginRight="0dp"
+            android:layout_marginTop="0dp"
+            android:alpha="1"
+            android:background="#c5c5c5"
+            android:padding="0dp"
+            android:text="LOG IN"
+            android:textStyle="bold"/>
 
         <Button
             android:id="@+id/sign_up_switch_button"
@@ -55,16 +54,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:text="SIGN UP"
-            android:textStyle="bold"
-            android:padding="0dp"
             android:layout_margin="0dp"
-            android:layout_marginLeft="0dp"
-            android:layout_marginTop="0dp"
-            android:layout_marginRight="0dp"
             android:layout_marginBottom="0dp"
+            android:layout_marginLeft="0dp"
+            android:layout_marginRight="0dp"
+            android:layout_marginTop="0dp"
+            android:alpha="1"
             android:background="#a2a2a2"
-            android:alpha="1" />
+            android:padding="0dp"
+            android:text="SIGN UP"
+            android:textStyle="bold"/>
 
     </RelativeLayout>
 
@@ -73,31 +72,56 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:weightSum="1"
         android:visibility="gone">
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="fill_parent"
-            android:layout_above="@+id/username"
-            android:orientation="vertical"
+            android:layout_above="@+id/username_feedback_area"
+            android:alpha=".5"
             android:background="#575757"
-            android:alpha=".5"></RelativeLayout>
+            android:orientation="vertical"></RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/username_feedback_area"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/username"
+            android:alpha=".8"
+            android:background="#575757"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/username_feedback"
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:paddingBottom="5dp"
+                android:paddingLeft="6dp"
+                android:paddingTop="5dp"
+                android:text="Pick a username"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textColor="@android:color/primary_text_dark"/>
+
+        </RelativeLayout>
 
         <com.auriferous.atch.ActionEditText
             android:id="@+id/username"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_above="@+id/sign_up_button"
-            android:hint="Pick a username"
-            android:padding="10dp"
-            android:layout_margin="0dp"
-            android:maxLines="1"
-            android:singleLine="true"
             android:layout_alignParentStart="true"
-            android:background="#c5c5c5"
+            android:layout_margin="0dp"
             android:alpha="1"
-            android:imeOptions="actionGo" />
+            android:background="#c5c5c5"
+            android:hint="Username"
+            android:imeOptions="actionGo"
+            android:maxLines="1"
+            android:padding="10dp"
+            android:singleLine="true"/>
 
         <Button
             android:id="@+id/sign_up_button"
@@ -105,16 +129,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:text="SIGN UP"
-            android:textStyle="bold"
-            android:padding="0dp"
             android:layout_margin="0dp"
-            android:layout_marginLeft="0dp"
-            android:layout_marginTop="0dp"
-            android:layout_marginRight="0dp"
             android:layout_marginBottom="0dp"
+            android:layout_marginLeft="0dp"
+            android:layout_marginRight="0dp"
+            android:layout_marginTop="0dp"
+            android:alpha="1"
             android:background="#a2a2a2"
-            android:alpha="1" />
+            android:padding="0dp"
+            android:text="SIGN UP"
+            android:textStyle="bold"/>
 
     </RelativeLayout>
 

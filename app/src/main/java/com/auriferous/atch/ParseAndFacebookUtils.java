@@ -4,6 +4,7 @@ import android.location.Location;
 import android.util.Log;
 
 import com.auriferous.atch.Callbacks.SimpleCallback;
+import com.auriferous.atch.Callbacks.TwoVariableCallback;
 import com.auriferous.atch.Callbacks.VariableCallback;
 import com.auriferous.atch.Messages.MessageList;
 import com.auriferous.atch.Users.User;
@@ -252,9 +253,9 @@ public class ParseAndFacebookUtils {
 
 
     public static void sendLoginNotifications() {
-        ParseCloud.callFunctionInBackground("sendLoginNotifications", new HashMap<String, Object>(), new FunctionCallback<ParseObject>() {
+        ParseCloud.callFunctionInBackground("sendLoginNotifications", null, new FunctionCallback<Object>() {
             @Override
-            public void done(ParseObject result, ParseException e) {
+            public void done(Object o, ParseException e) {
             }
         });
     }
@@ -300,11 +301,6 @@ public class ParseAndFacebookUtils {
     }
 
 
-    public static void getOrCreateMessageHistory(String recipientParseId, VariableCallback<ParseObject> callback){
-        ArrayList<String> recipientsParseIds = new ArrayList<>();
-        recipientsParseIds.add(recipientParseId);
-        getOrCreateMessageHistory(recipientsParseIds, callback);
-    }
     public static void getOrCreateMessageHistory(ArrayList<String> recipientsParseIds, final VariableCallback<ParseObject> callback){
         recipientsParseIds.add(ParseUser.getCurrentUser().getObjectId());
         JSONArray userIds = convertArray(recipientsParseIds);
@@ -333,7 +329,30 @@ public class ParseAndFacebookUtils {
             }
         });
     }
-    public static void getAllMessagesFromHistory(final ParseObject messageHistory, final VariableCallback<MessageList> callback){
+
+    public static void getAllMessagesFromAllLists(final TwoVariableCallback<String, MessageList> callback) {
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("MessageHistory");
+        query.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> list, ParseException e) {
+                if (list == null)
+                    Log.e("xxxerr", "getAllMessagesFromAllLists(...) failed:" + e.getMessage());
+                else {
+                    for (ParseObject messageHistory : list) {
+                        String mHName = messageHistory.getString("name");
+                        final String userIds = mHName.substring(mHName.indexOf('_') + 1);
+                        getMessagesFromHistory(messageHistory, new VariableCallback<MessageList>() {
+                            @Override
+                            public void done(MessageList messageList) {
+                                callback.done(userIds, messageList);
+                            }
+                        });
+                    }
+                }
+            }
+        });
+    }
+    public static void getMessagesFromHistory(final ParseObject messageHistory, final VariableCallback<MessageList> callback) {
         ArrayList<String> messageList = (ArrayList<String>)messageHistory.get("messageList");
 
         if(messageList != null) {

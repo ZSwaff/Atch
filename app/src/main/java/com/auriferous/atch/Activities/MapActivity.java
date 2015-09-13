@@ -24,6 +24,7 @@ import com.auriferous.atch.Callbacks.SimpleCallback;
 import com.auriferous.atch.Callbacks.VariableCallback;
 import com.auriferous.atch.Callbacks.ViewUpdateCallback;
 import com.auriferous.atch.GeneralUtils;
+import com.auriferous.atch.Messages.Message;
 import com.auriferous.atch.Messages.MessageList;
 import com.auriferous.atch.Messages.MessageListAdapter;
 import com.auriferous.atch.ParseAndFacebookUtils;
@@ -202,8 +203,7 @@ public class MapActivity  extends BaseFriendsActivity {
                     if(chatRecipients != null && chatRecipients.getId() >= 0)
                         panTo(chatRecipients.getLocation(), 700);
                 }
-            }
-            else if (type.equals("zoom")) {
+            } else if (type.equals("zoom") || type.equals("login")) {
                 final String chatterPID = getIntent().getStringExtra("chatterParseId");
                 if (chatterPID != null) {
                     if(chatterPID.startsWith("group"))
@@ -446,7 +446,7 @@ public class MapActivity  extends BaseFriendsActivity {
 
     //chat functions
     public boolean isChattingWithPerson(String chatterObjId){
-        return (banner.allTheWayUp && chatRecipients != null && chatRecipients.containsAll(chatterObjId.split("_")));
+        return (banner.allTheWayUp && chatRecipients != null && chatRecipients.matchesAll(chatterObjId.split("_")));
     }
 
     public void refreshChatHistory(){
@@ -455,10 +455,9 @@ public class MapActivity  extends BaseFriendsActivity {
             @Override
             public void done(ParseObject messageHistory) {
                 activity.messageHistory = messageHistory;
-                ParseAndFacebookUtils.getAllMessagesFromHistory(messageHistory, new VariableCallback<MessageList>() {
+                ((AtchApplication) getApplication()).refreshMessageList(chatRecipients, messageHistory, new SimpleCallback() {
                     @Override
-                    public void done(MessageList messageList) {
-                        activity.messageList = messageList;
+                    public void done() {
                         fillListView();
                     }
                 });
@@ -467,18 +466,42 @@ public class MapActivity  extends BaseFriendsActivity {
     }
     private void fillListView() {
         if (chatRecipients != null) {
+            messageList = ((AtchApplication) getApplication()).getMessageList(chatRecipients);
+
             ((TextView)banner.findViewById(R.id.fullname)).setText(chatRecipients.getNames());
             ((ImageView)banner.findViewById(R.id.prof_pic)).setImageBitmap(chatRecipients.getGroupImage());
             banner.findViewById(R.id.title_bar).setBackgroundColor(chatRecipients.getColor());
         }
 
         ListView listView = (ListView) findViewById(R.id.listview);
-        MessageListAdapter arrayAdapter = new MessageListAdapter(this, listView, messageHistory, messageList, ParseUser.getCurrentUser(), chatRecipients, "No messages", (MessageListAdapter) listView.getAdapter(), new SimpleCallback() {
+        String firstMessageId = null;
+        int scrollFromTop = 0;
+        if (listView.getAdapter() != null && listView.getCount() > 0) {
+            if (!(listView.getLastVisiblePosition() == listView.getCount() - 1 && listView.getChildAt(listView.getChildCount() - 1).getBottom() <= listView.getHeight())) {
+                Message firstMessage = (Message) listView.getItemAtPosition(listView.getFirstVisiblePosition());
+                if (firstMessage != null) {
+                    View v = listView.getChildAt(0);
+                    scrollFromTop = (v == null) ? 0 : (v.getTop() - listView.getPaddingTop());
+                    firstMessageId = firstMessage.getObjectId();
+                }
+            }
+        }
+
+        MessageListAdapter arrayAdapter = new MessageListAdapter(this, listView, messageHistory, messageList, ParseUser.getCurrentUser(), chatRecipients, "No messages", new SimpleCallback() {
             @Override
             public void done() {
                 refreshChatHistory();
             }
         });
         listView.setAdapter(arrayAdapter);
+
+        if (firstMessageId != null) {
+            for (int i = listView.getCount() - 1; i >= 0; i--) {
+                if (((Message) listView.getItemAtPosition(i)).getObjectId().equals(firstMessageId)) {
+                    listView.setSelectionFromTop(i, scrollFromTop);
+                    break;
+                }
+            }
+        }
     }
 }

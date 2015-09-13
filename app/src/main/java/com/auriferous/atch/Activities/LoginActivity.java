@@ -2,7 +2,6 @@ package com.auriferous.atch.Activities;
 
 import android.app.Activity;
 import android.content.Intent;
-
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
@@ -20,7 +19,6 @@ import android.widget.TextView;
 
 import com.auriferous.atch.ActionEditText;
 import com.auriferous.atch.AtchApplication;
-import com.auriferous.atch.AtchParsePushReceiver;
 import com.auriferous.atch.Callbacks.SimpleCallback;
 import com.auriferous.atch.Callbacks.VariableCallback;
 import com.auriferous.atch.ParseAndFacebookUtils;
@@ -39,13 +37,10 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.parse.LogInCallback;
 import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
-import com.parse.ParseInstallation;
-import com.parse.ParsePush;
 import com.parse.ParseUser;
 
 public class LoginActivity extends FragmentActivity {
     private GoogleMap map;
-    private ActionEditText usernameView;
     private CallbackManager callbackManager;
 
     private boolean signUpScreen = false;
@@ -116,7 +111,7 @@ public class LoginActivity extends FragmentActivity {
         vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                map.setPadding(0, 0, 0, findViewById(R.id.log_in_button).getMeasuredHeight()+findViewById(R.id.sign_up_switch_button).getMeasuredHeight());
+                map.setPadding(0, 0, 0, findViewById(R.id.log_in_button).getMeasuredHeight() + findViewById(R.id.sign_up_switch_button).getMeasuredHeight());
                 ViewTreeObserver obs = view.getViewTreeObserver();
                 obs.removeOnGlobalLayoutListener(this);
             }
@@ -140,7 +135,7 @@ public class LoginActivity extends FragmentActivity {
         });
 
 
-        usernameView = (ActionEditText) findViewById(R.id.username);
+        final ActionEditText usernameView = (ActionEditText) findViewById(R.id.username);
         usernameView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -154,16 +149,8 @@ public class LoginActivity extends FragmentActivity {
         usernameView.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
-                usernameView.setError(null);
                 String currentUsername = s.toString();
-                if (!currentUsername.matches("\\w*")) {
-                    usernameView.setError(getString(R.string.error_invalid_characters));
-                    usernameView.requestFocus();
-                }
-                if (currentUsername.length() > 20) {
-                    usernameView.setError(getString(R.string.error_too_long));
-                    usernameView.requestFocus();
-                }
+                isValidUsername(currentUsername, null);
             }
 
             @Override
@@ -228,8 +215,8 @@ public class LoginActivity extends FragmentActivity {
 
     private void attemptSignUp() {
         final Activity activity = this;
-        final String username = usernameView.getText().toString();
-        isValidUsername(new SimpleCallback() {
+        final String username = ((ActionEditText) findViewById(R.id.username)).getText().toString();
+        isValidUsername(username, new SimpleCallback() {
             @Override
             public void done() {
                 ParseFacebookUtils.logInWithReadPermissionsInBackground(activity, ParseAndFacebookUtils.permissions, new LogInCallback() {
@@ -243,37 +230,39 @@ public class LoginActivity extends FragmentActivity {
             }
         });
     }
-    private void isValidUsername(final SimpleCallback calledIfValid){
-        usernameView.setError(null);
-        final ActionEditText focusView = usernameView;
-        final String username = usernameView.getText().toString();
-
+    private void isValidUsername(String username, final SimpleCallback calledIfValid) {
         if (TextUtils.isEmpty(username)) {
-            focusView.setError(getString(R.string.error_username_required));
-            focusView.requestFocus();
+            updateUsernameFeedback(getString(R.string.error_username_required));
             return;
         }
         if(!username.matches("\\w*")){
-            usernameView.setError(getString(R.string.error_invalid_characters));
-            usernameView.requestFocus();
+            updateUsernameFeedback(getString(R.string.error_invalid_characters));
             return;
         }
-        if(username.length() > 20){
-            usernameView.setError(getString(R.string.error_too_long));
-            usernameView.requestFocus();
+        if (username.length() >= 20) {
+            updateUsernameFeedback(getString(R.string.error_too_long));
             return;
         }
         ParseAndFacebookUtils.getParseUserFromUsername(username, new VariableCallback<ParseUser>() {
             @Override
             public void done(ParseUser parseUser) {
                 if (parseUser != null) {
-                    focusView.setError(getString(R.string.error_taken_username));
-                    focusView.requestFocus();
+                    updateUsernameFeedback(getString(R.string.error_taken_username));
                 } else {
-                    calledIfValid.done();
+                    updateUsernameFeedback(getString(R.string.valid_username));
+                    if (calledIfValid != null)
+                        calledIfValid.done();
                 }
             }
         });
+    }
+    private void updateUsernameFeedback(String message) {
+        if (message == null || message.isEmpty()) {
+            findViewById(R.id.username_feedback_area).setVisibility(View.GONE);
+        } else {
+            findViewById(R.id.username_feedback_area).setVisibility(View.VISIBLE);
+            ((TextView) findViewById(R.id.username_feedback)).setText(message);
+        }
     }
 
 
@@ -282,6 +271,11 @@ public class LoginActivity extends FragmentActivity {
         oldLayout.setVisibility(View.GONE);
         RelativeLayout newLayout = (RelativeLayout) findViewById(signUpScreen?R.id.sign_up_layout:R.id.buttons_layout);
         newLayout.setVisibility(View.VISIBLE);
+
+        if (signUpScreen)
+            map.setPadding(0, 0, 0, findViewById(R.id.log_in_button).getMeasuredHeight() + findViewById(R.id.sign_up_switch_button).getMeasuredHeight());
+        else
+            map.setPadding(0, 0, 0, findViewById(R.id.username).getMeasuredHeight() + findViewById(R.id.sign_up_button).getMeasuredHeight());
     }
     private void proceedToAtchAgreement(){
         ((AtchApplication)getApplication()).setIsLoggedIn(true);

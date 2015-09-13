@@ -25,6 +25,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Stack;
 
 public class User {
     private static AtchApplication app;
@@ -36,9 +37,9 @@ public class User {
     private UserType userType = UserType.RANDOM;
 
     private int relativeColor = Color.argb(256, 0, 0, 0);
+    private Stack<Integer> oldColors = new Stack<>();
     private int lighterColor = Color.argb(256, 0, 0, 0);
     private Bitmap rawFbPic = null;
-    private Bitmap circProfPic = null;
     private Bitmap profPic = null;
     private Bitmap markerIcon = null;
     private Bitmap chatIcon = null;
@@ -156,13 +157,6 @@ public class User {
             loggedIn = false;
         Date udAtPlus5 = new Date(privateData.getUpdatedAt().getTime() + (5 * 60 * 1000));
         loggedIn = udAtPlus5.after(new Date());
-
-        //todo reexamine
-//        if(!initialStatus && loggedIn){
-//            Activity currActivity = app.getCurrentActivity();
-//            if (app.isOnlineAndAppOpen() && currActivity != null && currActivity instanceof BaseFriendsActivity)
-//                ((BaseFriendsActivity)currActivity).createNotification(getFirstname() + " is online", getRelativeColor(), null, null);
-//        }
     }
     private void setFacebookProfilePicture(){
         final String fbid = user.getString("fbid");
@@ -188,7 +182,6 @@ public class User {
     }
     private void setProfPics(){
         if(rawFbPic != null) {
-            circProfPic = getCircular(rawFbPic);
             profPic = getCircularWithColor(rawFbPic, relativeColor);
             setMarkerIconBitmap();
         }
@@ -214,7 +207,15 @@ public class User {
         return lighterColor;
     }
     public void setNewColor() {
+        oldColors.push(relativeColor);
         relativeColor = GeneralUtils.generateNewColor();
+        lighterColor = GeneralUtils.getLighter(relativeColor);
+        setProfPics();
+        setChatIcon();
+        UserInfoSaveable.autoSave(app, User.getUserCache());
+    }
+    public void resetToLastColor() {
+        relativeColor = oldColors.pop();
         lighterColor = GeneralUtils.getLighter(relativeColor);
         setProfPics();
         setChatIcon();
@@ -256,9 +257,6 @@ public class User {
     public Bitmap getProfPic() {
         return profPic;
     }
-    public Bitmap getCircProfPic() {
-        return circProfPic;
-    }
     public Bitmap getMarkerIcon() {
         return markerIcon;
     }
@@ -267,7 +265,7 @@ public class User {
     }
     public LatLng getLocation() {
         ParseGeoPoint loc = privateData.getParseGeoPoint("location");
-        if (loc == null) return null;
+        if (loc == null || !isLoggedIn()) return null;
         return new LatLng(loc.getLatitude(), loc.getLongitude());
     }
     public float getDistanceInMetersFrom(User otherUser){

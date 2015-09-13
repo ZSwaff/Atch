@@ -13,8 +13,9 @@
 
     <string name="error_username_required">Pick a username</string>
     <string name="error_taken_username">That username is taken</string>
-    <string name="error_invalid_characters">Usernames can only be letters and numbers</string>
-    <string name="error_too_long">Usernames are constrained to 20 characters</string>
-    <string name="error_account_created">This Facebook account is already in use</string>
+    <string name="error_invalid_characters">Only letters and numbers, sorry</string>
+    <string name="error_too_long">Gotta be shorter than 20 characters</string>
+    <string name="error_account_created">That Facebook account is already in use</string>
+    <string name="valid_username">That\'s a dope username</string>
 
 </resources>

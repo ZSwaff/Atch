@@ -3,11 +3,7 @@ package com.auriferous.atch.Users;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -43,14 +39,11 @@ public class UserListAdapter extends BaseAdapter {
     private HashMap<String, View> allViews = new HashMap<>();
 
 
-    public static void init(AtchApplication app){
-        UserListAdapter.app = app;
-    }
-
-
     public UserListAdapter(Context context, UserListAdapterSection section, String emptyMessage, UserListAdapter oldAdapter) {
-        this(context, new ArrayList<>(Arrays.asList(new UserListAdapterSection[] {section})), emptyMessage, oldAdapter);
+        this(context, new ArrayList<>(Arrays.asList(new UserListAdapterSection[]{section})), emptyMessage, oldAdapter);
     }
+
+
     public UserListAdapter(Context context, ArrayList<UserListAdapterSection> sections, String emptyMessage, UserListAdapter oldAdapter) {
         this.context = context;
         this.sections = sections;
@@ -61,8 +54,9 @@ public class UserListAdapter extends BaseAdapter {
         if(oldAdapter != null)
             allViews = oldAdapter.allViews;
     }
-
-
+    public static void init(AtchApplication app) {
+        UserListAdapter.app = app;
+    }
     @Override
     public int getCount() {
         int count = 0;
@@ -195,6 +189,13 @@ public class UserListAdapter extends BaseAdapter {
                     user.setNewColor();
                 }
             });
+            imageView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    user.resetToLastColor();
+                    return true;
+                }
+            });
         }
 
         ImageButton actionButton = null;
@@ -289,9 +290,8 @@ public class UserListAdapter extends BaseAdapter {
 
         final Context context = this.context;
         rowView.setOnTouchListener(new View.OnTouchListener(){
-            float slop = ViewConfiguration.get(context).getScaledTouchSlop();
-
             public boolean allTheWayLeft = false;
+            float slop = ViewConfiguration.get(context).getScaledTouchSlop();
             int initialX = 0;
             boolean newEvent = true;
 

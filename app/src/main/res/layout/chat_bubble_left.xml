@@ -8,51 +8,51 @@
         android:id="@+id/whole_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="0dp"
+        android:layout_alignParentTop="true"
         android:layout_marginBottom="4dp"
+        android:layout_marginEnd="70dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="70dp"
-        android:layout_marginEnd="70dp">
+        android:layout_marginTop="0dp">
 
         <View
             android:id="@+id/background"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/label"
             android:layout_alignBottom="@+id/label"
-            android:layout_alignRight="@+id/label"
             android:layout_alignLeft="@+id/label"
+            android:layout_alignRight="@+id/label"
+            android:layout_alignTop="@+id/label"
             android:background="@drawable/chat_left_background"/>
 
         <TextView
             android:id="@+id/label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="chat"
-            android:paddingTop="5dp"
             android:paddingBottom="5dp"
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
+            android:paddingTop="5dp"
+            android:text="chat"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="#010101"/>
 
     </RelativeLayout>
 
     <TextView
+        android:id="@+id/date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="date"
-        android:id="@+id/date"
-        android:textColor="#959595"
-        android:layout_marginRight="8dp"
-        android:layout_marginTop="-7dp"
-        android:layout_marginBottom="4dp"
-        android:layout_below="@+id/whole_layout"
         android:layout_alignStart="@+id/whole_layout"
+        android:layout_below="@+id/whole_layout"
+        android:layout_marginBottom="4dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="-5dp"
+        android:text="date"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="#959595"
         android:visibility="gone"/>
 
 </RelativeLayout>

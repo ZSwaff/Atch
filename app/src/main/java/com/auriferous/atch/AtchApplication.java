@@ -12,8 +12,11 @@ import android.util.Base64;
 import android.util.Log;
 
 import com.auriferous.atch.Callbacks.SimpleCallback;
+import com.auriferous.atch.Callbacks.TwoVariableCallback;
 import com.auriferous.atch.Callbacks.VariableCallback;
 import com.auriferous.atch.Callbacks.ViewUpdateCallback;
+import com.auriferous.atch.Messages.MessageList;
+import com.auriferous.atch.Users.Group;
 import com.auriferous.atch.Users.User;
 import com.auriferous.atch.Users.UserInfoSaveable;
 import com.auriferous.atch.Users.UserList;
@@ -22,9 +25,13 @@ import com.facebook.FacebookSdk;
 import com.google.android.gms.maps.MapsInitializer;
 import com.parse.Parse;
 import com.parse.ParseFacebookUtils;
+import com.parse.ParseObject;
+import com.parse.ParseUser;
 
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
 //old laptop qgG7TnZ3y6x5EIBELHxeOp5l0+0=
 //new laptop OYjIaRgMAlt7n5rwAlrxEN3XMf8=
@@ -45,6 +52,7 @@ public class AtchApplication extends Application {
     private volatile UserList friendsList = new UserList(User.UserType.FRIEND);
     private volatile UserList usersWhoSentFriendRequests = new UserList(User.UserType.PENDING_YOU);
     private volatile UserList facebookFriends = new UserList(User.UserType.FACEBOOK_FRIEND);
+    private volatile HashMap<String, MessageList> allMessageLists = new HashMap<>();
 
     private volatile CountDownTimer logoutAlarm = null;
     private volatile boolean isLoggedIn = false;
@@ -142,6 +150,24 @@ public class AtchApplication extends Application {
     }
     public void removeFriend(User newEnemy){
         friendsList.removeUser(newEnemy);
+    }
+
+    public MessageList getMessageList(Group chatGroup) {
+        String chatGroupIds = chatGroup.getIdsInString(ParseUser.getCurrentUser().getObjectId());
+        if (allMessageLists.containsKey(chatGroupIds))
+            return allMessageLists.get(chatGroupIds);
+        return new MessageList(new ArrayList<ParseObject>());
+    }
+    public void refreshMessageList(final Group chatGroup, ParseObject messageHistory, final SimpleCallback callback) {
+        final String chatGroupIds = chatGroup.getIdsInString(ParseUser.getCurrentUser().getObjectId());
+        ParseAndFacebookUtils.getMessagesFromHistory(messageHistory, new VariableCallback<MessageList>() {
+            @Override
+            public void done(MessageList messageList) {
+                allMessageLists.put(chatGroupIds, messageList);
+                if (callback != null)
+                    callback.done();
+            }
+        });
     }
 
     public UserList getUsersWhoSentFriendRequests() {
@@ -275,6 +301,16 @@ public class AtchApplication extends Application {
             public void done(UserList userList) {
                 if (!isSetupComplete)
                     callbackIfReady(3);
+            }
+        });
+    }
+    //populates once results come in from Parse
+    public void populateMessageLists() {
+        allMessageLists = new HashMap<>();
+        ParseAndFacebookUtils.getAllMessagesFromAllLists(new TwoVariableCallback<String, MessageList>() {
+            @Override
+            public void done(String userIds, MessageList messageList) {
+                allMessageLists.put(userIds, messageList);
             }
         });
     }

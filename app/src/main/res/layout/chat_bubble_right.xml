@@ -8,44 +8,44 @@
         android:id="@+id/background"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginTop="0dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
         android:layout_marginBottom="4dp"
-        android:layout_marginRight="10dp"
         android:layout_marginLeft="70dp"
+        android:layout_marginRight="10dp"
         android:layout_marginStart="70dp"
-        android:padding="2dp"
-        android:background="@drawable/chat_right_background">
+        android:layout_marginTop="0dp"
+        android:background="@drawable/chat_right_background"
+        android:padding="2dp">
 
         <TextView
+            android:id="@+id/label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="chat"
-            android:id="@+id/label"
-            android:layout_marginTop="3dp"
             android:layout_marginBottom="3dp"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
+            android:layout_marginTop="3dp"
+            android:text="chat"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="#010101"/>
 
     </RelativeLayout>
 
     <TextView
+        android:id="@+id/date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="date"
-        android:singleLine="true"
-        android:id="@+id/date"
-        android:textColor="#959595"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="-7dp"
-        android:layout_marginBottom="4dp"
-        android:layout_below="@+id/background"
         android:layout_alignEnd="@+id/background"
+        android:layout_below="@+id/background"
+        android:layout_marginBottom="4dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="-5dp"
+        android:singleLine="true"
+        android:text="date"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="#959595"
         android:visibility="gone"/>
 
 </RelativeLayout>
