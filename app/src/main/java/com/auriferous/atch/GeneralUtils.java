@@ -57,7 +57,6 @@ public class GeneralUtils {
 
         return newImage;
     }
-
     public static Bitmap layerImagesRecolorForeground(Bitmap foreground, Bitmap background, int newColor) {
         int width = background.getWidth();
         int height = background.getHeight();
@@ -71,6 +70,33 @@ public class GeneralUtils {
         ColorFilter filter = new LightingColorFilter(newColor, 0);
         paint.setColorFilter(filter);
         canvas.drawBitmap(foreground, 0, 0, paint);
+
+        return newImage;
+    }
+
+    public static Bitmap addUnreadTag(Bitmap image, int unreadCount) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        Bitmap newImage = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(newImage);
+        canvas.drawBitmap(image, 0, 0, null);
+
+        float circleRadius = ((float) (width + height)) / 4f - 5f;
+        float xAndY = circleRadius / ((float) (Math.sqrt(2d)));
+        Paint paint = new Paint();
+        paint.setAntiAlias(true);
+        paint.setStyle(Paint.Style.FILL);
+        paint.setColor(0xffeeeeee);
+        canvas.drawCircle(width / 2f + xAndY, height / 2f + xAndY, circleRadius / 2.9f, paint);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setColor(0xff111111);
+        canvas.drawCircle(width / 2f + xAndY, height / 2f + xAndY, circleRadius / 2.9f, paint);
+
+        paint.setStyle(Paint.Style.FILL);
+        paint.setTextAlign(Paint.Align.CENTER);
+        float textSize = circleRadius / 2.6f;
+        paint.setTextSize(textSize);
+        canvas.drawText("" + unreadCount, width / 2f + xAndY, height / 2f + xAndY + textSize / 2f - 5f, paint);
 
         return newImage;
     }

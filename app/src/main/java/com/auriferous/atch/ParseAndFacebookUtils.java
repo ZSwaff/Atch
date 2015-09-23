@@ -362,12 +362,14 @@ public class ParseAndFacebookUtils {
             query.findInBackground(new FindCallback<ParseObject>() {
                 @Override
                 public void done(List<ParseObject> messages, ParseException e) {
-                    callback.done(new MessageList(messages, true));
+                    MessageList ret = new MessageList(messageHistory, messages, true);
+                    ret.setMessageHistory(messageHistory);
+                    callback.done(ret);
                 }
             });
         }
         else {
-            callback.done(new MessageList(new ArrayList<ParseObject>()));
+            callback.done(new MessageList(messageHistory, new ArrayList<ParseObject>()));
         }
     }
 
@@ -421,6 +423,7 @@ public class ParseAndFacebookUtils {
                             currUser.put("fbid", object.getString("id"));
                             currUser.put("fullname", object.getString("name"));
                             currUser.put("queryFullname", object.getString("name").toLowerCase());
+                            currUser.put("gender", object.getString("gender"));
                             currUser.saveInBackground();
                         } catch (JSONException e) {}
                     }

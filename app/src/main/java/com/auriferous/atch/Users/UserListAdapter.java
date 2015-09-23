@@ -242,6 +242,7 @@ public class UserListAdapter extends BaseAdapter {
         }
         ImageButton fakeButton = (ImageButton) rowView.findViewById(R.id.fake_button);
         if(fakeButton != null){
+            actionButton = fakeButton;
             fakeButton.setEnabled(false);
             fakeButton.setClickable(false);
         }
@@ -328,8 +329,7 @@ public class UserListAdapter extends BaseAdapter {
                                 allTheWayLeft = true;
 
                             swipeButton.setEnabled(allTheWayLeft);
-                            if(actionButton != null)
-                                actionButton.setEnabled(!allTheWayLeft);
+                            actionButton.setEnabled(!allTheWayLeft);
                         }
 
                         if (Math.abs(offset) > slop)
@@ -386,7 +386,7 @@ public class UserListAdapter extends BaseAdapter {
         TextView names = (TextView) rowView.findViewById(R.id.names);
         names.setText(group.getNames());
 
-        Bitmap groupImage = group.getGroupImage();
+        Bitmap groupImage = group.getGroupImage(true);
         if(groupImage != null) {
             ImageView imageView = (ImageView) rowView.findViewById(R.id.group_pic);
             imageView.setImageBitmap(groupImage);

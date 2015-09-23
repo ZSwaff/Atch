@@ -246,8 +246,14 @@ public class User {
         return user.getInt("checkinCount");
     }
     public String getSHePronoun(){
-        //todo fix
-        return "he";
+        String gender = getGender();
+        if (getGender() == null) return "they";
+        if (getGender().equals("male")) return "he";
+        if (getGender().equals("female")) return "she";
+        return "they";
+    }
+    public String getGender() {
+        return user.getString("gender");
     }
 
 

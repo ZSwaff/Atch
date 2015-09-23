@@ -19,7 +19,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.auriferous.atch.AtchApplication;
-import com.auriferous.atch.BannerTouchView;
 import com.auriferous.atch.Callbacks.SimpleCallback;
 import com.auriferous.atch.Callbacks.VariableCallback;
 import com.auriferous.atch.Callbacks.ViewUpdateCallback;
@@ -29,6 +28,8 @@ import com.auriferous.atch.Messages.MessageList;
 import com.auriferous.atch.Messages.MessageListAdapter;
 import com.auriferous.atch.ParseAndFacebookUtils;
 import com.auriferous.atch.R;
+import com.auriferous.atch.UiElements.BannerTouchView;
+import com.auriferous.atch.UiElements.SwipeRefreshLayoutBottom.SwipeRefreshLayoutBottom;
 import com.auriferous.atch.Users.Group;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -51,7 +52,6 @@ public class MapActivity  extends BaseFriendsActivity {
     private boolean pendingImmediateChat = false;
 
     private Group chatRecipients;
-    private volatile ParseObject messageHistory;
     private volatile MessageList messageList;
 
 
@@ -120,7 +120,6 @@ public class MapActivity  extends BaseFriendsActivity {
         });
         GeneralUtils.addButtonEffect(findViewById(R.id.my_location_button));
 
-
         findViewById(R.id.send_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -131,17 +130,24 @@ public class MapActivity  extends BaseFriendsActivity {
         findViewById(R.id.meet_here).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sendMessageMeetHere();
+                sendMessageMeetHereOrThere('h');
             }
         });
         GeneralUtils.addButtonEffect(findViewById(R.id.meet_here));
         findViewById(R.id.meet_there).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sendMessageMeetThere();
+                sendMessageMeetHereOrThere('t');
             }
         });
         GeneralUtils.addButtonEffect(findViewById(R.id.meet_there));
+
+        ((SwipeRefreshLayoutBottom) findViewById(R.id.swipe_refresh_layout)).setOnRefreshListener(new SwipeRefreshLayoutBottom.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refreshChatHistory();
+            }
+        });
     }
 
     @Override
@@ -158,6 +164,9 @@ public class MapActivity  extends BaseFriendsActivity {
         addMarkers();
 
         immediateChat();
+
+        if (chatRecipients != null)
+            chatRecipients = Group.getOrCreateGroup(chatRecipients.getIdsInString(null), app.getFriendsList().getAllGroups());
 
         if(bannerShowingAtAll)
             banner.findViewById(R.id.title_bar).setBackgroundColor(chatRecipients.getColor());
@@ -303,7 +312,10 @@ public class MapActivity  extends BaseFriendsActivity {
         map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(final Marker marker) {
+                Group crBefore = chatRecipients;
                 enableBanner(marker.getSnippet(), null);
+                if (chatRecipients.equals(crBefore))
+                    panTo(chatRecipients.getLocation(), 400);
                 return true;
             }
         });
@@ -358,29 +370,29 @@ public class MapActivity  extends BaseFriendsActivity {
         EditText messageBox = (EditText) findViewById(R.id.message_box);
         String newMessage = messageBox.getText().toString();
         if(newMessage.isEmpty()) return;
-        ParseAndFacebookUtils.sendMessage(messageHistory, newMessage, 'n', new SimpleCallback() {
+        ParseAndFacebookUtils.sendMessage(messageList.getMessageHistory(), newMessage, 'n', new SimpleCallback() {
             @Override
             public void done() {
                 refreshChatHistory();
             }
         });
         messageBox.setText("");
+
+        addFakeMessageToChatHistory(newMessage, 'n');
     }
-    private void sendMessageMeetHere() {
-        ParseAndFacebookUtils.sendMessage(messageHistory, "Meet here", 'h', new SimpleCallback() {
+    private void sendMessageMeetHereOrThere(char flag) {
+        ParseAndFacebookUtils.sendMessage(messageList.getMessageHistory(), "Meet", flag, new SimpleCallback() {
             @Override
             public void done() {
                 refreshChatHistory();
             }
         });
+
+        addFakeMessageToChatHistory("Meet", flag);
     }
-    private void sendMessageMeetThere() {
-        ParseAndFacebookUtils.sendMessage(messageHistory, "Meet there", 't', new SimpleCallback() {
-            @Override
-            public void done() {
-                refreshChatHistory();
-            }
-        });
+    private void addFakeMessageToChatHistory(String messageText, char decorationFlag) {
+        messageList.addFakeMessage(messageText, decorationFlag, ParseUser.getCurrentUser());
+        ((MessageListAdapter) ((ListView) findViewById(R.id.listview)).getAdapter()).notifyDataSetChanged();
     }
 
     private void enableBanner(final String chatterParseId, final SimpleCallback callback){
@@ -433,10 +445,10 @@ public class MapActivity  extends BaseFriendsActivity {
             public void done(Integer i) {
                 map.setPadding(0, 0, 0, i - banner.shadowHeight);
                 View myLocButton = findViewById(R.id.my_location_button);
-                ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams)myLocButton.getLayoutParams();
+                ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) myLocButton.getLayoutParams();
                 int tenDpInPx = GeneralUtils.convertDpToPixel(10, context);
                 layoutParams.bottomMargin = i - banner.shadowHeight + tenDpInPx;
-                if(layoutParams.bottomMargin < tenDpInPx)
+                if (layoutParams.bottomMargin < tenDpInPx)
                     layoutParams.bottomMargin = tenDpInPx;
                 myLocButton.invalidate();
             }
@@ -450,14 +462,14 @@ public class MapActivity  extends BaseFriendsActivity {
     }
 
     public void refreshChatHistory(){
-        final MapActivity activity = this;
+        fillListView();
         ParseAndFacebookUtils.getOrCreateMessageHistory(chatRecipients.getUserIds(), new VariableCallback<ParseObject>() {
             @Override
             public void done(ParseObject messageHistory) {
-                activity.messageHistory = messageHistory;
                 ((AtchApplication) getApplication()).refreshMessageList(chatRecipients, messageHistory, new SimpleCallback() {
                     @Override
                     public void done() {
+                        ((SwipeRefreshLayoutBottom) findViewById(R.id.swipe_refresh_layout)).setRefreshing(false);
                         fillListView();
                     }
                 });
@@ -465,13 +477,16 @@ public class MapActivity  extends BaseFriendsActivity {
         });
     }
     private void fillListView() {
+        ArrayList<Group> list;
         if (chatRecipients != null) {
             messageList = ((AtchApplication) getApplication()).getMessageList(chatRecipients);
 
             ((TextView)banner.findViewById(R.id.fullname)).setText(chatRecipients.getNames());
-            ((ImageView)banner.findViewById(R.id.prof_pic)).setImageBitmap(chatRecipients.getGroupImage());
+            ((ImageView) banner.findViewById(R.id.prof_pic)).setImageBitmap(chatRecipients.getGroupImage(false));
             banner.findViewById(R.id.title_bar).setBackgroundColor(chatRecipients.getColor());
         }
+
+        list = app.getFriendsList().getAllGroups();
 
         ListView listView = (ListView) findViewById(R.id.listview);
         String firstMessageId = null;
@@ -481,27 +496,39 @@ public class MapActivity  extends BaseFriendsActivity {
                 Message firstMessage = (Message) listView.getItemAtPosition(listView.getFirstVisiblePosition());
                 if (firstMessage != null) {
                     View v = listView.getChildAt(0);
-                    scrollFromTop = (v == null) ? 0 : (v.getTop() - listView.getPaddingTop());
-                    firstMessageId = firstMessage.getObjectId();
+                    if (v != null) {
+                        scrollFromTop = v.getTop() - listView.getPaddingTop();
+                        firstMessageId = firstMessage.getObjectId();
+                    }
                 }
             }
         }
 
-        MessageListAdapter arrayAdapter = new MessageListAdapter(this, listView, messageHistory, messageList, ParseUser.getCurrentUser(), chatRecipients, "No messages", new SimpleCallback() {
-            @Override
-            public void done() {
-                refreshChatHistory();
-            }
-        });
-        listView.setAdapter(arrayAdapter);
+        if (messageList != null) {
+            MessageListAdapter arrayAdapter = new MessageListAdapter(this, listView, messageList.getMessageHistory(), messageList, ParseUser.getCurrentUser(), chatRecipients, "No messages", new SimpleCallback() {
+                @Override
+                public void done() {
+                    refreshChatHistory();
+                }
+            });
+            listView.setAdapter(arrayAdapter);
+        }
 
+        boolean scrolled = false;
         if (firstMessageId != null) {
             for (int i = listView.getCount() - 1; i >= 0; i--) {
-                if (((Message) listView.getItemAtPosition(i)).getObjectId().equals(firstMessageId)) {
+                Message item = (Message) listView.getItemAtPosition(i);
+                if (item.getObjectId() != null && item.getObjectId().equals(firstMessageId)) {
                     listView.setSelectionFromTop(i, scrollFromTop);
+                    scrolled = true;
                     break;
                 }
             }
+        }
+        if (!scrolled) {
+            int scrollTo = listView.getCount() - 1;
+            if (scrollTo != -1)
+                listView.setSelectionFromTop(scrollTo, scrollFromTop);
         }
     }
 }

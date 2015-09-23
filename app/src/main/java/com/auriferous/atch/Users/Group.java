@@ -7,32 +7,44 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 
+import com.auriferous.atch.AtchApplication;
+import com.auriferous.atch.Messages.MessageList;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.parse.ParseUser;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class Group {
     private static final float maxDistanceInMetersForGroup = 100;
     private static final int rakishAngle = 20;
 
+    private static AtchApplication app;
+
     private int id = -1;
     private ArrayList<User> usersInGroup;
     private LatLng location;
     private Bitmap groupImage = null;
     private MarkerOptions marker = null;
+    private int unreadCount = 0;
 
 
     private Group() {
         usersInGroup = new ArrayList<>();
     }
+
+
     private Group(User user) {
         usersInGroup = new ArrayList<>();
         usersInGroup.add(user);
+    }
+    public static void init(AtchApplication app) {
+        Group.app = app;
     }
     public static ArrayList<Group> getGroups(UserList users) {
         ArrayList<User> allUsers = new ArrayList<>();
@@ -68,6 +80,7 @@ public class Group {
             group.recalcLocation();
             group.makeImage();
             group.setupMarker();
+            group.findUnreadCount();
             ret.add(group);
         }
         return ret;
@@ -94,6 +107,7 @@ public class Group {
         newGroup.recalcLocation();
         newGroup.makeImage();
         newGroup.setupMarker();
+        newGroup.findUnreadCount();
         return newGroup;
     }
     private void addUsersFrom(Group otherGroup) {
@@ -121,8 +135,11 @@ public class Group {
         }
         return (userIds.length == usersInGroup.size());
     }
-    public Bitmap getGroupImage() {
+    public Bitmap getGroupImage(boolean withUnreadTag) {
         return groupImage;
+//        if(!withUnreadTag || unreadCount == 0)
+//            return groupImage;
+//        return GeneralUtils.addUnreadTag(groupImage, unreadCount);
     }
     public MarkerOptions getMarker() {
         return marker;
@@ -194,8 +211,13 @@ public class Group {
                 return user.getLighterColor();
         return -1;
     }
+    public int getUnreadCount() {
+        return unreadCount;
+    }
 
-
+    public void setUnreadCount(int unreadCount) {
+        this.unreadCount = unreadCount;
+    }
     public void resetImage(){
         makeImage();
         setupMarker();
@@ -203,7 +225,7 @@ public class Group {
     private void recalcLocation() {
         Collections.sort(usersInGroup, new Comparator<User>() {
             @Override
-            public int compare(User user1, User user2){
+            public int compare(User user1, User user2) {
                 return user1.getUsername().compareTo(user2.getUsername());
             }
         });
@@ -294,9 +316,15 @@ public class Group {
         if(groupImage != null)
             marker = new MarkerOptions().position(location)
                     .snippet("group " + getId())
-                    .icon(BitmapDescriptorFactory.fromBitmap(Bitmap.createScaledBitmap(groupImage, width, width, false)))
+                    .icon(BitmapDescriptorFactory.fromBitmap(Bitmap.createScaledBitmap(getGroupImage(true), width, width, false)))
                     .anchor(.5f, .5f);
         else
             marker = null;
+    }
+    private void findUnreadCount() {
+        HashMap<String, MessageList> allMessageLists = app.getAllMessageLists();
+        String groupUserIds = getIdsInString(ParseUser.getCurrentUser().getObjectId());
+        if (allMessageLists.containsKey(groupUserIds))
+            setUnreadCount(allMessageLists.get(groupUserIds).getUnreadCount(ParseUser.getCurrentUser()));
     }
 }

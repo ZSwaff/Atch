@@ -1,16 +1,16 @@
-package com.auriferous.atch;
+package com.auriferous.atch.UiElements;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.os.Handler;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 import android.widget.RelativeLayout;
 
 import com.auriferous.atch.Callbacks.SimpleCallback;
+import com.auriferous.atch.GeneralUtils;
 
 public class InAppNotificationView extends RelativeLayout {
     public int barHeight = 90;

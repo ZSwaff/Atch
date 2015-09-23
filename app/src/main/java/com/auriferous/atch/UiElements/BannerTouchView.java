@@ -1,42 +1,35 @@
-package com.auriferous.atch;
+package com.auriferous.atch.UiElements;
 
 import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Resources;
 import android.os.Build;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 
-import com.auriferous.atch.Activities.MapActivity;
 import com.auriferous.atch.Callbacks.VariableCallback;
+import com.auriferous.atch.GeneralUtils;
 
 public class BannerTouchView extends RelativeLayout {
+    public int titleBarHeight = 75;
+    public int shadowHeight = 5;
+    public boolean isHeightInitialized = false;
+    public boolean allTheWayUp = false;
+    public boolean partiallyUp = false;
     private InputMethodManager imm;
     private Window window;
     private int color;
     private ImageButton myLocButton = null;
-
-    public int titleBarHeight = 75;
-    public int shadowHeight = 5;
     private int windowHeight;
-    public boolean isHeightInitialized = false;
     private float slop;
-
     private ViewGroup.MarginLayoutParams layoutParams;
-    public boolean allTheWayUp = false;
-    public boolean partiallyUp = false;
-
     private float lastY = 0;
     private int activePointerId = -1;
     private boolean panned = false;

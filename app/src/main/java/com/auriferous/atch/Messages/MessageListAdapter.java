@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -20,6 +21,7 @@ import com.parse.ParseObject;
 import com.parse.ParseUser;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 
 public class MessageListAdapter extends BaseAdapter {
     private final Context context;
@@ -118,6 +120,11 @@ public class MessageListAdapter extends BaseAdapter {
 
         return chatView;
     }
+    @Override
+    public void notifyDataSetChanged() {
+        super.notifyDataSetChanged();
+        listView.setSelection(getCount() - 1);
+    }
 
     private View createFullscreenLabelView(ViewGroup parent) {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -171,13 +178,30 @@ public class MessageListAdapter extends BaseAdapter {
         SimpleDateFormat formatter = new SimpleDateFormat("h:mm a");
         date.setText(formatter.format(message.getSendDate()));
 
-        Message response = messageList.getResponse(message.getObjectId());
-        if(response == null){
+        ArrayList<Message> responses = messageList.getResponses(message.getObjectId());
+        boolean existsResponseFromCurrentUser = false;
+        for (Message response : responses) {
+            boolean thisMessageFromCurrUser = false;
+            if (response.getSender().getObjectId().equals(ParseUser.getCurrentUser().getObjectId())) {
+                existsResponseFromCurrentUser = true;
+                thisMessageFromCurrUser = true;
+            }
+
+            LinearLayout responseArea = (LinearLayout) rowView.findViewById(R.id.response_layout);
+            View responseView = inflater.inflate(R.layout.response, responseArea, true);
+            TextView responseLabel = (TextView) responseView.findViewById(R.id.response_message);
+            responseLabel.setText(response.getDecoratedMessageText(recipientUsers, thisMessageFromCurrUser));
+            TextView responseDate = (TextView) responseView.findViewById(R.id.response_date);
+            responseDate.setText(formatter.format(response.getSendDate()));
+        }
+        if (!existsResponseFromCurrentUser) {
             Button okButton = (Button) rowView.findViewById(R.id.ok_button);
             if(okButton != null)
                 okButton.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View v) {
                         ParseAndFacebookUtils.sendMessage(messageHistory, message.getObjectId() + "_atch", 'r', viewRefreshCallback);
+                        messageList.addFakeMessage(message.getObjectId() + "_atch", 'r', ParseUser.getCurrentUser());
+                        ((MessageListAdapter) listView.getAdapter()).notifyDataSetChanged();
                     }
                 });
             Button busyButton = (Button) rowView.findViewById(R.id.busy_button);
@@ -185,20 +209,14 @@ public class MessageListAdapter extends BaseAdapter {
                 busyButton.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View v) {
                         ParseAndFacebookUtils.sendMessage(messageHistory, message.getObjectId() + "_busy", 'r', viewRefreshCallback);
+                        messageList.addFakeMessage(message.getObjectId() + "_busy", 'r', ParseUser.getCurrentUser());
+                        ((MessageListAdapter) listView.getAdapter()).notifyDataSetChanged();
                     }
                 });
-        }
-        else{
+        } else {
             RelativeLayout buttonArea = (RelativeLayout)rowView.findViewById(R.id.response_options);
             if(buttonArea != null)
                 buttonArea.setVisibility(View.GONE);
-
-            RelativeLayout responseArea = (RelativeLayout)rowView.findViewById(R.id.response);
-            responseArea.setVisibility(View.VISIBLE);
-            TextView responseLabel = (TextView) rowView.findViewById(R.id.response_message);
-            responseLabel.setText(response.getDecoratedMessageText(recipientUsers, !fromCurrUser));
-            TextView responseDate = (TextView) rowView.findViewById(R.id.response_date);
-            responseDate.setText(formatter.format(response.getSendDate()));
         }
 
         return rowView;

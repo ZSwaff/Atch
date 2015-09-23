@@ -2,11 +2,13 @@ package com.auriferous.atch.Activities;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.View;
 
 import com.auriferous.atch.AtchApplication;
 import com.auriferous.atch.AtchParsePushReceiver;
+import com.auriferous.atch.GeneralUtils;
 import com.auriferous.atch.ParseAndFacebookUtils;
 import com.auriferous.atch.R;
 import com.facebook.login.LoginManager;
@@ -30,6 +32,17 @@ public class AtchAgreementActivity extends Activity {
         app.populatePendingLists();
         app.populateMessageLists();
 
+        int bgColor = GeneralUtils.generateNewColor();
+        GradientDrawable gd = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{bgColor, GeneralUtils.getLighter(bgColor)});
+        gd.setCornerRadius(0f);
+        findViewById(R.id.imageView).setBackground(gd);
+
+        findViewById(R.id.root).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                engageApp();
+            }
+        });
         findViewById(R.id.engage_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

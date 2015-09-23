@@ -9,12 +9,19 @@ import java.util.Date;
 
 public class Message {
     private ParseObject parseMessage;
+    private Date sendDate = null;
 
 
     public Message(ParseObject parseMessage) {
         this.parseMessage = parseMessage;
     }
-
+    public Message(String messageText, char decorationFlag, ParseUser fromUser) {
+        parseMessage = new ParseObject("Message");
+        parseMessage.put("messageText", messageText);
+        parseMessage.put("decorationFlag", decorationFlag + "");
+        parseMessage.put("fromUser", fromUser);
+        sendDate = new Date();
+    }
 
     public String getObjectId() {
         return parseMessage.getObjectId();
@@ -64,6 +71,7 @@ public class Message {
         return parseMessage.getParseUser("fromUser").getObjectId();
     }
     public Date getSendDate() {
+        if (sendDate != null) return sendDate;
         return parseMessage.getCreatedAt();
     }
 }

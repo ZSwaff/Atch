@@ -156,7 +156,7 @@ public class AtchApplication extends Application {
         String chatGroupIds = chatGroup.getIdsInString(ParseUser.getCurrentUser().getObjectId());
         if (allMessageLists.containsKey(chatGroupIds))
             return allMessageLists.get(chatGroupIds);
-        return new MessageList(new ArrayList<ParseObject>());
+        return new MessageList(null, new ArrayList<ParseObject>());
     }
     public void refreshMessageList(final Group chatGroup, ParseObject messageHistory, final SimpleCallback callback) {
         final String chatGroupIds = chatGroup.getIdsInString(ParseUser.getCurrentUser().getObjectId());
@@ -164,6 +164,10 @@ public class AtchApplication extends Application {
             @Override
             public void done(MessageList messageList) {
                 allMessageLists.put(chatGroupIds, messageList);
+
+                int unreadCount = messageList.getUnreadCount(ParseUser.getCurrentUser());
+                chatGroup.setUnreadCount(unreadCount);
+
                 if (callback != null)
                     callback.done();
             }
@@ -175,6 +179,9 @@ public class AtchApplication extends Application {
     }
     public UserList getFacebookFriends() {
         return facebookFriends;
+    }
+    public HashMap<String, MessageList> getAllMessageLists() {
+        return allMessageLists;
     }
 
 
@@ -188,6 +195,7 @@ public class AtchApplication extends Application {
 
         UserInfoSaveable infoGroup = UserInfoSaveable.autoLoad(this);
         User.init(this, infoGroup);
+        Group.init(this);
         UserListAdapter.init(this);
 
         MapsInitializer.initialize(this);
@@ -311,6 +319,13 @@ public class AtchApplication extends Application {
             @Override
             public void done(String userIds, MessageList messageList) {
                 allMessageLists.put(userIds, messageList);
+                int unreadCount = messageList.getUnreadCount(ParseUser.getCurrentUser());
+                for (Group group : friendsList.getAllGroups()) {
+                    if (group.getIdsInString(ParseUser.getCurrentUser().getObjectId()).equals(userIds)) {
+                        group.setUnreadCount(unreadCount);
+                        break;
+                    }
+                }
             }
         });
     }

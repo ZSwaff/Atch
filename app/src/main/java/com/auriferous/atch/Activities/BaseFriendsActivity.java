@@ -12,8 +12,8 @@ import com.auriferous.atch.AtchApplication;
 import com.auriferous.atch.AtchParsePushReceiver;
 import com.auriferous.atch.Callbacks.SimpleCallback;
 import com.auriferous.atch.Callbacks.ViewUpdateCallback;
-import com.auriferous.atch.InAppNotificationView;
 import com.auriferous.atch.R;
+import com.auriferous.atch.UiElements.InAppNotificationView;
 
 public abstract class BaseFriendsActivity extends AppCompatActivity{
     protected AtchApplication app;
