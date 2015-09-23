@@ -7,7 +7,7 @@
     android:layout_height="120dp"
     android:elevation="8dp">
 
-    <com.auriferous.atch.UiElements.InAppNotificationView
+    <com.atchapp.atch.UiElements.InAppNotificationView
         android:id="@+id/notif"
         android:layout_width="match_parent"
         android:layout_height="90dp"
@@ -25,6 +25,6 @@
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="@android:color/primary_text_dark" />
 
-    </com.auriferous.atch.UiElements.InAppNotificationView>
+    </com.atchapp.atch.UiElements.InAppNotificationView>
 
 </RelativeLayout>

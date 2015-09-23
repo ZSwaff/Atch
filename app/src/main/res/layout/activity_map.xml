@@ -7,7 +7,7 @@
     android:alpha="1"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    tools:context="com.auriferous.atch.Activities.LoginActivity">
+    tools:context="com.atchapp.atch.Activities.LoginActivity">
 
     <RelativeLayout
         android:id="@+id/map_view"
@@ -63,7 +63,7 @@
 
     </RelativeLayout>
 
-    <com.auriferous.atch.UiElements.BannerTouchView
+    <com.atchapp.atch.UiElements.BannerTouchView
         android:id="@+id/map_banner"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -196,7 +196,7 @@
             android:paddingLeft="0dp"
             android:paddingRight="0dp">
 
-            <com.auriferous.atch.UiElements.SwipeRefreshLayoutBottom.SwipeRefreshLayoutBottom
+            <com.atchapp.atch.UiElements.SwipeRefreshLayoutBottom.SwipeRefreshLayoutBottom
                 android:id="@+id/swipe_refresh_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -218,7 +218,7 @@
                     android:transcriptMode="normal">
                 </ListView>
 
-            </com.auriferous.atch.UiElements.SwipeRefreshLayoutBottom.SwipeRefreshLayoutBottom>
+            </com.atchapp.atch.UiElements.SwipeRefreshLayoutBottom.SwipeRefreshLayoutBottom>
 
             <View
                 android:layout_width="fill_parent"
@@ -226,7 +226,7 @@
                 android:layout_below="@+id/swipe_refresh_layout"
                 android:background="@android:color/darker_gray"/>
 
-            <com.auriferous.atch.ActionEditText
+            <com.atchapp.atch.ActionEditText
                 android:id="@+id/message_box"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -266,7 +266,7 @@
 
         </RelativeLayout>
 
-    </com.auriferous.atch.UiElements.BannerTouchView>
+    </com.atchapp.atch.UiElements.BannerTouchView>
 
     <RelativeLayout
         android:id="@+id/splash_screen"

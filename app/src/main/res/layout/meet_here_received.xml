@@ -58,27 +58,26 @@
 
         <RelativeLayout
             android:id="@+id/response_options"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
             android:layout_below="@+id/response_layout"
+            android:layout_centerHorizontal="true"
             android:layout_marginTop="-10dp">
-
-            <Button
-                android:id="@+id/ok_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentTop="true"
-                android:text="Atch!"/>
 
             <Button
                 android:id="@+id/busy_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
-                android:layout_toStartOf="@+id/ok_button"
                 android:text="Busy"/>
+
+            <Button
+                android:id="@+id/ok_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_toEndOf="@+id/busy_button"
+                android:text="Atch!"/>
 
         </RelativeLayout>
 

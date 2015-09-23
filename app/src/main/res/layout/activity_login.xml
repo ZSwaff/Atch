@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    tools:context="com.auriferous.atch.Activities.LoginActivity">
+    tools:context="com.atchapp.atch.Activities.LoginActivity">
 
     <fragment
         android:id="@+id/map"
@@ -108,7 +108,7 @@
 
         </RelativeLayout>
 
-        <com.auriferous.atch.ActionEditText
+        <com.atchapp.atch.ActionEditText
             android:id="@+id/username"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
