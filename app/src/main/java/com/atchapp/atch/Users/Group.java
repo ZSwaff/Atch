@@ -99,7 +99,7 @@ public class Group {
 
         Group newGroup = new Group();
         for(String chatterId : chatterIds.trim().split("_")){
-            User currUser = User.getUserFromMap(chatterId);
+            User currUser = User.getUserFromCache(chatterId);
             if (currUser == null) return null;
             newGroup.usersInGroup.add(currUser);
         }

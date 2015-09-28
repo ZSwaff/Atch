@@ -145,6 +145,9 @@ public class BannerTouchView extends RelativeLayout {
                 final float dy = currentY - lastY;
 
                 layoutParams.topMargin += dy;
+                if (dy != 0)
+                    allTheWayUp = (dy > 0);
+
                 if(layoutParams.topMargin <= -shadowHeight) {
                     layoutParams.topMargin = -shadowHeight;
                     allTheWayUp = true;

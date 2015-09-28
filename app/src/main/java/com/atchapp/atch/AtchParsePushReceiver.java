@@ -39,8 +39,6 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
     @Override
     protected void onPushReceive(final Context context, final Intent intent) {
         if(app != null) {
-            app.updateView();
-
             String type = null;
             String chatRecipientObjectId = null;
             String friendRecipientObjectId = null;
@@ -58,32 +56,38 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
             }
 
             Activity currActivity = app.getCurrentActivity();
-            if (currActivity != null && chatRecipientObjectId != null && currActivity instanceof MapActivity && ((MapActivity) currActivity).isChattingWithPerson(chatRecipientObjectId)){
+            if (currActivity != null && currActivity instanceof MapActivity)
                 ((MapActivity) currActivity).refreshChatHistory();
-            }
+
             else if(app.isOnlineAndAppOpen() && currActivity instanceof BaseFriendsActivity){
                 User user = null;
                 String message ="";
                 if(type.equals("message")) {
-                    user = User.getUserFromMap(chatRecipientObjectId);
+                    user = User.getUserFromCache(chatRecipientObjectId);
                     if(atchage != null)
                         message = atchage;
                     else
                         message = "new atchage from " + user.getUsername();
                 }
                 else if(type.equals("friendRequest")) {
-                    user = User.getUserFromMap(friendRecipientObjectId);
+                    user = User.getUserFromCache(friendRecipientObjectId);
+                    user.setUserType(User.UserType.PENDING_YOU);
+                    app.addUserWhoRequestedYou(user);
                     message = "Friend request from " + user.getUsername();
                 }
                 else if(type.equals("friendAccept")) {
-                    user = User.getUserFromMap(friendRecipientObjectId);
+                    user = User.getUserFromCache(friendRecipientObjectId);
+                    user.setUserType(User.UserType.FRIEND);
+                    app.addFriend(user);
                     message = user.getUsername() + " accepted your friend request";
                 } else if (type.equals("login")) {
-                    user = User.getUserFromMap(pid);
+                    user = User.getUserFromCache(pid);
                     message = user.getUsername() + " logged in";
                 }
                 ((BaseFriendsActivity)currActivity).createNotification(message, (user != null)?user.getRelativeColor():-1, getClassToOpen(type),
                         createIntent(context, getClassToOpen(type), intent, type, chatRecipientObjectId, friendRecipientObjectId, pid));
+
+                app.updateView();
             }
             else {
                 setupAndDeliverNotification(context, intent);
@@ -111,11 +115,6 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
             broadcastIntent.setPackage(context.getPackageName());
             context.sendBroadcast(broadcastIntent);
         }
-
-//        //reset certain parts of the message
-//        if (pushData != null) {
-//            action = pushData.optString("action", null);
-//        }
 
         Notification notification = getNotification(context, intent);
         if(context != null && notification != null) {

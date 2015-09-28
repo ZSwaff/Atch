@@ -18,9 +18,11 @@
             android:id="@+id/message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
-            android:layout_marginBottom="30dp"
+            android:layout_centerVertical="true"
+            android:gravity="center"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
             android:text="message"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="@android:color/primary_text_dark" />

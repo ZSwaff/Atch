@@ -27,7 +27,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Stack;
 
-public class User {
+public class User implements Comparable<User> {
     private static AtchApplication app;
     private static HashMap<String, User> userCache = new HashMap<>();
     private static UserInfoSaveable infoGroup = null;
@@ -71,12 +71,12 @@ public class User {
         User.app = app;
         User.infoGroup = infoGroup;
     }
-    public static User getUserFromMap(String parseId){
+    public static User getUserFromCache(String parseId) {
         if (!userCache.containsKey(parseId)) return null;
         return userCache.get(parseId);
     }
     public static User getOrCreateUser(ParseUser parseUser, UserType userType){
-        User oldUser = getUserFromMap(parseUser.getObjectId());
+        User oldUser = getUserFromCache(parseUser.getObjectId());
 
         if(oldUser != null) {
             if(userType == UserType.FRIEND) {
@@ -98,12 +98,25 @@ public class User {
                     oldUser.setUserType(userType);
                 }
             }
+            app.updateView();
 
             return oldUser;
         }
 
         return new User(parseUser, userType);
     }
+    public static HashMap<String, User> getUserCache() {
+        return userCache;
+    }
+    public static void resetCache() {
+        userCache = new HashMap<>();
+        infoGroup = UserInfoSaveable.autoLoad(app);
+    }
+    public static void resetAllCachedTypes() {
+        for (User user : userCache.values())
+            user.setUserType(UserType.RANDOM);
+    }
+
     private static Bitmap getCircular(Bitmap bm) {
         int radius = bm.getWidth();
 
@@ -144,9 +157,7 @@ public class User {
 
         return bmOut;
     }
-    public static HashMap<String, User> getUserCache() {
-        return userCache;
-    }
+
     public void setPrivateData(ParseObject privateData){
         this.privateData = privateData;
         updateOnlineStatus();
@@ -200,6 +211,7 @@ public class User {
         Bitmap rightBubble = BitmapFactory.decodeResource(app.getResources(), R.drawable.right_chat_bubble);
         chatIcon = GeneralUtils.layerImagesRecolorForeground(leftBubble, rightBubble, relativeColor);
     }
+
     public int getRelativeColor() {
         return relativeColor;
     }
@@ -287,9 +299,12 @@ public class User {
     }
     public void setUserType(UserType userType) {
         this.userType = userType;
-        app.updateView();
     }
 
+
+    public int compareTo(User otherUser) {
+        return getFullname().compareTo(otherUser.getFullname());
+    }
 
     public enum UserType {
         FRIEND, PENDING_YOU, PENDING_THEM, FACEBOOK_FRIEND, RANDOM

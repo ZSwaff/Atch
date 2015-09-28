@@ -4,6 +4,7 @@ import com.parse.ParseObject;
 import com.parse.ParseUser;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class UserList{
@@ -20,10 +21,12 @@ public class UserList{
         this.userType = userType;
         for(ParseUser pUsr : users)
             this.users.add(User.getOrCreateUser(pUsr, userType));
+        Collections.sort(this.users);
     }
     public UserList(User.UserType userType, ArrayList<User> users) {
         this.userType = userType;
         this.users = users;
+        Collections.sort(this.users);
     }
 
 
@@ -59,10 +62,12 @@ public class UserList{
     public void addUser(User user) {
         if (!users.contains(user))
             users.add(user);
+        Collections.sort(users);
     }
     public void removeUser(User user) {
         users.remove(user);
     }
+
 
     public void addDataToUnknownUser(ParseObject privateDatum){
         ParseUser goalUser = privateDatum.getParseUser("user");

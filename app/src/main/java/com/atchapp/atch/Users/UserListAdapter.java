@@ -235,6 +235,7 @@ public class UserListAdapter extends BaseAdapter {
                 public void onClick(View v) {
                     ParseAndFacebookUtils.acceptFriendRequest(uid);
                     user.setUserType(User.UserType.FRIEND);
+                    app.removeUserWhoRequestedYou(user);
                     app.addFriend(user);
                     app.updateView();
                 }

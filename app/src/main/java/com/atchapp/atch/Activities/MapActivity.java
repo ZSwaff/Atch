@@ -2,6 +2,7 @@ package com.atchapp.atch.Activities;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.GradientDrawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -142,12 +143,19 @@ public class MapActivity  extends BaseFriendsActivity {
         });
         GeneralUtils.addButtonEffect(findViewById(R.id.meet_there));
 
-        ((SwipeRefreshLayoutBottom) findViewById(R.id.swipe_refresh_layout)).setOnRefreshListener(new SwipeRefreshLayoutBottom.OnRefreshListener() {
+        SwipeRefreshLayoutBottom swipeRefreshObj = (SwipeRefreshLayoutBottom) findViewById(R.id.swipe_refresh_layout);
+        swipeRefreshObj.setColorSchemeColors(GeneralUtils.generateNewColors(30));
+        swipeRefreshObj.setOnRefreshListener(new SwipeRefreshLayoutBottom.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 refreshChatHistory();
             }
         });
+
+        int bgColor = GeneralUtils.generateNewColor();
+        GradientDrawable gd = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{0xffffffff, bgColor});
+        gd.setCornerRadius(0f);
+        findViewById(R.id.splash_screen).setBackground(gd);
     }
 
     @Override
@@ -170,7 +178,6 @@ public class MapActivity  extends BaseFriendsActivity {
 
         if(bannerShowingAtAll)
             banner.findViewById(R.id.title_bar).setBackgroundColor(chatRecipients.getColor());
-
         banner.requestFocus();
 
         fillListView();
@@ -267,6 +274,8 @@ public class MapActivity  extends BaseFriendsActivity {
 
 
     private void logOut() {
+        locLoaded = false;
+
         Intent intent = new Intent(getApplication(), AtchAgreementActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         intent.putExtra("back", true);
@@ -465,6 +474,8 @@ public class MapActivity  extends BaseFriendsActivity {
     }
 
     public void refreshChatHistory(){
+        if (chatRecipients == null) return;
+
         fillListView();
         ParseAndFacebookUtils.getOrCreateMessageHistory(chatRecipients.getUserIds(), new VariableCallback<ParseObject>() {
             @Override
@@ -472,7 +483,9 @@ public class MapActivity  extends BaseFriendsActivity {
                 ((AtchApplication) getApplication()).refreshMessageList(chatRecipients, messageHistory, new SimpleCallback() {
                     @Override
                     public void done() {
-                        ((SwipeRefreshLayoutBottom) findViewById(R.id.swipe_refresh_layout)).setRefreshing(false);
+                        SwipeRefreshLayoutBottom swipeRefreshObj = (SwipeRefreshLayoutBottom) findViewById(R.id.swipe_refresh_layout);
+                        swipeRefreshObj.setRefreshing(false);
+                        swipeRefreshObj.setColorSchemeColors(GeneralUtils.generateNewColors(30));
                         fillListView();
                     }
                 });
@@ -480,16 +493,12 @@ public class MapActivity  extends BaseFriendsActivity {
         });
     }
     private void fillListView() {
-        ArrayList<Group> list;
-        if (chatRecipients != null) {
-            messageList = ((AtchApplication) getApplication()).getMessageList(chatRecipients);
+        if (chatRecipients == null) return;
 
-            ((TextView)banner.findViewById(R.id.fullname)).setText(chatRecipients.getNames());
-            ((ImageView) banner.findViewById(R.id.prof_pic)).setImageBitmap(chatRecipients.getGroupImage(false));
-            banner.findViewById(R.id.title_bar).setBackgroundColor(chatRecipients.getColor());
-        }
-
-        list = app.getFriendsList().getAllGroups();
+        messageList = ((AtchApplication) getApplication()).getMessageList(chatRecipients);
+        ((TextView) banner.findViewById(R.id.fullname)).setText(chatRecipients.getNames());
+        ((ImageView) banner.findViewById(R.id.prof_pic)).setImageBitmap(chatRecipients.getGroupImage(false));
+        banner.findViewById(R.id.title_bar).setBackgroundColor(chatRecipients.getColor());
 
         ListView listView = (ListView) findViewById(R.id.listview);
         String firstMessageId = null;

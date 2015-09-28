@@ -36,13 +36,13 @@ public class Message {
                 if(fromCurrUser)
                     return "You suggest that " + otherUsers.getNamesAsNiceList() + " come over";
                 else
-                    return User.getUserFromMap(getSenderId()).getFirstname() + " suggests that you come over";
+                    return User.getUserFromCache(getSenderId()).getFirstname() + " suggests that you come over";
             }
             case 't': {
                 if(fromCurrUser)
                     return "You suggest that you go to " + otherUsers.getNamesAsNiceList();
                 else
-                    return User.getUserFromMap(getSenderId()).getFirstname() + " suggests that " + otherUsers.getSHeTheyPronoun() + " come over";
+                    return User.getUserFromCache(getSenderId()).getFirstname() + " suggests that " + otherUsers.getSHeTheyPronoun() + " come over";
             }
             case 'r': {
                 String responseText = originalText.split("_")[1];
@@ -51,7 +51,7 @@ public class Message {
                 if(fromCurrUser)
                     return "You are " + responseText;
                 else
-                    return User.getUserFromMap(getSenderId()).getFirstname() + " is " + responseText;
+                    return User.getUserFromCache(getSenderId()).getFirstname() + " is " + responseText;
             }
             case 'n':
             default: {

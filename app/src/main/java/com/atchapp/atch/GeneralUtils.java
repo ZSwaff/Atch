@@ -35,6 +35,12 @@ public class GeneralUtils {
             return Color.argb(255, r, g, b);
         }
     }
+    public static int[] generateNewColors(int count) {
+        int[] ret = new int[count];
+        for (int i = 1; i < count; i++)
+            ret[i] = generateNewColor();
+        return ret;
+    }
     public static int getLighter(int oldColor) {
         float[] hsv = new float[3];
         Color.colorToHSV(oldColor, hsv);

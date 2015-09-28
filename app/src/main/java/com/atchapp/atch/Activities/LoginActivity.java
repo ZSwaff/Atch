@@ -100,7 +100,7 @@ public class LoginActivity extends FragmentActivity {
                     double lat = 37.427325;
                     double lng = -122.169882;
                     LatLngBounds mapBounds = new LatLngBounds(new LatLng(lat-.015, lng-.015), new LatLng(lat+.015, lng+.015));
-                    map.animateCamera(CameraUpdateFactory.newLatLngBounds(mapBounds, 0), 2000, null);
+                    map.animateCamera(CameraUpdateFactory.newLatLngBounds(mapBounds, 0), 5000, null);
                 }
             });
         }

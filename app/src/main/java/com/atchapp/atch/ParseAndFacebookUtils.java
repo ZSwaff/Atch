@@ -124,7 +124,7 @@ public class ParseAndFacebookUtils {
 
 
     public static void sendFriendRequest(String targetParseId) {
-        final ParseUser targetUser = User.getUserFromMap(targetParseId).getUser();
+        final ParseUser targetUser = User.getUserFromCache(targetParseId).getUser();
         if (targetUser == null) {
             Log.e("xxxerr", "sendFriendRequest(...) failed, requested User not in userMap");
         }
@@ -145,7 +145,7 @@ public class ParseAndFacebookUtils {
         });
     }
     public static void cancelFriendRequest(String targetParseId) {
-        final ParseUser targetUser = User.getUserFromMap(targetParseId).getUser();
+        final ParseUser targetUser = User.getUserFromCache(targetParseId).getUser();
         if (targetUser == null) {
             Log.e("xxxerr", "cancelFriendRequest(...) failed, requested User not in userMap");
         }
@@ -163,7 +163,7 @@ public class ParseAndFacebookUtils {
     }
 
     public static void acceptFriendRequest(String senderParseId) {
-        final ParseUser targetUser = User.getUserFromMap(senderParseId).getUser();
+        final ParseUser targetUser = User.getUserFromCache(senderParseId).getUser();
         if (targetUser == null) {
             Log.e("xxxerr", "acceptFriendRequest(...) failed, requested User not in userMap");
         }
@@ -179,7 +179,7 @@ public class ParseAndFacebookUtils {
         });
     }
     public static void rejectFriendRequest(String senderParseId) {
-        final ParseUser targetUser = User.getUserFromMap(senderParseId).getUser();
+        final ParseUser targetUser = User.getUserFromCache(senderParseId).getUser();
         if (targetUser == null) {
             Log.e("xxxerr", "rejectFriendRequest(...) failed, requested User not in userMap");
         }
@@ -195,7 +195,7 @@ public class ParseAndFacebookUtils {
         });
     }
     public static void unfriendFriend(String uid){
-        final ParseUser targetUser = User.getUserFromMap(uid).getUser();
+        final ParseUser targetUser = User.getUserFromCache(uid).getUser();
         if (targetUser == null) {
             Log.e("xxxerr", "unfriendFriend(...) failed, requested User not in userMap");
         }

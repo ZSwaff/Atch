@@ -45,10 +45,6 @@ public class AddFriendsActivity extends BaseFriendsActivity {
             }
         });
         fillListView();
-
-        AtchApplication app = (AtchApplication) getApplication();
-        app.populateFacebookFriendList();
-        app.populatePendingLists();
     }
 
     @Override

@@ -33,8 +33,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
+//Facebook keys
 //laptop  OYjIaRgMAlt7n5rwAlrxEN3XMf8=
 //desktop OYTDmaBNFPsf+lOOtQO1qU+67pk=
+//release zOUNwzamJtYdvkOLFjwZzdo44MI=
+
+//Google Maps key
+//AIzaSyAsNS90q3K8S_IMsNr5B_BK_fWl9amDSR8
 
 public class AtchApplication extends Application {
     private volatile Activity currentActivity = null;
@@ -42,6 +47,7 @@ public class AtchApplication extends Application {
 
     private volatile boolean isSetupComplete = false;
     //0 is friendList, 1 is facebook friends, 2 is pending you, 3 is pending them, 4 is locations, 5 is prof pics
+    //TODO replace with CountDownLatch or something
     private volatile int[] loadingPhasesComplete = {1, 1, 1, 1, 1, -1};
     private volatile SimpleCallback setupCompleteCallback = null;
 
@@ -110,6 +116,10 @@ public class AtchApplication extends Application {
         stopLocationUpdates();
         setIsOnline(false);
         ParseAndFacebookUtils.updateMyLocation(null);
+
+        isSetupComplete = false;
+        loadingPhasesComplete = new int[]{1, 1, 1, 1, 1, -1};
+        User.resetCache();
     }
     public void activateLogoutAlarm() {
         logoutAlarm = new CountDownTimer(30 * 60 * 1000, 30 * 60 * 1000) {
@@ -148,8 +158,14 @@ public class AtchApplication extends Application {
     public void addFriend(User newFriend){
         friendsList.addUser(newFriend);
     }
+    public void addUserWhoRequestedYou(User userWhoRequestedYou) {
+        usersWhoSentFriendRequests.addUser(userWhoRequestedYou);
+    }
     public void removeFriend(User newEnemy){
         friendsList.removeUser(newEnemy);
+    }
+    public void removeUserWhoRequestedYou(User noLongerRequested) {
+        usersWhoSentFriendRequests.removeUser(noLongerRequested);
     }
 
     public MessageList getMessageList(Group chatGroup) {
@@ -192,16 +208,12 @@ public class AtchApplication extends Application {
 
         AtchParsePushReceiver.init(this);
         AtchParsePushReceiver.cancelAllNotifications(this);
-
-        UserInfoSaveable infoGroup = UserInfoSaveable.autoLoad(this);
-        User.init(this, infoGroup);
+        User.init(this, UserInfoSaveable.autoLoad(this));
         Group.init(this);
         UserListAdapter.init(this);
 
         MapsInitializer.initialize(this);
-
         FacebookSdk.sdkInitialize(this);
-
         Parse.initialize(this, "P4g0harOzaQTi9g3QyEqGPI3HkiPJxxz4SJObhCE", "GpAM5yqJzbltLQENhwJt0cMbrVyM9q4aHR8O3k2s");
         ParseFacebookUtils.initialize(this);
     }
@@ -209,21 +221,19 @@ public class AtchApplication extends Application {
     private void logReleaseHashKey(){
         PackageInfo info;
         try {
-            info = getPackageManager().getPackageInfo("com.atchapp.atch", PackageManager.GET_SIGNATURES);
+            info = getPackageManager().getPackageInfo(getPackageName(), PackageManager.GET_SIGNATURES);
             for (Signature signature : info.signatures) {
                 MessageDigest md;
                 md = MessageDigest.getInstance("SHA");
                 md.update(signature.toByteArray());
                 String something = new String(Base64.encode(md.digest(), 0));
-                Log.e("xxx hash key", something);
+                Log.e("xxx key hash", something);
             }
         }
         catch (Exception e) {
-            Log.e("xxxerr hash key", "error");
+            Log.e("xxxerr key hash", "error");
         }
     }
-
-
 
     public boolean isSetupComplete() {
         return isSetupComplete;
@@ -253,7 +263,14 @@ public class AtchApplication extends Application {
         }
     }
 
-    //populates once results come in from Parse
+    //populates once results come in from Parse/Fb
+    public void refreshAppData() {
+        User.resetAllCachedTypes();
+        populateFriendList();
+        populateFacebookFriendList();
+        populatePendingLists();
+        populateMessageLists();
+    }
     public void populateFriendList() {
         ParseAndFacebookUtils.getAllFriends(new VariableCallback<UserList>() {
             @Override
@@ -277,7 +294,6 @@ public class AtchApplication extends Application {
             }
         });
     }
-    //populates once results come in from Facebook, then Parse
     public void populateFacebookFriendList(){
         ParseAndFacebookUtils.getAllFacebookFriends(new VariableCallback<UserList>() {
             @Override
@@ -291,7 +307,6 @@ public class AtchApplication extends Application {
 
         });
     }
-    //populates once results come in from Parse
     public void populatePendingLists(){
         ParseAndFacebookUtils.getUsersWhoHaveRequestedToFriendCurrentUser(new VariableCallback<UserList>() {
             @Override
@@ -312,7 +327,6 @@ public class AtchApplication extends Application {
             }
         });
     }
-    //populates once results come in from Parse
     public void populateMessageLists() {
         allMessageLists = new HashMap<>();
         ParseAndFacebookUtils.getAllMessagesFromAllLists(new TwoVariableCallback<String, MessageList>() {

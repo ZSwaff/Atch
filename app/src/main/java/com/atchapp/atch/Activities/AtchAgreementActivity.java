@@ -23,20 +23,6 @@ public class AtchAgreementActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_atch_agreement);
 
-        ParseAndFacebookUtils.setupParseInstallation();
-        AtchParsePushReceiver.cancelAllNotifications(this);
-
-        AtchApplication app = (AtchApplication) getApplication();
-        app.populateFriendList();
-        app.populateFacebookFriendList();
-        app.populatePendingLists();
-        app.populateMessageLists();
-
-        int bgColor = GeneralUtils.generateNewColor();
-        GradientDrawable gd = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{bgColor, 0x00ffffff});
-        gd.setCornerRadius(0f);
-        findViewById(R.id.imageView).setBackground(gd);
-
         findViewById(R.id.root).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -60,7 +46,17 @@ public class AtchAgreementActivity extends Activity {
     protected void onResume() {
         super.onResume();
 
-        ((AtchApplication)getApplication()).logout();
+        int bgColor = GeneralUtils.generateNewColor();
+        GradientDrawable gd = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{bgColor, 0x00ffffff});
+        gd.setCornerRadius(0f);
+        findViewById(R.id.imageView).setBackground(gd);
+
+        ParseAndFacebookUtils.setupParseInstallation();
+        AtchParsePushReceiver.cancelAllNotifications(this);
+
+        AtchApplication app = (AtchApplication) getApplication();
+        app.logout();
+        app.refreshAppData();
     }
 
     @Override
@@ -79,7 +75,6 @@ public class AtchAgreementActivity extends Activity {
 
         LoginManager.getInstance().logOut();
 
-        ParseUser user = ParseUser.getCurrentUser();
         ParseUser.logOutInBackground(new LogOutCallback() {
             @Override
             public void done(ParseException e) {
@@ -97,8 +92,9 @@ public class AtchAgreementActivity extends Activity {
 
 
     public void engageApp(){
-        ((AtchApplication)getApplication()).setIsOnline(true);
-        ((AtchApplication)getApplication()).startLocationUpdates();
+        AtchApplication app = (AtchApplication) getApplication();
+        app.setIsOnline(true);
+        app.startLocationUpdates();
 
         ParseAndFacebookUtils.sendLoginNotifications();
 
