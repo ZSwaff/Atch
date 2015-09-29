@@ -1,6 +1,7 @@
 package com.atchapp.atch;
 
 import android.location.Location;
+import android.os.Bundle;
 import android.util.Log;
 
 import com.atchapp.atch.Callbacks.SimpleCallback;
@@ -385,11 +386,16 @@ public class ParseAndFacebookUtils {
 
                         ArrayList<String> fbids = new ArrayList<>();
 
-                        for (int i = 0; i < array.length(); i++) {
-                            try {
-                                JSONObject obj = array.getJSONObject(i);
-                                fbids.add(obj.getString("id"));
-                            } catch (JSONException e) {}
+                        if (array == null)
+                            Log.e("xxxerr", response.toString());
+                        else {
+                            for (int i = 0; i < array.length(); i++) {
+                                try {
+                                    JSONObject obj = array.getJSONObject(i);
+                                    fbids.add(obj.getString("id"));
+                                } catch (JSONException e) {
+                                }
+                            }
                         }
 
                         ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
@@ -414,20 +420,27 @@ public class ParseAndFacebookUtils {
                 new GraphRequest.GraphJSONObjectCallback() {
                     @Override
                     public void onCompleted(JSONObject object, GraphResponse response) {
+                        ParseUser currUser = ParseUser.getCurrentUser();
+                        currUser.setUsername(username);
+                        currUser.put("checkinCount", 0);
+                        currUser.put("queryUsername", username.toLowerCase());
                         try {
-                            ParseUser currUser = ParseUser.getCurrentUser();
-                            currUser.setUsername(username);
-                            currUser.put("checkinCount", 0);
-                            currUser.put("queryUsername", username.toLowerCase());
-                            currUser.put("firstname", object.getString("first_name"));
                             currUser.put("fbid", object.getString("id"));
                             currUser.put("fullname", object.getString("name"));
                             currUser.put("queryFullname", object.getString("name").toLowerCase());
+                            currUser.put("firstname", object.getString("first_name"));
                             currUser.put("gender", object.getString("gender"));
+
+                        } catch (JSONException e) {
+                            Log.e("xxxerr", e.toString());
+                        } finally {
                             currUser.saveInBackground();
-                        } catch (JSONException e) {}
+                        }
                     }
                 });
+        Bundle parameters = new Bundle();
+        parameters.putString("fields", "id,name,first_name,gender");
+        request.setParameters(parameters);
         request.executeAsync();
     }
 
