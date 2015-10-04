@@ -56,13 +56,20 @@ public class ParseAndFacebookUtils {
         roleQuery.getFirstInBackground(new GetCallback<ParseRole>() {
             @Override
             public void done(ParseRole role, ParseException e) {
-                if (role == null) return;
+                if (role == null) {
+                    Log.e("xxxerr", "getAllFriends(...) failed, role null\n" + e.toString());
+                    return;
+                }
                 ParseRelation<ParseUser> relation = role.getRelation("users");
                 ParseQuery<ParseUser> friendQuery = relation.getQuery();
                 friendQuery.orderByAscending("fullname");
                 friendQuery.findInBackground(new FindCallback<ParseUser>() {
                     @Override
                     public void done(List<ParseUser> list, ParseException e) {
+                        if (list == null) {
+                            Log.e("xxxerr", "getAllFriends(...) failed, list null\n" + e.toString());
+                            return;
+                        }
                         for (ParseUser user : list) {
                             friendsList.addUser(User.getOrCreateUser(user, User.UserType.FRIEND));
                         }
@@ -74,6 +81,7 @@ public class ParseAndFacebookUtils {
         });
     }
 
+    //these might give null users
     public static void getParseUserFromFbid(String fbid, final VariableCallback<ParseUser> callback){
         ParseQuery<ParseUser> userQuery = ParseUser.getQuery();
         userQuery.whereEqualTo("fbid", fbid);
@@ -115,7 +123,10 @@ public class ParseAndFacebookUtils {
         mainQuery.findInBackground(new FindCallback<ParseUser>() {
             @Override
             public void done(List<ParseUser> list, ParseException e) {
-                if (list == null) return;
+                if (list == null) {
+                    Log.e("xxxerr", "getUsersWithMatchingUsernameOrFullname(...) failed, list null\n" + e.toString());
+                    return;
+                }
                 UserList searchResults = new UserList(list, User.UserType.RANDOM);
                 searchResults.sortByPriorityForSearch();
                 callback.done(searchResults);
@@ -135,6 +146,10 @@ public class ParseAndFacebookUtils {
         query.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> list, ParseException e) {
+                if (list == null) {
+                    Log.e("xxxerr", "sendFriendRequest(...) failed, list null\n" + e.toString());
+                    return;
+                }
                 if (list.isEmpty()) {
                     ParseObject friendRequest = new ParseObject("FriendRequest");
                     friendRequest.put("fromUser", ParseUser.getCurrentUser());
@@ -156,6 +171,10 @@ public class ParseAndFacebookUtils {
         query.getFirstInBackground(new GetCallback<ParseObject>() {
             @Override
             public void done(ParseObject parseObject, ParseException e) {
+                if (parseObject == null) {
+                    Log.e("xxxerr", "cancelFriendRequest(...) failed, parseObject null\n" + e.toString());
+                    return;
+                }
                 HashMap<String, Object> params = new HashMap<>();
                 params.put("friendRequestId", parseObject.getObjectId());
                 ParseCloud.callFunctionInBackground("cancelFriendRequest", params);
@@ -174,6 +193,10 @@ public class ParseAndFacebookUtils {
         query.getFirstInBackground(new GetCallback<ParseObject>() {
             @Override
             public void done(ParseObject friendRequest, ParseException e) {
+                if (friendRequest == null) {
+                    Log.e("xxxerr", "acceptFriendRequest(...) failed, friendRequest null\n" + e.toString());
+                    return;
+                }
                 friendRequest.put("state", "accepted");
                 friendRequest.saveInBackground();
             }
@@ -190,6 +213,10 @@ public class ParseAndFacebookUtils {
         query.getFirstInBackground(new GetCallback<ParseObject>() {
             @Override
             public void done(ParseObject friendRequest, ParseException e) {
+                if (friendRequest == null) {
+                    Log.e("xxxerr", "rejectFriendRequest(...) failed, friendRequest null\n" + e.toString());
+                    return;
+                }
                 friendRequest.put("state", "rejected");
                 friendRequest.saveInBackground();
             }
@@ -213,6 +240,11 @@ public class ParseAndFacebookUtils {
         query.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> requests, ParseException e) {
+                if (requests == null) {
+                    Log.e("xxxerr", "getUsersWhoCurrentUserHasRequestedToFriend(...) failed, requests null\n" + e.toString());
+                    return;
+                }
+
                 ArrayList<String> userObjIds = new ArrayList<>();
                 for (ParseObject req : requests)
                     userObjIds.add(req.getParseObject("toUser").getObjectId());
@@ -222,6 +254,10 @@ public class ParseAndFacebookUtils {
                 userQuery.findInBackground(new FindCallback<ParseUser>() {
                     @Override
                     public void done(List<ParseUser> users, ParseException e) {
+                        if (users == null) {
+                            Log.e("xxxerr", "getUsersWhoCurrentUserHasRequestedToFriend(...) failed, users null\n" + e.toString());
+                            return;
+                        }
                         callback.done(new UserList(users, User.UserType.PENDING_THEM));
                     }
                 });
@@ -235,6 +271,11 @@ public class ParseAndFacebookUtils {
         query.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> requests, ParseException e) {
+                if (requests == null) {
+                    Log.e("xxxerr", "getUsersWhoHaveRequestedToFriendCurrentUser(...) failed, requests null\n" + e.toString());
+                    return;
+                }
+
                 ArrayList<String> userObjIds = new ArrayList<>();
                 for (ParseObject req : requests)
                     userObjIds.add(req.getParseObject("fromUser").getObjectId());
@@ -245,6 +286,10 @@ public class ParseAndFacebookUtils {
                 userQuery.findInBackground(new FindCallback<ParseUser>() {
                     @Override
                     public void done(List<ParseUser> users, ParseException e) {
+                        if (users == null) {
+                            Log.e("xxxerr", "getUsersWhoHaveRequestedToFriendCurrentUser(...) failed, users null\n" + e.toString());
+                            return;
+                        }
                         callback.done(new UserList(users, User.UserType.PENDING_YOU));
                     }
                 });
@@ -254,9 +299,10 @@ public class ParseAndFacebookUtils {
 
 
     public static void sendLoginNotifications() {
-        ParseCloud.callFunctionInBackground("sendLoginNotifications", null, new FunctionCallback<Object>() {
+        ParseCloud.callFunctionInBackground("sendLoginNotifications", new HashMap<String, Object>(), new FunctionCallback<Object>() {
             @Override
             public void done(Object o, ParseException e) {
+                if (e != null) Log.d("xxxerr", "e:" + e.toString());
             }
         });
     }
@@ -274,7 +320,10 @@ public class ParseAndFacebookUtils {
         query.getFirstInBackground(new GetCallback<ParseObject>() {
             @Override
             public void done(ParseObject parseObject, ParseException e) {
-                if (parseObject == null) return;
+                if (parseObject == null) {
+                    Log.e("xxxerr", "updateMyLocation(...) failed, parseObject null\n" + e.toString());
+                    return;
+                }
                 if (loc == null)
                     parseObject.remove("location");
                 else
@@ -289,7 +338,11 @@ public class ParseAndFacebookUtils {
         userQuery.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> parseObjects, ParseException e) {
-                if (parseObjects == null) return;
+                if (parseObjects == null) {
+                    Log.e("xxxerr", "updateFriendDataWithMostRecentLocations(...) failed, parseObjects null\n" + e.toString());
+                    return;
+                }
+
                 for (ParseObject privateDatum : parseObjects)
                     friends.addDataToUnknownUser(privateDatum);
 
@@ -311,6 +364,10 @@ public class ParseAndFacebookUtils {
         ParseCloud.callFunctionInBackground("getOrCreateMessageHistory", params, new FunctionCallback<ParseObject>() {
             @Override
             public void done(ParseObject messageHistory, ParseException e) {
+                if (messageHistory == null) {
+                    Log.e("xxxerr", "getOrCreateMessageHistory(...) failed, messageHistory null\n" + e.toString());
+                    return;
+                }
                 callback.done(messageHistory);
             }
         });
@@ -336,19 +393,19 @@ public class ParseAndFacebookUtils {
         query.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> list, ParseException e) {
-                if (list == null)
-                    Log.e("xxxerr", "getAllMessagesFromAllLists(...) failed:" + e.getMessage());
-                else {
-                    for (ParseObject messageHistory : list) {
-                        String mHName = messageHistory.getString("name");
-                        final String userIds = mHName.substring(mHName.indexOf('_') + 1);
-                        getMessagesFromHistory(messageHistory, new VariableCallback<MessageList>() {
-                            @Override
-                            public void done(MessageList messageList) {
-                                callback.done(userIds, messageList);
-                            }
-                        });
-                    }
+                if (list == null) {
+                    Log.e("xxxerr", "getAllMessagesFromAllLists(...) failed, list null\n" + e.getMessage());
+                    return;
+                }
+                for (ParseObject messageHistory : list) {
+                    String mHName = messageHistory.getString("name");
+                    final String userIds = mHName.substring(mHName.indexOf('_') + 1);
+                    getMessagesFromHistory(messageHistory, new VariableCallback<MessageList>() {
+                        @Override
+                        public void done(MessageList messageList) {
+                            callback.done(userIds, messageList);
+                        }
+                    });
                 }
             }
         });
@@ -363,6 +420,10 @@ public class ParseAndFacebookUtils {
             query.findInBackground(new FindCallback<ParseObject>() {
                 @Override
                 public void done(List<ParseObject> messages, ParseException e) {
+                    if (messages == null) {
+                        Log.e("xxxerr", "getMessagesFromHistory(...) failed, messages null\n" + e.getMessage());
+                        return;
+                    }
                     MessageList ret = new MessageList(messageHistory, messages, true);
                     ret.setMessageHistory(messageHistory);
                     callback.done(ret);
@@ -382,19 +443,19 @@ public class ParseAndFacebookUtils {
                 new GraphRequest.GraphJSONArrayCallback() {
                     @Override
                     public void onCompleted(JSONArray array, GraphResponse response) {
-                        final UserList facebookFriends = new UserList(User.UserType.FACEBOOK_FRIEND);
+                        if (array == null) {
+                            Log.e("xxxerr", "getAllFacebookFriends(...) failed, array null\n" + response.toString());
+                            return;
+                        }
 
+                        final UserList facebookFriends = new UserList(User.UserType.FACEBOOK_FRIEND);
                         ArrayList<String> fbids = new ArrayList<>();
 
-                        if (array == null)
-                            Log.e("xxxerr", response.toString());
-                        else {
-                            for (int i = 0; i < array.length(); i++) {
-                                try {
-                                    JSONObject obj = array.getJSONObject(i);
-                                    fbids.add(obj.getString("id"));
-                                } catch (JSONException e) {
-                                }
+                        for (int i = 0; i < array.length(); i++) {
+                            try {
+                                JSONObject obj = array.getJSONObject(i);
+                                fbids.add(obj.getString("id"));
+                            } catch (JSONException e) {
                             }
                         }
 
@@ -404,6 +465,10 @@ public class ParseAndFacebookUtils {
                         userQuery.findInBackground(new FindCallback<ParseUser>() {
                             @Override
                             public void done(List<ParseUser> list, ParseException e) {
+                                if (list == null) {
+                                    Log.e("xxxerr", "getAllFacebookFriends(...) failed, list null\n" + e.getMessage());
+                                    return;
+                                }
                                 for (ParseUser user : list)
                                     facebookFriends.addUser(User.getOrCreateUser(user, User.UserType.FACEBOOK_FRIEND));
 
@@ -430,11 +495,11 @@ public class ParseAndFacebookUtils {
                             currUser.put("queryFullname", object.getString("name").toLowerCase());
                             currUser.put("firstname", object.getString("first_name"));
                             currUser.put("gender", object.getString("gender"));
-
+                            currUser.saveInBackground();
                         } catch (JSONException e) {
                             Log.e("xxxerr", e.toString());
-                        } finally {
-                            currUser.saveInBackground();
+                            currUser.deleteInBackground();
+                            ParseUser.logOut();
                         }
                     }
                 });

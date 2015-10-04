@@ -19,6 +19,12 @@ import com.parse.ParsePushBroadcastReceiver;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+//import android.app.PendingIntent;
+//import android.support.v7.app.NotificationCompat;
+
+//import java.util.Locale;
+//import java.util.Random;
+
 
 public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
     private static final int NOTIFICATION_ID = 492304;
@@ -56,9 +62,8 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
             }
 
             Activity currActivity = app.getCurrentActivity();
-            if (currActivity != null && currActivity instanceof MapActivity)
+            if (type.equals("message") && currActivity != null && currActivity instanceof MapActivity && ((MapActivity) currActivity).isChattingWithPerson(chatRecipientObjectId))
                 ((MapActivity) currActivity).refreshChatHistory();
-
             else if(app.isOnlineAndAppOpen() && currActivity instanceof BaseFriendsActivity){
                 User user = null;
                 String message ="";
@@ -82,6 +87,7 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
                     message = user.getUsername() + " accepted your friend request";
                 } else if (type.equals("login")) {
                     user = User.getUserFromCache(pid);
+                    app.getFriendsList().addUser(user);
                     message = user.getUsername() + " logged in";
                 }
                 ((BaseFriendsActivity)currActivity).createNotification(message, (user != null)?user.getRelativeColor():-1, getClassToOpen(type),
@@ -150,7 +156,7 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
 //            NotificationCompat.Builder parseBuilder = new NotificationCompat.Builder(context);
 //            parseBuilder.setContentTitle(title).setContentText(alert).setTicker(tickerText).setSmallIcon(this.getSmallIconId(context, intent)).setLargeIcon(this.getLargeIcon(context, intent)).setContentIntent(pContentIntent).setDeleteIntent(pDeleteIntent).setAutoCancel(true).setDefaults(-1);
 //            if(alert != null && alert.length() > 38) {
-//                parseBuilder.setStyle((new NotificationCompat.Builder.BigTextStyle()).bigText(alert));
+//                parseBuilder.setStyle((new NotificationCompat.BigTextStyle()).bigText(alert));
 //            }
 //
 //            return parseBuilder.build();

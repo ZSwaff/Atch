@@ -122,7 +122,8 @@ public class AtchApplication extends Application {
         User.resetCache();
     }
     public void activateLogoutAlarm() {
-        logoutAlarm = new CountDownTimer(30 * 60 * 1000, 30 * 60 * 1000) {
+        int logoutTime = 180 * 60 * 1000;
+        logoutAlarm = new CountDownTimer(logoutTime, logoutTime) {
             @Override
             public void onTick(long millisUntilFinished) { }
             @Override
