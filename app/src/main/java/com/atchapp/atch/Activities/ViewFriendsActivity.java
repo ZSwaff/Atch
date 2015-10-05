@@ -36,6 +36,8 @@ public class ViewFriendsActivity extends BaseFriendsActivity {
             }
         });
         fillListView();
+
+        ((AtchApplication) getApplication()).refreshAppData();
     }
 
     @Override

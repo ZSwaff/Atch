@@ -45,6 +45,8 @@ public class AddFriendsActivity extends BaseFriendsActivity {
             }
         });
         fillListView();
+
+        ((AtchApplication) getApplication()).refreshAppData();
     }
 
     @Override

@@ -227,6 +227,7 @@ public class User implements Comparable<User> {
         UserInfoSaveable.autoSave(app, User.getUserCache());
     }
     public void resetToLastColor() {
+        if (oldColors.empty()) return;
         relativeColor = oldColors.pop();
         lighterColor = GeneralUtils.getLighter(relativeColor);
         setProfPics();
