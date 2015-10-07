@@ -64,7 +64,7 @@ public class AtchParsePushReceiver extends ParsePushBroadcastReceiver {
             Activity currActivity = app.getCurrentActivity();
             if (type.equals("message") && currActivity != null && currActivity instanceof MapActivity && ((MapActivity) currActivity).isChattingWithPerson(chatRecipientObjectId))
                 ((MapActivity) currActivity).refreshChatHistory();
-            else if(app.isOnlineAndAppOpen() && currActivity instanceof BaseFriendsActivity){
+            else if (app.isOnlineAndAppOpen() && currActivity instanceof BaseFriendsActivity && !(currActivity instanceof MapActivity && ((MapActivity) currActivity).isSplashScreenActive())) {
                 User user = null;
                 String message ="";
                 if(type.equals("message")) {

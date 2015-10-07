@@ -6,6 +6,8 @@ import android.graphics.drawable.GradientDrawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
@@ -19,6 +21,7 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.atchapp.atch.ActionEditText;
 import com.atchapp.atch.AtchApplication;
 import com.atchapp.atch.Callbacks.SimpleCallback;
 import com.atchapp.atch.Callbacks.VariableCallback;
@@ -43,10 +46,12 @@ import com.parse.ParseObject;
 import com.parse.ParseUser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MapActivity  extends BaseFriendsActivity {
     private GoogleMap map;
     private boolean locLoaded = false;
+    private boolean splashScreenActive = true;
 
     private BannerTouchView banner;
     private boolean bannerShowingAtAll = false;
@@ -54,6 +59,8 @@ public class MapActivity  extends BaseFriendsActivity {
 
     private Group chatRecipients;
     private volatile MessageList messageList;
+
+    private HashMap<String, String> messagesInProgress = new HashMap<>();
 
 
     @Override
@@ -95,6 +102,18 @@ public class MapActivity  extends BaseFriendsActivity {
                     return true;
                 }
                 return false;
+            }
+        });
+        messageBox.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                messagesInProgress.put(chatRecipients.getIdsInString(null), s.toString());
+            }
+            @Override
+            public void afterTextChanged(Editable s) {
             }
         });
 
@@ -352,6 +371,7 @@ public class MapActivity  extends BaseFriendsActivity {
                                 @Override
                                 public void done() {
                                     splashScreen.setVisibility(View.GONE);
+                                    splashScreenActive = false;
                                 }
                             });
                         }
@@ -385,6 +405,7 @@ public class MapActivity  extends BaseFriendsActivity {
                 refreshChatHistory();
             }
         });
+        messagesInProgress.put(chatRecipients.getIdsInString(null), "");
         messageBox.setText("");
 
         addFakeMessageToChatHistory(newMessage, 'n');
@@ -425,10 +446,9 @@ public class MapActivity  extends BaseFriendsActivity {
                     chatRecipients = group;
                     break;
                 }
-
             }
         }
-        else
+        if (!chatterParseId.startsWith("group") || chatRecipients == null)
             chatRecipients = Group.getOrCreateGroup(chatterParseId, app.getFriendsList().getAllGroups());
 
         final Context context = this;
@@ -469,6 +489,9 @@ public class MapActivity  extends BaseFriendsActivity {
 
 
     //chat functions
+    public boolean isSplashScreenActive() {
+        return splashScreenActive;
+    }
     public boolean isChattingWithPerson(String chatterObjId){
         return (banner.allTheWayUp && chatRecipients != null && chatRecipients.matchesAll(chatterObjId.split("_")));
     }
@@ -499,6 +522,10 @@ public class MapActivity  extends BaseFriendsActivity {
         ((TextView) banner.findViewById(R.id.fullname)).setText(chatRecipients.getNames());
         ((ImageView) banner.findViewById(R.id.prof_pic)).setImageBitmap(chatRecipients.getGroupImage(false));
         banner.findViewById(R.id.title_bar).setBackgroundColor(chatRecipients.getColor());
+        ActionEditText editText = (ActionEditText) findViewById(R.id.message_box);
+        int start = editText.getSelectionStart(), end = editText.getSelectionEnd();
+        editText.setText(messagesInProgress.get(chatRecipients.getIdsInString(null)));
+        editText.setSelection(start, end);
 
         ListView listView = (ListView) findViewById(R.id.listview);
         String firstMessageId = null;
@@ -530,7 +557,7 @@ public class MapActivity  extends BaseFriendsActivity {
         if (firstMessageId != null) {
             for (int i = listView.getCount() - 1; i >= 0; i--) {
                 Message item = (Message) listView.getItemAtPosition(i);
-                if (item.getObjectId() != null && item.getObjectId().equals(firstMessageId)) {
+                if (item != null && item.getObjectId() != null && item.getObjectId().equals(firstMessageId)) {
                     listView.setSelectionFromTop(i, scrollFromTop);
                     scrolled = true;
                     break;

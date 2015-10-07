@@ -23,7 +23,9 @@ import com.atchapp.atch.Users.UserList;
 import com.atchapp.atch.Users.UserListAdapter;
 import com.facebook.FacebookSdk;
 import com.google.android.gms.maps.MapsInitializer;
+import com.parse.LogInCallback;
 import com.parse.Parse;
+import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
@@ -266,6 +268,18 @@ public class AtchApplication extends Application {
 
     //populates once results come in from Parse/Fb
     public void refreshAppData() {
+        if (ParseUser.getCurrentUser() != null)
+            refreshAppDataHelper();
+        else {
+            ParseFacebookUtils.logInWithReadPermissionsInBackground(currentActivity, ParseAndFacebookUtils.permissions, new LogInCallback() {
+                @Override
+                public void done(ParseUser parseUser, ParseException e) {
+                    refreshAppDataHelper();
+                }
+            });
+        }
+    }
+    private void refreshAppDataHelper() {
         User.resetAllCachedTypes();
         populateFriendList();
         populateFacebookFriendList();

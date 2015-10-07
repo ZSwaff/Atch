@@ -46,6 +46,9 @@ public class AtchAgreementActivity extends Activity {
     protected void onResume() {
         super.onResume();
 
+        if (ParseUser.getCurrentUser() == null)
+            logAllTheWayOut();
+
         int bgColor = GeneralUtils.generateNewColor();
         GradientDrawable gd = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{bgColor, 0x00ffffff});
         gd.setCornerRadius(0f);
@@ -73,21 +76,32 @@ public class AtchAgreementActivity extends Activity {
     public void logAllTheWayOut() {
         deregisterParseInstallation();
 
-        LoginManager.getInstance().logOut();
+        LoginManager loginManager = LoginManager.getInstance();
+        if(loginManager != null)
+            loginManager.logOut();
+
+        if (ParseUser.getCurrentUser() == null) {
+            switchToLoginActivity();
+            return;
+        }
 
         ParseUser.logOutInBackground(new LogOutCallback() {
             @Override
             public void done(ParseException e) {
-                Intent intent = new Intent(getApplication(), LoginActivity.class);
-                startActivity(intent);
-                overridePendingTransition(R.anim.slide_up_in, R.anim.slide_up_out);
+                switchToLoginActivity();
             }
         });
     }
     private void deregisterParseInstallation() {
         ParseInstallation installation = ParseInstallation.getCurrentInstallation();
+        if(installation == null) return;
         installation.remove("userId");
         installation.saveInBackground();
+    }
+    private void switchToLoginActivity() {
+        Intent intent = new Intent(getApplication(), LoginActivity.class);
+        startActivity(intent);
+        overridePendingTransition(R.anim.slide_up_in, R.anim.slide_up_out);
     }
 
 

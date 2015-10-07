@@ -10,9 +10,15 @@ import android.widget.Toast;
 import com.atchapp.atch.Callbacks.SimpleCallback;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
 
 import java.util.Date;
 
@@ -30,16 +36,42 @@ public class LocationUpdateService extends Service implements
 
         buildGoogleApiClient();
         createLocationRequest();
-        googleApiClient.connect();
+        googleApiClient.connect(); //TODO get rid of this when fixing the rest
+//        ensureSettingsEnabled();
     }
-    protected void buildGoogleApiClient() {
+    private void buildGoogleApiClient() {
         googleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
                 .build();
     }
-    protected void createLocationRequest() {
+    private void ensureSettingsEnabled() {
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+                .addLocationRequest(locationRequest);
+        PendingResult<LocationSettingsResult> result = LocationServices.SettingsApi.checkLocationSettings(googleApiClient, builder.build());
+        result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
+            @Override
+            public void onResult(LocationSettingsResult result) {
+                final Status status = result.getStatus();
+                switch (status.getStatusCode()) {
+                    case LocationSettingsStatusCodes.SUCCESS:
+                        googleApiClient.connect();
+                        break;
+                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+//                        try {
+//                            //TODO startResolutionForResult
+//                            status.startResolutionForResult(AtchAgreementActivity.class, 0x1);
+//                        } catch (IntentSender.SendIntentException e) {}
+                        break;
+                    case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                        //TODO what is this?!
+                        break;
+                }
+            }
+        });
+    }
+    private void createLocationRequest() {
         locationRequest = new LocationRequest();
         locationRequest.setInterval(60000);
         locationRequest.setFastestInterval(60000);
@@ -53,6 +85,23 @@ public class LocationUpdateService extends Service implements
         super.onDestroy();
     }
 
+//    @Override
+//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        switch (requestCode) {
+//            case 0x1:
+//                switch (resultCode) {
+//                    case Activity.RESULT_OK:
+//                        //TODO not a problem
+//                        break;
+//                    case Activity.RESULT_CANCELED:
+//                        //TODO problem
+//                        break;
+//                    default:
+//                        break;
+//                }
+//                break;
+//        }
+//    }
 
     @Override
     public void onConnected(Bundle connectionHint) {

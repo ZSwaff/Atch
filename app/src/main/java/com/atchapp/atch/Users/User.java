@@ -283,6 +283,7 @@ public class User implements Comparable<User> {
         return chatIcon;
     }
     public LatLng getLocation() {
+        if (privateData == null) return null;
         ParseGeoPoint loc = privateData.getParseGeoPoint("location");
         if (loc == null || !isLoggedIn()) return null;
         return new LatLng(loc.getLatitude(), loc.getLongitude());

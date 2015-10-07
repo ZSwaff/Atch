@@ -17,7 +17,7 @@ import com.atchapp.atch.UiElements.InAppNotificationView;
 
 public abstract class BaseFriendsActivity extends AppCompatActivity{
     protected AtchApplication app;
-
+    private InAppNotificationView notif = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,18 +72,21 @@ public abstract class BaseFriendsActivity extends AppCompatActivity{
 
 
     public void createNotification(String message, int color, final Class activityToStart, final Intent startInfo){
-        final ViewGroup baseLayout = ((ViewGroup)getWindow().getDecorView().getRootView());
-        final View notifLayout = View.inflate(this, R.layout.in_app_notif, baseLayout);
+        final ViewGroup baseLayout = ((ViewGroup) getWindow().getDecorView().getRootView());
+        notif = (InAppNotificationView) baseLayout.findViewById(R.id.notif);
+        if (notif == null) {
+            View notifLayout = View.inflate(this, R.layout.in_app_notif, baseLayout);
 
-        int statusBarHeight = -1;
-        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
-        if(resourceId > 0)
-            statusBarHeight = getResources().getDimensionPixelSize(resourceId);
+            int statusBarHeight = -1;
+            int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+            if (resourceId > 0)
+                statusBarHeight = getResources().getDimensionPixelSize(resourceId);
 
-        InAppNotificationView notif = (InAppNotificationView)notifLayout.findViewById(R.id.notif);
-        if(color != -1)
-            notif.setBackgroundColor(color);
-        notif.setUpperMargin(statusBarHeight);
+            notif = (InAppNotificationView) notifLayout.findViewById(R.id.notif);
+            if (color != -1)
+                notif.setBackgroundColor(color);
+            notif.setUpperMargin(statusBarHeight);
+        }
 
         final Activity thisAct = this;
         notif.setCallbacks(new SimpleCallback() {
@@ -93,22 +96,12 @@ public abstract class BaseFriendsActivity extends AppCompatActivity{
                     startInfo.putExtra("direct", true);
                     onNewIntent(startInfo);
                     onResume();
-                }
-                else
+                } else
                     startActivity(startInfo);
             }
-        }, new SimpleCallback() {
-            @Override
-            public void done() {
-                View v = baseLayout.findViewById(R.id.notif_root);
-                while (v != null) {
-                    baseLayout.removeView(v);
-                    v = baseLayout.findViewById(R.id.notif_root);
-                }
-                baseLayout.removeView(notifLayout);
-            }
         });
-        ((TextView)notif.findViewById(R.id.message)).setText(message);
+        ((TextView) notif.findViewById(R.id.message)).setText(message);
+
         notif.deployDown();
     }
 

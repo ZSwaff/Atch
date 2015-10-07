@@ -130,7 +130,7 @@ public class LoginActivity extends FragmentActivity {
         logInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                attemptLogin();
+                attemptFacebookLogin();
             }
         });
 
@@ -188,7 +188,7 @@ public class LoginActivity extends FragmentActivity {
     }
 
 
-    private void attemptLogin() {
+    private void attemptFacebookLogin() {
         LoginManager.getInstance().logInWithReadPermissions(this, ParseAndFacebookUtils.permissions);
     }
     private void checkParseForFbAccount(final AccessToken token) {

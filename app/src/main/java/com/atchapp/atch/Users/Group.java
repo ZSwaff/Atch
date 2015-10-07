@@ -240,6 +240,7 @@ public class Group {
         double centerLat = 0, centerLng = 0;
         for(User user : usersInGroup){
             LatLng userLoc = user.getLocation();
+            if (userLoc == null) continue;
             centerLat += userLoc.latitude/((float)numUsers);
             centerLng += userLoc.longitude/((float)numUsers);
         }

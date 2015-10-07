@@ -24,7 +24,6 @@ public class InAppNotificationView extends RelativeLayout {
     private boolean panned = false;
 
     private SimpleCallback onClickCallback;
-    private SimpleCallback destroyCallback;
     private Handler rescindViewHandler;
     private Runnable rescindView;
 
@@ -50,9 +49,8 @@ public class InAppNotificationView extends RelativeLayout {
         slop = ViewConfiguration.get(context).getScaledTouchSlop();
     }
 
-    public void setCallbacks(SimpleCallback onClickCallback, SimpleCallback destroyCallback){
+    public void setCallbacks(SimpleCallback onClickCallback) {
         this.onClickCallback = onClickCallback;
-        this.destroyCallback = destroyCallback;
 
         layoutParams = (MarginLayoutParams)getLayoutParams();
         layoutParams.setMargins(0, -barHeight, 0, 0);
@@ -63,14 +61,14 @@ public class InAppNotificationView extends RelativeLayout {
     }
 
     public void deployDown(){
-        animate(barHeight, -upperMargin, true);
+        animate(layoutParams.bottomMargin, -upperMargin);
         rescindViewHandler.postDelayed(rescindView, 3500);
     }
     public void returnUp(){
-        animate(layoutParams.bottomMargin, barHeight, false);
+        animate(layoutParams.bottomMargin, barHeight);
     }
 
-    private void animate(int start, int finish, boolean deploying) {
+    private void animate(int start, int finish) {
         ValueAnimator animator = ValueAnimator.ofInt(start, finish);
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -104,21 +102,6 @@ public class InAppNotificationView extends RelativeLayout {
         });
         animator.setDuration(Math.abs((500*Math.abs(finish-start))/(barHeight+upperMargin)));
         animator.start();
-
-        if(!deploying){
-            animator.addListener(new Animator.AnimatorListener() {
-                @Override
-                public void onAnimationStart(Animator animation) {}
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    destroyCallback.done();
-                }
-                @Override
-                public void onAnimationCancel(Animator animation) {}
-                @Override
-                public void onAnimationRepeat(Animator animation) {}
-            });
-        }
     }
 
 
@@ -165,7 +148,8 @@ public class InAppNotificationView extends RelativeLayout {
                         deployDown();
                     else {
                         returnUp();
-                        onClickCallback.done();
+                        if (onClickCallback != null)
+                            onClickCallback.done();
                     }
                 }
                 else

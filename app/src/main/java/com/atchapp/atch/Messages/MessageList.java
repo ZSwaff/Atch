@@ -41,6 +41,7 @@ public class MessageList {
             nonResponseMessages.add(newMessage);
     }
 
+
     public ParseObject getMessageHistory() {
         return messageHistory;
     }
